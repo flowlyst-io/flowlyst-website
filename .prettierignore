@@ -1,0 +1,21 @@
+# Build output & deps
+.next/
+node_modules/
+coverage/
+playwright-report/
+test-results/
+blob-report/
+pnpm-lock.yaml
+
+# Payload-generated files (do not hand-format)
+src/payload-types.ts
+src/payload-generated-schema.ts
+src/app/(payload)/admin/importMap.js
+src/migrations/
+
+# System / docs owned outside the app scaffold (managed elsewhere)
+.claude/
+.codery/
+design/
+docs/PRD.md
+CLAUDE.md
