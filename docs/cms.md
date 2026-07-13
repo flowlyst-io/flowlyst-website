@@ -71,19 +71,32 @@ Scheduled publishing does nothing until something calls the jobs runner:
 GET /api/payload-jobs/run
 ```
 
-On Vercel this is wired by [`vercel.json`](../vercel.json) as a Cron every 5 min.
-Vercel automatically sends `Authorization: Bearer <CRON_SECRET>` when the
-`CRON_SECRET` env var is set, which the config's `jobs.access.run` checks.
+On Vercel this is wired by [`vercel.json`](../vercel.json) as a Cron. Vercel
+automatically sends `Authorization: Bearer <CRON_SECRET>` when the `CRON_SECRET`
+env var is set, which the config's `jobs.access.run` checks.
 
 **Runbook (issue #5 / staging & prod):**
 
 1. Set `CRON_SECRET` to a random secret in the Vercel project env.
 2. Deploy — `vercel.json` registers the cron automatically.
-3. Note: Vercel Cron minute-level frequency requires a Pro plan; on Hobby the
-   minimum is daily. Adjust `schedule` to the plan.
 
-The queue can also be run manually by an authenticated Admin hitting the same
-endpoint, or in code via `payload.jobs.run()`.
+### Cron schedule — daily by default, and why
+
+The committed schedule is **`0 6 * * *`** (daily at 06:00 UTC ≈ 1–2am ET, a quiet
+window). This is deliberate: **Vercel's Hobby plan hard-fails the deployment for
+any cron more frequent than once per day** (it's a deploy-time error, not a
+throttle), so a sub-daily default would brick staging on Hobby. A daily default
+deploys on every plan.
+
+Consequence: on the daily default, a post scheduled for 2pm won't publish until
+the next 06:00 UTC run. Options:
+
+- **Near-real-time (Pro plan):** edit `vercel.json` to
+  `"schedule": "*/5 * * * *"` (every 5 min) and redeploy. Pro allows
+  minute-level crons; scheduled posts then go live within ~5 minutes.
+- **Manual trigger (any plan):** an authenticated Admin can run the queue on
+  demand — `GET /api/payload-jobs/run` (Admin session), or `payload.jobs.run()`
+  in code — to publish due posts immediately without waiting for the cron.
 
 ## Media storage
 
