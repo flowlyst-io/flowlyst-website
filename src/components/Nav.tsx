@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Mark } from './Mark'
@@ -33,14 +33,18 @@ const DRAWER_ID = 'site-nav-drawer'
 export function Nav() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const burgerRef = useRef<HTMLButtonElement>(null)
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
 
-  // Escape closes the open drawer.
+  // Escape closes the open drawer and returns focus to the burger (disclosure pattern).
   useEffect(() => {
     if (!open) return
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Escape') {
+        setOpen(false)
+        burgerRef.current?.focus()
+      }
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
@@ -58,6 +62,7 @@ export function Nav() {
       </Link>
 
       <button
+        ref={burgerRef}
         type="button"
         className="nav__burger"
         aria-label={open ? 'Close menu' : 'Open menu'}

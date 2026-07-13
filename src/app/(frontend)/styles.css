@@ -498,13 +498,6 @@ code,
   text-decoration: none;
   color: inherit;
 }
-.nav__brand img {
-  width: 26px;
-  height: 26px;
-}
-.nav__brand--dark img {
-  filter: brightness(0) invert(1);
-}
 .nav__links {
   display: flex;
   gap: 32px;
@@ -846,11 +839,6 @@ code,
   margin-bottom: 16px;
   letter-spacing: -0.02em;
 }
-.footer__brand img {
-  width: 24px;
-  height: 24px;
-  filter: brightness(0) invert(1);
-}
 .footer__bottom {
   margin-top: 64px;
   padding-top: 24px;
@@ -1131,6 +1119,23 @@ code,
     align-items: flex-start;
   }
 
+  /* A11y-driven responsive amendment to the reference (WCAG 1.4.10 reflow).
+     site.css's phone rules cover .nav__cta but not .footer__cta: the CTA band
+     keeps 48px inset padding and a nowrap two-button actions row, whose
+     min-content pushes past a 390px viewport and clips content. Mirror the
+     established .nav__cta phone pattern — stack the actions into full-width
+     buttons — and trim the band padding to --sp-6 (24px, spacing scale). */
+  .footer__cta {
+    padding: 24px;
+  }
+  .footer__cta-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .footer__cta-actions .btn {
+    width: 100%;
+  }
+
   /* Tabular list rows stack */
   .t-row {
     grid-template-columns: 1fr !important;
@@ -1242,6 +1247,16 @@ code,
 }
 .skip-link:focus {
   top: 12px;
+}
+
+/* Skip-to-content target: offset the scroll so focused content clears the
+   sticky nav (~62px), and suppress the container focus ring (main is not
+   interactive; tabindex=-1 only makes it programmatically focusable). */
+#main-content {
+  scroll-margin-top: var(--sp-16);
+}
+#main-content:focus {
+  outline: none;
 }
 
 :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {

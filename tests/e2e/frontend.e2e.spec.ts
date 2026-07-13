@@ -39,6 +39,11 @@ test.describe('Frontend', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('http://localhost:3000')
 
+    // No horizontal overflow at 390px (WCAG 1.4.10 reflow regression guard —
+    // the footer CTA band used to push the document to 404px).
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    expect(scrollWidth).toBeLessThanOrEqual(390)
+
     const drawer = page.locator('#site-nav-drawer')
     const openBtn = page.getByRole('button', { name: /open menu/i })
 
@@ -53,12 +58,11 @@ test.describe('Frontend', () => {
     await expect(closeBtn).toHaveAttribute('aria-expanded', 'true')
     await expect(drawer.getByRole('link', { name: 'Budget Software' })).toBeVisible()
 
-    // Escape closes it (keyboard accessible).
+    // Escape closes it (keyboard accessible) and returns focus to the burger.
     await page.keyboard.press('Escape')
     await expect(drawer).toBeHidden()
-    await expect(page.getByRole('button', { name: /open menu/i })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    )
+    const reopenBtn = page.getByRole('button', { name: /open menu/i })
+    await expect(reopenBtn).toHaveAttribute('aria-expanded', 'false')
+    await expect(reopenBtn).toBeFocused()
   })
 })
