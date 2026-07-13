@@ -11,5 +11,11 @@ export default defineConfig({
     // CSS is not processed in tests (imports resolve to no-ops), so components
     // that pull in global stylesheets can be rendered without a PostCSS pipeline.
     css: false,
+    // Integration tests share one Postgres database. In local dev the schema is
+    // auto-synced on Payload boot (`push`); running test files in parallel would
+    // let two workers race to CREATE the same types/tables. Serialize files so
+    // the first boot syncs the schema and later boots are no-ops. (In CI push is
+    // off and the schema comes from migrations, so this is a local-dev safeguard.)
+    fileParallelism: false,
   },
 })
