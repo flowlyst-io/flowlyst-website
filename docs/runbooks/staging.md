@@ -6,6 +6,7 @@ Stand up the **staging** environment for flowlyst-website so that every merge to
 one local command); no part of it is run by an agent.
 
 > **Read this first.**
+>
 > - **Never paste a real secret into this file or the repo.** Every credential
 >   below is a `<PLACEHOLDER>`. Fill real values only in the Neon/Vercel
 >   dashboards and your local shell.
@@ -28,18 +29,18 @@ The brief's topics are resequenced here into true dependency order (Neon must
 exist before you can migrate or set env vars; the Vercel project must exist
 before you can attach a Blob store):
 
-| Part | What | Where |
-| ---- | ---- | ----- |
-| 0 | Prerequisites | local |
-| 1 | Create the Neon database, grab both connection strings | Neon dashboard |
-| 2 | Generate `PAYLOAD_SECRET` | local shell |
-| 3 | Run the initial migration against Neon (**mandatory, manual**) | local shell |
-| 4 | Create the Vercel project (import repo, build settings) | Vercel dashboard |
-| 5 | Create + attach the Vercel Blob store | Vercel dashboard |
-| 6 | Set environment variables | Vercel dashboard |
-| 7 | Deploy | Vercel dashboard |
-| 8 | Scheduled publishing trigger (set `CRON_SECRET`; daily cron default) | Vercel dashboard |
-| 9 | End-state verification | browser |
+| Part | What                                                                 | Where            |
+| ---- | -------------------------------------------------------------------- | ---------------- |
+| 0    | Prerequisites                                                        | local            |
+| 1    | Create the Neon database, grab both connection strings               | Neon dashboard   |
+| 2    | Generate `PAYLOAD_SECRET`                                            | local shell      |
+| 3    | Run the initial migration against Neon (**mandatory, manual**)       | local shell      |
+| 4    | Create the Vercel project (import repo, build settings)              | Vercel dashboard |
+| 5    | Create + attach the Vercel Blob store                                | Vercel dashboard |
+| 6    | Set environment variables                                            | Vercel dashboard |
+| 7    | Deploy                                                               | Vercel dashboard |
+| 8    | Scheduled publishing trigger (set `CRON_SECRET`; daily cron default) | Vercel dashboard |
+| 9    | End-state verification                                               | browser          |
 
 ---
 
@@ -180,13 +181,13 @@ column, deployed before you migrate, will error until you run the migration.
    Vercel GitHub app for the `flowlyst-io` org if prompted).
 3. Configure the project:
 
-   | Setting | Value |
-   | ------- | ----- |
-   | **Framework Preset** | **Next.js** (auto-detected) |
-   | **Root Directory** | `./` (repo root — the app is not in a subfolder) |
-   | **Build Command** | leave **default** (`next build` via the preset) |
-   | **Install Command** | leave **default** — Vercel auto-detects **pnpm** from `pnpm-lock.yaml`. See step 4 for pinning the exact version |
-   | **Output Directory** | leave **default** |
+   | Setting              | Value                                                                                                            |
+   | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+   | **Framework Preset** | **Next.js** (auto-detected)                                                                                      |
+   | **Root Directory**   | `./` (repo root — the app is not in a subfolder)                                                                 |
+   | **Build Command**    | leave **default** (`next build` via the preset)                                                                  |
+   | **Install Command**  | leave **default** — Vercel auto-detects **pnpm** from `pnpm-lock.yaml`. See step 4 for pinning the exact version |
+   | **Output Directory** | leave **default**                                                                                                |
 
 4. **Pin pnpm to `10.4.1` via Corepack.** Vercel detects pnpm from the lockfile
    but, by default, uses **its own** pnpm version (chosen from the lockfile format)
@@ -243,19 +244,20 @@ preview URLs also boot; `CRON_SECRET` is Production-only, since Vercel Cron runs
 only on Production deploys). Leave **Development** unset — local dev uses your
 `.env` against Docker Postgres, per `docs/development.md`.
 
-| Variable | Value (placeholder) | Environments | How to obtain | Status in code |
-| -------- | ------------------- | ------------ | ------------- | -------------- |
-| `ENABLE_EXPERIMENTAL_COREPACK` | `1` | Production, Preview | Fixed value — pins pnpm to `10.4.1` (Part 4, step 4) | Build-time — makes Vercel use the pinned pnpm |
-| `DATABASE_URL` | `<neon-POOLED-connection-string>` | Production, Preview | Part 1 — the **pooled** (`-pooler`) string | **Required** — read by `payload.config.ts` at runtime |
-| `PAYLOAD_SECRET` | `<PAYLOAD_SECRET>` | Production, Preview | Part 2 — the **same** value you migrated with | **Required** — read by `payload.config.ts` |
-| `BLOB_READ_WRITE_TOKEN` | _(auto-injected — do not paste)_ | _(auto)_ | Part 5 — created when you attach the Blob store | Consumed by the media adapter (#4) — present → uploads go to Blob; absent → local filesystem |
-| `CRON_SECRET` | `<openssl rand -hex 32>` | Production | `openssl rand -hex 32` (fresh value) | Consumed by `jobs.access.run` (#4) — secures `GET /api/payload-jobs/run`; absent → scheduled publishing denied. See Part 8 |
-| `PREVIEW_SECRET` | `<openssl rand -hex 32>` | Production, Preview | `openssl rand -hex 32` (fresh value) | **Required for draft preview** (#4) — secures the `/preview` route; **unset → preview denied** (no fallback) |
-| `RESEND_API_KEY` | `<resend-api-key>` | Production, Preview | Resend dashboard → API Keys | Not yet consumed — set when the forms/email feature lands |
-| `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | `<recaptcha-site-key>` | Production, Preview | Google reCAPTCHA admin console (v3) | Not yet consumed — set when forms land |
-| `RECAPTCHA_SECRET_KEY` | `<recaptcha-secret-key>` | Production, Preview | Google reCAPTCHA admin console (v3) | Not yet consumed — set when forms land |
+| Variable                         | Value (placeholder)               | Environments        | How to obtain                                        | Status in code                                                                                                             |
+| -------------------------------- | --------------------------------- | ------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `ENABLE_EXPERIMENTAL_COREPACK`   | `1`                               | Production, Preview | Fixed value — pins pnpm to `10.4.1` (Part 4, step 4) | Build-time — makes Vercel use the pinned pnpm                                                                              |
+| `DATABASE_URL`                   | `<neon-POOLED-connection-string>` | Production, Preview | Part 1 — the **pooled** (`-pooler`) string           | **Required** — read by `payload.config.ts` at runtime                                                                      |
+| `PAYLOAD_SECRET`                 | `<PAYLOAD_SECRET>`                | Production, Preview | Part 2 — the **same** value you migrated with        | **Required** — read by `payload.config.ts`                                                                                 |
+| `BLOB_READ_WRITE_TOKEN`          | _(auto-injected — do not paste)_  | _(auto)_            | Part 5 — created when you attach the Blob store      | Consumed by the media adapter (#4) — present → uploads go to Blob; absent → local filesystem                               |
+| `CRON_SECRET`                    | `<openssl rand -hex 32>`          | Production          | `openssl rand -hex 32` (fresh value)                 | Consumed by `jobs.access.run` (#4) — secures `GET /api/payload-jobs/run`; absent → scheduled publishing denied. See Part 8 |
+| `PREVIEW_SECRET`                 | `<openssl rand -hex 32>`          | Production, Preview | `openssl rand -hex 32` (fresh value)                 | **Required for draft preview** (#4) — secures the `/preview` route; **unset → preview denied** (no fallback)               |
+| `RESEND_API_KEY`                 | `<resend-api-key>`                | Production, Preview | Resend dashboard → API Keys                          | Not yet consumed — set when the forms/email feature lands                                                                  |
+| `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | `<recaptcha-site-key>`            | Production, Preview | Google reCAPTCHA admin console (v3)                  | Not yet consumed — set when forms land                                                                                     |
+| `RECAPTCHA_SECRET_KEY`           | `<recaptcha-secret-key>`          | Production, Preview | Google reCAPTCHA admin console (v3)                  | Not yet consumed — set when forms land                                                                                     |
 
 Notes:
+
 - **To boot staging:** `ENABLE_EXPERIMENTAL_COREPACK` (build time, so pnpm
   matches), `DATABASE_URL`, and `PAYLOAD_SECRET`. Nothing else is required for the
   app to come up.
@@ -310,11 +312,13 @@ is set, and the config's `jobs.access.run` verifies that header. **If `CRON_SECR
 is unset, the runner denies the request and scheduled posts never publish.**
 
 **Setup — nothing new to do beyond env + deploy:**
+
 1. Set `CRON_SECRET` in the Vercel project (Production) — done in **Part 6**.
 2. Deploy (Part 7). Vercel reads the committed `vercel.json` and registers the cron
    automatically. No repo change is required.
 
 > ### Publish cadence — optional, Tural's choice (not a prerequisite)
+>
 > The committed default publishes **once daily at 06:00 UTC**, so a scheduled post
 > goes live at the next 06:00 UTC after its scheduled time — fine for a marketing
 > site, and it works on every plan. If you want **near-real-time** publishing (posts
@@ -328,6 +332,7 @@ is unset, the runner denies the request and scheduled posts never publish.**
 > fastest way to verify below.
 
 **Verify:**
+
 1. Vercel → project → **Settings → Cron Jobs** shows the `/api/payload-jobs/run`
    job registered with its schedule (`0 6 * * *`).
 2. In `/admin`, open a Blog Post (or Case Study), set the publish date to a moment
@@ -376,6 +381,7 @@ Confirm staging is live and self-deploying.
    let the 06:00 UTC cron do it).
 
 ### Done when
+
 - [ ] `/` renders the marketing homepage over HTTPS.
 - [ ] `/admin` reaches the create-first-admin screen; the admin you created sees
       the Content / Leads / Admin nav.
