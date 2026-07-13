@@ -10,12 +10,12 @@ one local command); no part of it is run by an agent.
 >   below is a `<PLACEHOLDER>`. Fill real values only in the Neon/Vercel
 >   dashboards and your local shell.
 > - **Two env vars are strictly required to boot:** `DATABASE_URL` and
->   `PAYLOAD_SECRET`. The CMS features from issue #4 add three more that the code
->   reads with sensible fallbacks: `BLOB_READ_WRITE_TOKEN` (media → Vercel Blob;
->   absent → local filesystem), `CRON_SECRET` (secures scheduled publishing;
->   absent → cron denied), and `PREVIEW_SECRET` (**optional** — falls back to
->   `PAYLOAD_SECRET`). `RESEND_*` / `RECAPTCHA_*` are still forward-looking (forms
->   issue) and unused today.
+>   `PAYLOAD_SECRET`. The CMS features from issue #4 add three more, each of which
+>   **fails closed** when unset: `BLOB_READ_WRITE_TOKEN` (absent → media on the local
+>   filesystem instead of Vercel Blob), `CRON_SECRET` (absent → scheduled publishing
+>   denied), and `PREVIEW_SECRET` (absent → admin draft preview denied — **no
+>   fallback**). `RESEND_*` / `RECAPTCHA_*` are still forward-looking (forms issue)
+>   and unused today.
 > - The repo is **not** wired to run database migrations on deploy. You run the
 >   migration yourself (Part 3), and again after any future PR that adds a
 >   migration. This is intentional — see Part 3.
@@ -250,7 +250,7 @@ only on Production deploys). Leave **Development** unset — local dev uses your
 | `PAYLOAD_SECRET` | `<PAYLOAD_SECRET>` | Production, Preview | Part 2 — the **same** value you migrated with | **Required** — read by `payload.config.ts` |
 | `BLOB_READ_WRITE_TOKEN` | _(auto-injected — do not paste)_ | _(auto)_ | Part 5 — created when you attach the Blob store | Consumed by the media adapter (#4) — present → uploads go to Blob; absent → local filesystem |
 | `CRON_SECRET` | `<openssl rand -hex 32>` | Production | `openssl rand -hex 32` (fresh value) | Consumed by `jobs.access.run` (#4) — secures `GET /api/payload-jobs/run`; absent → scheduled publishing denied. See Part 8 |
-| `PREVIEW_SECRET` | `<openssl rand -hex 32>` | Production, Preview | `openssl rand -hex 32` — **optional** | Optional (#4) — draft preview; **falls back to `PAYLOAD_SECRET`** if unset |
+| `PREVIEW_SECRET` | `<openssl rand -hex 32>` | Production, Preview | `openssl rand -hex 32` (fresh value) | **Required for draft preview** (#4) — secures the `/preview` route; **unset → preview denied** (no fallback) |
 | `RESEND_API_KEY` | `<resend-api-key>` | Production, Preview | Resend dashboard → API Keys | Not yet consumed — set when the forms/email feature lands |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | `<recaptcha-site-key>` | Production, Preview | Google reCAPTCHA admin console (v3) | Not yet consumed — set when forms land |
 | `RECAPTCHA_SECRET_KEY` | `<recaptcha-secret-key>` | Production, Preview | Google reCAPTCHA admin console (v3) | Not yet consumed — set when forms land |
@@ -259,10 +259,13 @@ Notes:
 - **To boot staging:** `ENABLE_EXPERIMENTAL_COREPACK` (build time, so pnpm
   matches), `DATABASE_URL`, and `PAYLOAD_SECRET`. Nothing else is required for the
   app to come up.
+- **Generate all three secrets up front** with `openssl rand -hex 32` — a distinct
+  value each for `PAYLOAD_SECRET`, `CRON_SECRET`, and `PREVIEW_SECRET` — and set them
+  at initial setup so the full CMS works from the first deploy.
 - **To exercise the full CMS (issue #4):** attach the Blob store so
-  `BLOB_READ_WRITE_TOKEN` is injected (media → Blob), and set `CRON_SECRET` so
-  scheduled publishing works (Part 8). `PREVIEW_SECRET` is **optional** — skip it
-  and draft preview uses `PAYLOAD_SECRET`.
+  `BLOB_READ_WRITE_TOKEN` is injected (media → Blob); set `CRON_SECRET` so scheduled
+  publishing works (Part 8); and set `PREVIEW_SECRET` so admin draft preview works —
+  **it has no fallback, so if it's unset, preview is denied.**
 - The `RESEND_*` / `RECAPTCHA_*` rows are for a later forms issue — add them as
   placeholders now or defer entirely; staging deploys and runs without them.
 - **`DATABASE_URL` uses the POOLED string here** (runtime), which is the opposite
