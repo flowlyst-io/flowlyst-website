@@ -150,11 +150,18 @@ set), so a fresh Neon database has **no schema** until it's migrated. If you ski
 this, `/admin` returns a 500 (`relation "users" does not exist`).
 
 This is a **one-time bootstrap** to seed the initial schema before the first deploy
-and first `/admin` visit. **After** this, you never run the migrate command by hand
-again: production Vercel builds apply any new committed migrations automatically (PR
-#36 — see [After this: schema changes deploy themselves](#after-this-schema-changes-deploy-themselves)
+and first `/admin` visit. It isn't redundant with the auto-migrate on deploy: it runs
+**before the Vercel project even exists** and lets you confirm the migrations apply
+cleanly before anything depends on them. **After** this, you never run the migrate
+command by hand again: production Vercel builds apply any new committed migrations
+automatically (PR #36 — see [After this: schema changes deploy themselves](#after-this-schema-changes-deploy-themselves)
 below). `payload migrate` is idempotent, so the bootstrap and the first production
-deploy's auto-migrate don't conflict — whichever runs second finds nothing pending.
+deploy's auto-migrate don't conflict — whichever runs second finds nothing pending —
+provided the manual bootstrap string (Part 1) and the integration's Production
+`DATABASE_URL_UNPOOLED` target the same Neon branch. (Confirmed for the 2026-07-13
+stand-up: the project had exactly two branches, `production` + `vercel-dev`, and the
+deployed app served the bootstrapped schema through the integration's variables.
+Re-standers should glance at the Neon branch list to confirm the same.)
 
 Run it from your local clone against the Neon **direct** string (CI applies the same
 migrations in its own step — `.github/workflows/ci.yml` → "Run database migrations"
@@ -191,8 +198,8 @@ and that script decides whether to migrate before building (logic in
   connection (`DATABASE_URL_UNPOOLED`), **then** builds the app.
 - On **preview** builds — and any non-production environment — it **skips migration**
   and goes straight to the build. Only production migrates; a preview's un-merged
-  schema change isn't applied until it lands on `main` (previews run against their own
-  Neon branch — Part 6).
+  schema change isn't applied until it lands on `main` (previews are expected to run
+  against their own Neon branch — Part 6).
 - It is **fail-closed**: if the migrate step fails, the build exits non-zero, the
   deploy fails, and the **previous** deployment stays live. If a production build is
   missing `DATABASE_URL_UNPOOLED` it fails loudly rather than falling back to the
@@ -327,12 +334,14 @@ injects the database env vars for you:
 - **`DATABASE_URL_UNPOOLED`** — the **direct** string, **required at build time** by
   the production migrate step (PR #36; the build fails closed without it).
 
-The integration scopes both to **Development + Production**, backs Vercel's
-**Development** environment with a dedicated **`vercel-dev`** Neon branch, and
-provisions **preview branches on demand** — when a PR deploys, a branch named
-`preview/<git-branch>` appears in Neon and its strings are injected into that preview
-deploy. (Preview deploys therefore get their own branch rather than sharing the main
-staging database. This supersedes the old "shared staging DB" caveat.) You never edit
+The integration scopes both to **Development + Production** and backs Vercel's
+**Development** environment with a dedicated **`vercel-dev`** Neon branch (both
+observed during the 2026-07-13 stand-up). It is also **documented to provision a
+preview branch per preview deploy** (documented naming `preview/<git-branch>`) and to
+inject that branch's strings into the deploy — this was **not confirmed in the Neon
+console** during the stand-up, so treat it as the expected model rather than an
+observed fact. Under that model preview deploys get their own branch rather than the
+Production database (superseding the old "shared staging DB" caveat). You never edit
 the `DATABASE_URL*` rows by hand — they show up already set.
 
 | Variable                         | Value (placeholder)                  | Environments                     | How to obtain                                                         | Status in code                                                                                                             |
@@ -370,9 +379,10 @@ Notes:
   `DATABASE_URL_UNPOOLED` for the build-time migrate step. That split (pooler at
   runtime, direct for DDL — see Part 1) is intentional and no longer something you
   wire up by hand.
-- **Preview deploys get their own Neon branch** (`preview/<git-branch>`), provisioned
-  by the integration on demand — they don't share the Production database. Preview
-  builds still **skip** migration (only production migrates — Part 3).
+- **Preview deploys are documented to get their own Neon branch** (`preview/<git-branch>`),
+  provisioned by the integration on demand — so they shouldn't share the Production
+  database (expected model; not console-confirmed in this stand-up). Preview builds
+  still **skip** migration regardless (only production migrates — Part 3).
 - Changing a hand-set env var requires a **redeploy** to take effect (Part 7).
 
 ---
@@ -491,10 +501,11 @@ re-standing staging.
    let the 06:00 UTC cron do it).
 
 6. **(Optional) Preview builds skip migration.** Open a PR and, in its **preview**
-   deployment's build log, confirm the line
-   `[vercel-build] VERCEL_ENV is "preview" (not "production") — skipping migrations`.
-   This proves only production builds migrate (PR #36). Requires reading Vercel build
-   logs (dashboard), so it's Tural's to eyeball.
+   deployment's build log, confirm a line beginning
+   `[vercel-build] VERCEL_ENV is "preview" (not "production") — skipping migrations`
+   (it continues "… Only production builds apply committed migrations."). This proves
+   only production builds migrate (PR #36). Requires reading Vercel build logs
+   (dashboard), so it's Tural's to eyeball.
 
 ### Done when
 
