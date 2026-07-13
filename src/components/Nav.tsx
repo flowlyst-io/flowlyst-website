@@ -52,7 +52,8 @@ export function Nav() {
     // sticky nav in a separately-sized <header> would break position: sticky.
     <header className="nav">
       <Link href="/" className="nav__brand">
-        <Mark size={26} />
+        {/* Brand-green mark on the light nav; the wordmark stays ink. */}
+        <Mark size={26} color="var(--fl-green)" />
         <span>flowlyst</span>
       </Link>
 
