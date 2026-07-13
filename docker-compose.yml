@@ -1,7 +1,7 @@
 # Local development database for flowlyst-website.
 #
-# Postgres 16 to match the CI service container and the intended Neon (Postgres)
-# production database, so schema behaviour is identical across all three.
+# Postgres 18 to match the CI service container and the Neon (Postgres)
+# database, so schema behaviour is identical across all three.
 #
 #   docker compose up -d     # start Postgres in the background
 #   docker compose down      # stop it (data persists in the named volume)
@@ -11,7 +11,7 @@
 # (see .env.example). They are not secrets and never touch Neon.
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: flowlyst

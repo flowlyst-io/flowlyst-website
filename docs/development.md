@@ -30,7 +30,7 @@ The app is split into two Next.js route groups under `src/app/`:
 ## First-time setup
 
 ```bash
-# 1. Start the local Postgres database (Postgres 16, in Docker).
+# 1. Start the local Postgres database (Postgres 18, in Docker).
 docker compose up -d
 
 # 2. Create your local env file from the template.
@@ -45,6 +45,10 @@ pnpm install
 # 5. Start the dev server.
 pnpm dev
 ```
+
+> **Upgrading an existing checkout to Postgres 18?** Recreate the local data volume
+> (`docker compose down -v`, then `docker compose up -d`) — a Postgres-16 data
+> directory won't boot under 18.
 
 `.env` is gitignored. The default `DATABASE_URL` in `.env.example` already matches
 the Docker Postgres credentials in `docker-compose.yml`, so you only need to fill

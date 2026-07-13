@@ -16,11 +16,11 @@ jobs:
     name: Lint, typecheck, test, build, e2e
     runs-on: ubuntu-latest
 
-    # Postgres 16 to match local docker-compose and the intended Neon database.
+    # Postgres 18 to match local docker-compose and the Neon database.
     # The job is not containerized, so the service is reachable at localhost:5432.
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: flowlyst
           POSTGRES_PASSWORD: flowlyst
