@@ -9,9 +9,13 @@ one local command); no part of it is run by an agent.
 > - **Never paste a real secret into this file or the repo.** Every credential
 >   below is a `<PLACEHOLDER>`. Fill real values only in the Neon/Vercel
 >   dashboards and your local shell.
-> - The app currently reads exactly **two** environment variables: `DATABASE_URL`
->   and `PAYLOAD_SECRET`. Everything else in the table is provisioned now but
->   **not consumed until a later feature ships** — staging boots without them.
+> - **Two env vars are strictly required to boot:** `DATABASE_URL` and
+>   `PAYLOAD_SECRET`. The CMS features from issue #4 add three more that the code
+>   reads with sensible fallbacks: `BLOB_READ_WRITE_TOKEN` (media → Vercel Blob;
+>   absent → local filesystem), `CRON_SECRET` (secures scheduled publishing;
+>   absent → cron denied), and `PREVIEW_SECRET` (**optional** — falls back to
+>   `PAYLOAD_SECRET`). `RESEND_*` / `RECAPTCHA_*` are still forward-looking (forms
+>   issue) and unused today.
 > - The repo is **not** wired to run database migrations on deploy. You run the
 >   migration yourself (Part 3), and again after any future PR that adds a
 >   migration. This is intentional — see Part 3.
@@ -34,7 +38,7 @@ before you can attach a Blob store):
 | 5 | Create + attach the Vercel Blob store | Vercel dashboard |
 | 6 | Set environment variables | Vercel dashboard |
 | 7 | Deploy | Vercel dashboard |
-| 8 | Scheduled publishing trigger | _pending #4_ |
+| 8 | Scheduled publishing trigger (set `CRON_SECRET`; plan decision) | Vercel dashboard |
 | 9 | End-state verification | browser |
 
 ---
@@ -132,11 +136,13 @@ PAYLOAD_SECRET='<PAYLOAD_SECRET>' \
 pnpm migrate
 ```
 
-Expected output: Payload reports the `20260713_123011_initial` migration applied
-(it creates the `users` table, Payload's internal tables, and the
-`payload_migrations` ledger). `payload migrate` is idempotent — it records applied
-migrations in `payload_migrations` and skips ones already run, so re-running is
-safe.
+Expected output: Payload applies **both** committed migrations in order —
+`20260713_123011_initial` then `20260713_151923_cms_content_model` — creating the
+`users`/auth tables, the full CMS content model (blog posts, case studies,
+testimonials, training programs, authors, media, the lead collections, and site
+settings), Payload's internal tables, and the `payload_migrations` ledger.
+`payload migrate` is idempotent — it records applied migrations in
+`payload_migrations` and skips ones already run, so re-running is safe.
 
 ### After any future schema change
 
@@ -201,9 +207,9 @@ column, deployed before you migrate, will error until you run the migration.
    it will succeed once env vars are set in Part 6. (Cancel/ignore the initial
    auto-build; you'll trigger a clean deploy in Part 7.)
 
-> **No `vercel.json` is needed** for staging — the Next.js preset covers the build.
-> (A committed `vercel.json` will arrive later **with issue #4** to declare the
-> scheduled-publishing cron — see Part 8. Nothing to add to the repo now.)
+> **`vercel.json` is already committed** (added by issue #4). It declares only the
+> scheduled-publishing **cron** (Part 8) — the Next.js preset still covers the
+> build. Vercel reads it automatically on deploy; nothing for you to add.
 
 ---
 
@@ -219,37 +225,45 @@ Media uploads will live in Vercel Blob.
    the project — **you do not copy or paste this token by hand.** Confirm it
    appears under Settings → Environment Variables after connecting.
 
-> **Note:** the code does **not** read `BLOB_READ_WRITE_TOKEN` yet — the Payload
-> Vercel-Blob storage adapter and the `Media` collection are not in
-> `payload.config.ts` at the time of writing (a separate part of issue #5). Attach
-> the store now so the token is ready; media upload can't be exercised until that
-> adapter ships (see Part 9).
+> **How it's wired:** the `Media` collection and the `@payloadcms/storage-vercel-blob`
+> adapter ship in the app (issue #4). The adapter is gated on
+> `BLOB_READ_WRITE_TOKEN`: **present** (staging/prod, once you attach the store) →
+> uploads go to Vercel Blob; **absent** (local dev) → filesystem (`/media`). So
+> attaching the store is all it takes to send staging uploads to Blob — verified
+> end-to-end in Part 9.
 
 ---
 
 ## Part 6 — Environment variables
 
-Set these in the Vercel project → Settings → **Environment Variables**. Add each
-to the **Production** and **Preview** environments (Preview so PR preview URLs
-also boot). Leave **Development** unset — local dev uses your `.env` against Docker
-Postgres, per `docs/development.md`.
+Set these in the Vercel project → Settings → **Environment Variables**, using the
+**Environments** column below for each (most go to **Production + Preview** so PR
+preview URLs also boot; `CRON_SECRET` is Production-only, since Vercel Cron runs
+only on Production deploys). Leave **Development** unset — local dev uses your
+`.env` against Docker Postgres, per `docs/development.md`.
 
 | Variable | Value (placeholder) | Environments | How to obtain | Status in code |
 | -------- | ------------------- | ------------ | ------------- | -------------- |
 | `ENABLE_EXPERIMENTAL_COREPACK` | `1` | Production, Preview | Fixed value — pins pnpm to `10.4.1` (Part 4, step 4) | Build-time — makes Vercel use the pinned pnpm |
 | `DATABASE_URL` | `<neon-POOLED-connection-string>` | Production, Preview | Part 1 — the **pooled** (`-pooler`) string | **Required** — read by `payload.config.ts` at runtime |
 | `PAYLOAD_SECRET` | `<PAYLOAD_SECRET>` | Production, Preview | Part 2 — the **same** value you migrated with | **Required** — read by `payload.config.ts` |
-| `BLOB_READ_WRITE_TOKEN` | _(auto-injected — do not paste)_ | _(auto)_ | Part 5 — created when you attach the Blob store | Provisioned now; consumed once the Media/storage adapter lands |
+| `BLOB_READ_WRITE_TOKEN` | _(auto-injected — do not paste)_ | _(auto)_ | Part 5 — created when you attach the Blob store | Consumed by the media adapter (#4) — present → uploads go to Blob; absent → local filesystem |
+| `CRON_SECRET` | `<openssl rand -hex 32>` | Production | `openssl rand -hex 32` (fresh value) | Consumed by `jobs.access.run` (#4) — secures `GET /api/payload-jobs/run`; absent → scheduled publishing denied. See Part 8 |
+| `PREVIEW_SECRET` | `<openssl rand -hex 32>` | Production, Preview | `openssl rand -hex 32` — **optional** | Optional (#4) — draft preview; **falls back to `PAYLOAD_SECRET`** if unset |
 | `RESEND_API_KEY` | `<resend-api-key>` | Production, Preview | Resend dashboard → API Keys | Not yet consumed — set when the forms/email feature lands |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | `<recaptcha-site-key>` | Production, Preview | Google reCAPTCHA admin console (v3) | Not yet consumed — set when forms land |
 | `RECAPTCHA_SECRET_KEY` | `<recaptcha-secret-key>` | Production, Preview | Google reCAPTCHA admin console (v3) | Not yet consumed — set when forms land |
 
 Notes:
-- **Minimum to stand up staging today:** `ENABLE_EXPERIMENTAL_COREPACK` (build
-  time, so pnpm matches), plus `DATABASE_URL` + `PAYLOAD_SECRET` (runtime), plus the
-  auto-injected `BLOB_READ_WRITE_TOKEN`. The `RESEND_*` / `RECAPTCHA_*` rows can be
-  added now as placeholders you fill later, or deferred entirely until their
-  feature ships — staging deploys and runs without them.
+- **To boot staging:** `ENABLE_EXPERIMENTAL_COREPACK` (build time, so pnpm
+  matches), `DATABASE_URL`, and `PAYLOAD_SECRET`. Nothing else is required for the
+  app to come up.
+- **To exercise the full CMS (issue #4):** attach the Blob store so
+  `BLOB_READ_WRITE_TOKEN` is injected (media → Blob), and set `CRON_SECRET` so
+  scheduled publishing works (Part 8). `PREVIEW_SECRET` is **optional** — skip it
+  and draft preview uses `PAYLOAD_SECRET`.
+- The `RESEND_*` / `RECAPTCHA_*` rows are for a later forms issue — add them as
+  placeholders now or defer entirely; staging deploys and runs without them.
 - **`DATABASE_URL` uses the POOLED string here** (runtime), which is the opposite
   of Part 3's migration command (direct string). That split is intentional.
 - **Shared staging DB caveat:** Preview deploys point at the same Neon staging
@@ -270,30 +284,49 @@ Notes:
 
 ## Part 8 — Scheduled publishing trigger
 
-<!-- PENDING #4 -->
-<!--
-  Issue #4 (content model, in flight in parallel) determines how scheduled
-  publishing fires — most likely a Vercel Cron that calls an API route on a
-  schedule. The orchestrator will supply the specifics to fold in here. When it
-  lands, this section must state:
+Blog Posts and Case Studies support **scheduled publishing** (set a future publish
+date in `/admin`). This enqueues a Payload `schedulePublish` job that only runs
+when something hits the jobs runner:
 
-    - CRON SCHEDULE ....... the crontab expression (e.g. every 5 min: "*/5 * * * *")
-    - ENDPOINT ............ the route the cron hits (e.g. /api/cron/publish)
-    - DECLARED IN ......... vercel.json `crons` array, committed to the repo (a
-                            vercel.json arrives WITH #4 — none exists today)
-    - AUTH SECRET ......... any CRON_SECRET the endpoint verifies, and to set it in
-                            Vercel → Settings → Environment Variables (Production)
-    - VERIFY .............. how to confirm the cron ran (Vercel → project → Crons /
-                            deployment logs) and that a scheduled item published
+```
+GET /api/payload-jobs/run
+```
 
-  Only the specifics above need filling in — the surrounding infra (Vercel
-  project, env vars) is already established by Parts 4–7.
--->
+**How it's wired (issue #4):** the committed [`vercel.json`](../../vercel.json)
+registers a **Vercel Cron** that calls that endpoint every 5 minutes
+(`"schedule": "*/5 * * * *"`). Vercel automatically attaches
+`Authorization: Bearer <CRON_SECRET>` to cron requests when `CRON_SECRET` is set,
+and the config's `jobs.access.run` verifies that header. **If `CRON_SECRET` is
+unset, the runner denies the request and scheduled posts never publish.**
 
-_Pending issue #4. Nothing to configure here yet: the scheduled-publishing
-mechanism (expected to be a committed `vercel.json` cron plus a `CRON_SECRET`) is
-defined by issue #4. Once it lands, fill in the schedule, endpoint, secret, and
-verification per the checklist in the comment above._
+**Setup — nothing new to do beyond env + deploy:**
+1. Set `CRON_SECRET` in the Vercel project (Production) — done in **Part 6**.
+2. Deploy (Part 7). Vercel reads the committed `vercel.json` and registers the cron
+   automatically. No repo change is required.
+
+> ### ⚠️ Plan decision — Tural's call (do not assume Pro)
+> Minute-level cron frequency (`*/5 * * * *`) **requires the Vercel Pro plan**. On
+> the **Hobby** plan, cron jobs run at most **once per day**, so the committed
+> schedule will not fire every 5 minutes. Choose:
+> - **Pro** — the committed `*/5` schedule runs as written; scheduled posts go live
+>   within ~5 minutes of their time. (Costs money — a Tural decision.)
+> - **Hobby** — accept **daily** granularity. The `*/5` schedule must then be
+>   changed to a daily expression (e.g. `0 8 * * *`) in `vercel.json`, which is a
+>   **repo change, out of scope for this runbook** — flag it back to the team so
+>   issue #4 adjusts the committed schedule to match the plan.
+>
+> **Regardless of plan**, an authenticated **Admin** can trigger the queue at any
+> time by hitting `GET /api/payload-jobs/run` while logged in (or via
+> `payload.jobs.run()` in code) — a manual fallback for demos/testing.
+
+**Verify:**
+1. Vercel → project → **Settings → Cron Jobs** shows the `/api/payload-jobs/run`
+   job registered with its schedule.
+2. In `/admin`, open a Blog Post (or Case Study), set the publish date a few minutes
+   ahead, and save it as scheduled.
+3. After the cron fires (Pro) — or after you trigger the endpoint manually — reload:
+   the document flips to **published** and becomes visible to anonymous site/API
+   callers.
 
 ---
 
@@ -308,8 +341,9 @@ Confirm staging is live and self-deploying.
 
 2. **Admin + schema.** Open `https://<project>.vercel.app/admin` →
    **Expect:** the Payload admin. On a freshly-migrated, user-less database this is
-   the **create-first-admin** screen. Fill it in to create your admin account and
-   log in.
+   the **create-first-admin** screen (the first user ever created is forced to the
+   **Admin** role). Fill it in and log in — you should see the full CMS nav grouped
+   into **Content**, **Leads**, and **Admin**.
    - **If you instead see a 500 / "relation … does not exist":** the migration
      (Part 3) didn't run against this database — re-run Part 3 with the **direct**
      string, then reload.
@@ -321,18 +355,22 @@ Confirm staging is live and self-deploying.
    passes. Also confirm Settings → Git → **Production Branch = `main`**. This proves
    "every merge to `main` auto-deploys."
 
-4. **Media upload → Blob (conditional — cannot be exercised yet).** The `Media`
-   collection and the Vercel-Blob storage adapter are **not** in the app at the
-   time of writing (a separate part of issue #5). **Once that adapter ships:**
-   - `/admin` → **Media** → upload an image.
-   - Vercel → project → **Storage** → your Blob store → **Browser** → confirm the
-     uploaded object appears there.
-   Until the adapter lands, this step is not runnable — the Blob store is
-   provisioned and its token wired, but there is no upload path yet.
+4. **Media upload → Blob.** In `/admin` → **Media**, upload an image (alt text is
+   required and validated). →
+   **Expect:** the upload succeeds, and in Vercel → project → **Storage** → your
+   Blob store → **Browser** the uploaded object appears. This proves media persists
+   to Blob (the adapter routes to Blob because `BLOB_READ_WRITE_TOKEN` is present).
+
+5. **Scheduled publishing.** Follow **Part 8 → Verify** — confirm the cron is
+   registered and a post scheduled for a near-future time flips to **published**
+   after the runner fires (or after a manual admin trigger). Subject to the Part 8
+   plan decision.
 
 ### Done when
 - [ ] `/` renders the marketing homepage over HTTPS.
-- [ ] `/admin` reaches the create-first-admin screen and you created an admin.
+- [ ] `/admin` reaches the create-first-admin screen; the admin you created sees
+      the Content / Leads / Admin nav.
 - [ ] A merge to `main` produced an automatic Production deployment.
-- [ ] Blob store attached and `BLOB_READ_WRITE_TOKEN` auto-injected (upload check
-      deferred until the Media adapter ships).
+- [ ] A media upload in `/admin` lands as an object in the Vercel Blob store.
+- [ ] The `/api/payload-jobs/run` cron is registered, and a scheduled post
+      publishes when the runner fires (per the Part 8 plan choice).
