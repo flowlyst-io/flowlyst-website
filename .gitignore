@@ -26,6 +26,17 @@ pnpm-debug.log*
 coverage/
 playwright-report/
 test-results/
+blob-report/
+playwright/.cache/
+
+# Next.js generated types
+next-env.d.ts
+
+# Payload local media uploads
+/media
+
+# Secrets / keys
+*.pem
 
 # Codery telemetry (machine-local)
 .codery/telemetry/

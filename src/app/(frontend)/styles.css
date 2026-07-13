@@ -1,0 +1,10 @@
+/*
+ * Frontend (public marketing site) global stylesheet.
+ *
+ * Tailwind v4 is imported here and ONLY here so its preflight reset stays scoped
+ * to the public site and never touches the Payload admin.
+ *
+ * The Flowlyst Design System tokens (colors, type, spacing) are wired in issue #3;
+ * this scaffold intentionally ships no brand values — just the Tailwind baseline.
+ */
+@import 'tailwindcss';

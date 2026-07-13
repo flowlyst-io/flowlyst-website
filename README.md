@@ -13,6 +13,12 @@ This site is built by an **orchestrator + workhorse agent system**. A **Fable 5*
 - [`CLAUDE.md`](CLAUDE.md) — the orchestration contract, loaded every session.
 - [`design/`](design/) — pointers to the two Claude Design projects the site is designed in: **"Flowlyst Design System"** (brand tokens/components) and **"flowlyst Website"** (the hi-fi page designs). The designs live there, not here; the lead session pulls what a task needs on demand. See [`design/README.md`](design/README.md).
 
+## Local development
+
+The app is a **Next.js (App Router)** site with **Payload CMS** embedded (admin at
+`/admin`) on **Postgres**. To go from a fresh clone to a running dev server and
+admin, follow [`docs/development.md`](docs/development.md).
+
 ## Legacy site
 
 The current **flowlyst.io** runs on the legacy `naysaziz/flowlyst-landing` monorepo (Next.js on EC2/RDS). It **stays in production, untouched, until cutover** — the DNS move is a decision-gated launch step, not part of routine work here.

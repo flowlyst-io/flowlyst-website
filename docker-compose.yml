@@ -1,0 +1,31 @@
+# Local development database for flowlyst-website.
+#
+# Postgres 16 to match the CI service container and the intended Neon (Postgres)
+# production database, so schema behaviour is identical across all three.
+#
+#   docker compose up -d     # start Postgres in the background
+#   docker compose down      # stop it (data persists in the named volume)
+#   docker compose down -v   # stop it AND wipe the data volume
+#
+# The credentials here are LOCAL-ONLY and must match DATABASE_URL in your .env
+# (see .env.example). They are not secrets and never touch Neon.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: flowlyst
+      POSTGRES_PASSWORD: flowlyst
+      POSTGRES_DB: flowlyst
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U flowlyst -d flowlyst']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
