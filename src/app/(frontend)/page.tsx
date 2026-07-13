@@ -1,25 +1,29 @@
 import React from 'react'
-import './styles.css'
 
 /**
  * Placeholder homepage for the flowlyst.io rewrite.
  *
- * This is a server component (no "use client") so the page is server-rendered —
- * a hard requirement for SEO / AI discoverability (PRD §10.1). It has no data
- * dependencies on purpose: the real homepage, built against the hi-fi design and
- * the Flowlyst Design System, lands in issue #6.
+ * Server component (no "use client") so the page is server-rendered — a hard
+ * requirement for SEO / AI discoverability (PRD §10.1). It now sits inside the
+ * shared shell (header/nav + footer, from the (frontend) layout) and owns the
+ * single page H1. The real homepage, built against the hi-fi design, lands in
+ * issue #6.
  */
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-4 px-6 text-center">
-      <p className="text-sm font-semibold uppercase tracking-widest text-neutral-500">flowlyst</p>
-      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-        The flowlyst site is being rebuilt.
-      </h1>
-      <p className="text-lg text-neutral-600">
-        Software, training, and consulting for K&#8211;12 school districts, built by the people who
-        used to do the job. The full site is under construction.
-      </p>
-    </main>
+    <section className="section section--cream text-c">
+      <div className="container">
+        <div className="eyebrow" style={{ marginBottom: 24 }}>
+          Under construction
+        </div>
+        <h1 className="h1" style={{ maxWidth: '16ch', margin: '0 auto 24px' }}>
+          The flowlyst site is being <em>rebuilt</em>.
+        </h1>
+        <p className="lead" style={{ margin: '0 auto', maxWidth: '52ch' }}>
+          Software, training, and consulting for K–12 school districts, built by the people who used
+          to do the job. The full site is under construction.
+        </p>
+      </div>
+    </section>
   )
 }
