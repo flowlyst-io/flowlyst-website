@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -12,6 +13,11 @@ import config from '@payload-config'
  */
 
 export const dynamic = 'force-dynamic'
+
+// Never index draft-preview URLs — they render unpublished content.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+}
 
 const PREVIEWABLE = ['blog-posts', 'case-studies'] as const
 type PreviewCollection = (typeof PREVIEWABLE)[number]

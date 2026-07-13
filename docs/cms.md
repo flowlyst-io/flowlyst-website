@@ -10,14 +10,14 @@ Grouped as they appear in the admin nav.
 
 ### Content
 
-| Collection            | Purpose                                                                 | Publishing            |
-| --------------------- | ----------------------------------------------------------------------- | --------------------- |
-| **Blog Posts**        | Lexical body, excerpt, featured + OG image, author, tags, service category, auto reading-time, SEO meta | Drafts + scheduled publish + preview |
+| Collection            | Purpose                                                                                                             | Publishing                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| **Blog Posts**        | Lexical body, excerpt, featured + OG image, author, tags, service category, auto reading-time, SEO meta             | Drafts + scheduled publish + preview |
 | **Case Studies**      | Structured long-form: intro / challenge / solution / results (each Lexical), district info, metrics, hero, SEO meta | Drafts + scheduled publish + preview |
-| **Testimonials**      | Quote, client, org/district, industry, service category, video URL, photo, featured flag | Plain `status` (draft/published) |
-| **Training Programs** | Hierarchical: program → ordered modules; level, format, duration        | Plain `status`        |
-| **Authors**           | Name, title, photo, bio, links — referenced by blog posts               | Public                |
-| **Media**             | Image library; **alt text required (validated)**; auto image sizes      | Public read           |
+| **Testimonials**      | Quote, client, org/district, industry, service category, video URL, photo, featured flag                            | Plain `status` (draft/published)     |
+| **Training Programs** | Hierarchical: program → ordered modules; level, format, duration                                                    | Plain `status`                       |
+| **Authors**           | Name, title, photo, bio, links — referenced by blog posts                                                           | Public                               |
+| **Media**             | Image library; **alt text required (validated)**; auto image sizes                                                  | Public read                          |
 
 ### Leads (inbox) — **Admin-only** (PII)
 
@@ -25,11 +25,11 @@ Grouped as they appear in the admin nav.
 PRD §9 scopes Editors to content, and lead records are PII, so Editors cannot
 see these inboxes.
 
-| Collection                 | Purpose                                                              |
-| -------------------------- | ------------------------------------------------------------------- |
+| Collection                 | Purpose                                                                                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Demo Requests**          | Highest-intent lead. Status workflow `pending → scheduled → completed/canceled`, internal notes, triage list columns + search. CSV export. |
-| **Contact Messages**       | Non-demo inquiries; reason dropdown; `new/handled` status.          |
-| **Newsletter Subscribers** | Email + `subscribed/unsubscribed` status. CSV export.              |
+| **Contact Messages**       | Non-demo inquiries; reason dropdown; `new/handled` status.                                                                                 |
+| **Newsletter Subscribers** | Email + `subscribed/unsubscribed` status. CSV export.                                                                                      |
 
 ### Admin
 
@@ -59,9 +59,12 @@ Guardrails:
 - **Scheduled publishing** — enabled via `versions.drafts.schedulePublish` on Blog
   Posts and Case Studies. Setting a future publish date enqueues a `schedulePublish`
   job. **The job only runs when the jobs queue is triggered** (see below).
-- **Preview** — `admin.preview` → `/preview` route handler → validates a secret,
-  enables Next.js Draft Mode, redirects to a server-rendered draft page. The page
-  is an intentional placeholder until the Phase-2 templates exist.
+- **Preview** — `admin.preview` → `/preview` route handler → validates
+  `PREVIEW_SECRET`, enables Next.js Draft Mode, redirects to a server-rendered
+  (and `noindex`) draft page. The page is an intentional placeholder until the
+  Phase-2 templates exist. **`PREVIEW_SECRET` is required** — with it unset, no
+  preview link is minted and every `/preview` request is denied (fail closed; it
+  never falls back to `PAYLOAD_SECRET`).
 
 ### Production trigger for scheduled publishing — REQUIRED
 
@@ -130,16 +133,15 @@ are otherwise open and would hang for a non-admin — see `adminOnlyEndpoints` i
 
 ## Environment variables
 
-Local dev needs none of these (sensible fallbacks). Staging/prod:
+App boots without any of these. Staging/prod (and to use draft preview locally):
 
-| Var                     | Needed for                    | Notes                                                  |
-| ----------------------- | ----------------------------- | ------------------------------------------------------ |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob media storage     | Set by Vercel Blob. Absent → local filesystem.         |
-| `CRON_SECRET`           | Scheduled publishing (cron)   | Secures `/api/payload-jobs/run`. Absent → cron denied. |
-| `PREVIEW_SECRET`        | Draft preview                 | Optional; falls back to `PAYLOAD_SECRET`.              |
+| Var                     | Needed for                  | Notes                                                                                                                                                                                                                                |
+| ----------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob media storage   | Set by Vercel Blob. Absent → local filesystem.                                                                                                                                                                                       |
+| `CRON_SECRET`           | Scheduled publishing (cron) | Secures `/api/payload-jobs/run`. Absent → cron denied.                                                                                                                                                                               |
+| `PREVIEW_SECRET`        | Draft preview               | **Required** for preview — **no fallback**. Unset ⇒ every preview request is denied and no preview link is minted. (Never falls back to `PAYLOAD_SECRET`: that would leak the master JWT secret into the preview URL / access logs.) |
 
-These three keys are documented in `.env.example` under the "CMS (issue #4)"
-section (all optional locally).
+These keys are documented in `.env.example` under the "CMS (issue #4)" section.
 
 ## Migrations
 
