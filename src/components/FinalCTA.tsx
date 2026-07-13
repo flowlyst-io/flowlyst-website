@@ -24,11 +24,11 @@ export function FinalCTA() {
         <h2 className="h1" style={{ color: '#fff', maxWidth: 1080, margin: '0 auto 32px' }}>
           See it run on <span className="accent--yellow">your district’s</span> data.
         </h2>
+        {/* Size + white come from the .section--green WCAG 1.4.3 amendment in
+            styles.css (large-text contrast on the brand-green band). */}
         <p
           style={{
-            fontSize: 22,
             lineHeight: 1.5,
-            color: 'rgba(255, 255, 255, 0.9)',
             margin: '0 auto 48px',
             maxWidth: '52ch',
           }}

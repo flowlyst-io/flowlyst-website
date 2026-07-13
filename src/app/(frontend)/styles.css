@@ -634,6 +634,27 @@ code,
   color: #fff;
 }
 
+/* WCAG 1.4.3 amendment — text runs on the brand-green (#00A568) bands.
+   Not in the source comp: the design puts ~20–22px white-at-90%-alpha body
+   copy and a cream (--c-cream) ghost-button label on the green band, both
+   under the 4.5:1 AA threshold for normal text (~2.8–3.1:1). Tural's call
+   (2026-07-13): keep the brand green and instead qualify these runs as WCAG
+   "large text" (needs only 3:1) at full white — #fff on #00A568 = 3.19:1.
+   Body copy → 24px regular (≥18pt); the ghost-light button label → 19px at
+   the button's inherited 700 weight (≥14pt bold). Scoped to .section--green
+   so it re-applies on every page reusing the stat / final-CTA bands; the
+   forest footer's own ghost-light button is a different surface and is
+   unaffected. Headings / stat numbers already pass and are left alone.
+   Tural will fold this into the design source later. */
+.section--green p {
+  font-size: 24px;
+  color: #fff;
+}
+.section--green .btn--ghost-light {
+  font-size: 19px;
+  color: #fff;
+}
+
 .container {
   max-width: 1280px;
   margin: 0 auto;

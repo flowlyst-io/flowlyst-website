@@ -323,12 +323,12 @@ export default async function HomePage() {
             <br />
             <span className="accent--yellow">500+</span> hours saved.
           </h2>
+          {/* Size + white come from the .section--green WCAG 1.4.3 amendment in
+              styles.css (large-text contrast on the brand-green band). */}
           <p
             style={{
-              fontSize: 20,
               lineHeight: 1.55,
               maxWidth: '54ch',
-              color: 'rgba(255,255,255,0.9)',
               margin: 0,
             }}
           >
