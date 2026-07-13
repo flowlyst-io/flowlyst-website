@@ -1,0 +1,190 @@
+/* ============================================================
+   FLOWLYST — Colors & Type
+   Source: flowlyst Brand Book (2021)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap');
+
+:root {
+  /* ---------- Brand color tokens ---------- */
+  /* Main */
+  --fl-green:        #00A568;   /* Pantone 2370 U  | RGB 0,165,104  | CMYK 100,0,37,35 */
+  --fl-red:          #CB2C30;   /* Pantone 446 C   | (NB book lists hex CB2C30 / RGB derived from purple value — kept as hex from book) */
+  /* Brand book secondary uses hex #CB2C30 in red, but the RGB row 95,90,162 (#5F5AA2) appears to be a mismatch in the source PDF. We expose both, naming by hex. */
+  --fl-violet:       #5F5AA2;   /* RGB 95,90,162 — accent/sub-brand */
+
+  /* Secondary / neutral */
+  --fl-gray-100:     #FFFFFF;
+  --fl-gray-200:     #F5F5F5;   /* derived */
+  --fl-gray-300:     #D9D9D9;   /* Pantone Cool Gray 1 C */
+  --fl-gray-500:     #8A8A8B;   /* derived mid-gray */
+  --fl-gray-800:     #404041;   /* Pantone 7482 U-equivalent dark */
+  --fl-black:        #1A1A1A;
+
+  /* Tints / fills (derived for UI surfaces) */
+  --fl-green-50:     #E6F6EF;
+  --fl-green-100:    #C5EBD8;
+  --fl-green-200:    #80D2B3;
+  --fl-green-600:    #008B58;
+  --fl-green-700:    #007147;
+
+  --fl-red-50:       #FAE5E6;
+  --fl-red-600:      #B22529;
+
+  --fl-violet-50:    #ECEBF5;
+  --fl-violet-600:   #4E498D;
+
+  /* ---------- Semantic surfaces ---------- */
+  --bg-page:         var(--fl-gray-100);
+  --bg-subtle:       var(--fl-gray-200);
+  --bg-elevated:     #FFFFFF;
+  --bg-inverse:      var(--fl-gray-800);
+
+  --fg-primary:      var(--fl-gray-800);
+  --fg-secondary:    #6B6B6C;
+  --fg-muted:        var(--fl-gray-500);
+  --fg-on-brand:     #FFFFFF;
+  --fg-on-inverse:   #FFFFFF;
+
+  --border-subtle:   var(--fl-gray-300);
+  --border-strong:   #BFBFBF;
+
+  --accent:          var(--fl-green);
+  --accent-hover:    var(--fl-green-600);
+  --accent-press:    var(--fl-green-700);
+  --accent-soft:     var(--fl-green-50);
+
+  --danger:          var(--fl-red);
+  --danger-soft:     var(--fl-red-50);
+
+  /* ---------- Type ---------- */
+  --font-sans: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Nunito', system-ui, sans-serif;
+
+  /* Brand book scale: title 32/38, body 16/18 */
+  --fs-display:    56px;   /* derived */
+  --fs-h1:         38px;
+  --fs-h2:         32px;
+  --fs-h3:         24px;
+  --fs-h4:         20px;
+  --fs-body-lg:    18px;
+  --fs-body:       16px;
+  --fs-small:      14px;
+  --fs-caption:    12px;
+
+  --lh-tight:      1.15;
+  --lh-snug:       1.3;
+  --lh-normal:     1.5;
+  --lh-relaxed:    1.65;
+
+  --fw-light:      300;
+  --fw-regular:    400;
+  --fw-semibold:   600;
+  --fw-bold:       700;
+  --fw-black:      800;
+
+  --tracking-tight:   -0.01em;
+  --tracking-normal:   0;
+  --tracking-wide:    0.04em;
+
+  /* ---------- Spacing (4 / 8 grid) ---------- */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+
+  /* ---------- Radii ---------- */
+  /* The mark uses a soft rounded diamond — radii are friendly, not pill, not sharp */
+  --radius-xs:  4px;
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-pill: 999px;
+
+  /* ---------- Shadows ---------- */
+  --shadow-xs: 0 1px 2px rgba(64, 64, 65, 0.06);
+  --shadow-sm: 0 2px 6px rgba(64, 64, 65, 0.08);
+  --shadow-md: 0 8px 20px rgba(64, 64, 65, 0.10);
+  --shadow-lg: 0 16px 40px rgba(64, 64, 65, 0.14);
+  --shadow-brand: 0 12px 28px rgba(0, 165, 104, 0.22);
+}
+
+/* ============================================================
+   Semantic element styles
+   ============================================================ */
+
+html, body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  color: var(--fg-primary);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, .h1 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0 0 var(--sp-4);
+}
+h2, .h2 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0 0 var(--sp-3);
+}
+h3, .h3 {
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  margin: 0 0 var(--sp-3);
+}
+h4, .h4 {
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-h4);
+  line-height: var(--lh-snug);
+  margin: 0 0 var(--sp-2);
+}
+
+p, .p {
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  margin: 0 0 var(--sp-4);
+  text-wrap: pretty;
+}
+
+.lead {
+  font-size: var(--fs-body-lg);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-relaxed);
+  color: var(--fg-secondary);
+}
+
+small, .small { font-size: var(--fs-small); color: var(--fg-secondary); }
+.caption { font-size: var(--fs-caption); color: var(--fg-muted); letter-spacing: var(--tracking-wide); text-transform: uppercase; font-weight: var(--fw-bold); }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+code, .mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  background: var(--bg-subtle);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
