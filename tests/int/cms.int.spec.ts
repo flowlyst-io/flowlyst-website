@@ -281,4 +281,27 @@ describe('Lead capture (demo requests inbox)', () => {
       payload.find({ collection: 'demo-requests', overrideAccess: false }),
     ).rejects.toThrow()
   })
+
+  it('does not let an Editor read the inbox (admin-only PII)', async () => {
+    await expect(
+      payload.find({ collection: 'demo-requests', overrideAccess: false, user: editor }),
+    ).rejects.toThrow()
+  })
+
+  it('lets an Admin read the inbox', async () => {
+    const res = await payload.find({ collection: 'demo-requests', overrideAccess: false, user: admin })
+    expect(res.totalDocs).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('CSV export (import-export plugin)', () => {
+  it('locks the exports collection to Admins', async () => {
+    // Editor is denied; Admin is allowed. (Export reads also respect the target
+    // inbox's Admin-only access, so an editor could not exfiltrate lead data.)
+    await expect(
+      payload.find({ collection: 'exports', overrideAccess: false, user: editor }),
+    ).rejects.toThrow()
+    const asAdmin = await payload.find({ collection: 'exports', overrideAccess: false, user: admin })
+    expect(asAdmin).toBeDefined()
+  })
 })
