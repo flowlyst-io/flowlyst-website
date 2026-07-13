@@ -30,6 +30,10 @@ const eslintConfig = [
     ignores: [
       '.next/',
       'node_modules/',
+      // Design reference snapshots (comps/JSX pulled from Claude Design) are not
+      // app source — they use browser globals and aren't compiled. Kept in sync
+      // with .prettierignore, which already excludes design/.
+      'design/**',
       'src/payload-types.ts',
       'src/payload-generated-schema.ts',
       'src/migrations/**',

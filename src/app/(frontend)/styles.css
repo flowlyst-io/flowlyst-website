@@ -4,7 +4,1263 @@
  * Tailwind v4 is imported here and ONLY here so its preflight reset stays scoped
  * to the public site and never touches the Payload admin.
  *
- * The Flowlyst Design System tokens (colors, type, spacing) are wired in issue #3;
- * this scaffold intentionally ships no brand values — just the Tailwind baseline.
+ * Design tokens and the shared component library below are ported byte-faithfully
+ * from the sanctioned design sources (issue #3):
+ *   - design/tokens/colors_and_type.css  (brand token contract + semantic elements)
+ *   - design/site/site.css               ("Direction C, productionized" — surface
+ *                                          tokens, display type, nav/footer/buttons/
+ *                                          sections/cards/chips/forms/marquee + the
+ *                                          responsive rules incl. the mobile drawer)
+ * Never invent a color, size, or spacing value — every value here traces to those
+ * two files. Nunito is loaded via next/font (fonts.ts); the Google Fonts @import
+ * from the source files is intentionally dropped (next/font owns loading — no CLS).
  */
 @import 'tailwindcss';
+
+/* ============================================================
+   Design tokens (CSS custom properties)
+   Ported from colors_and_type.css :root + site.css :root.
+   --font-sans / --font-display point at the next/font variable.
+   ============================================================ */
+:root {
+  /* ---------- Brand color tokens ---------- */
+  --fl-green: #00a568;
+  --fl-red: #cb2c30;
+  --fl-violet: #5f5aa2;
+
+  /* Secondary / neutral */
+  --fl-gray-100: #ffffff;
+  --fl-gray-200: #f5f5f5;
+  --fl-gray-300: #d9d9d9;
+  --fl-gray-500: #8a8a8b;
+  --fl-gray-800: #404041;
+  --fl-black: #1a1a1a;
+
+  /* Tints / fills (derived for UI surfaces) */
+  --fl-green-50: #e6f6ef;
+  --fl-green-100: #c5ebd8;
+  --fl-green-200: #80d2b3;
+  --fl-green-600: #008b58;
+  --fl-green-700: #007147;
+
+  --fl-red-50: #fae5e6;
+  --fl-red-600: #b22529;
+
+  --fl-violet-50: #ecebf5;
+  --fl-violet-600: #4e498d;
+
+  /* ---------- Semantic surfaces ---------- */
+  --bg-page: var(--fl-gray-100);
+  --bg-subtle: var(--fl-gray-200);
+  --bg-elevated: #ffffff;
+  --bg-inverse: var(--fl-gray-800);
+
+  --fg-primary: var(--fl-gray-800);
+  --fg-secondary: #6b6b6c;
+  --fg-muted: var(--fl-gray-500);
+  --fg-on-brand: #ffffff;
+  --fg-on-inverse: #ffffff;
+
+  --border-subtle: var(--fl-gray-300);
+  --border-strong: #bfbfbf;
+
+  --accent: var(--fl-green);
+  --accent-hover: var(--fl-green-600);
+  --accent-press: var(--fl-green-700);
+  --accent-soft: var(--fl-green-50);
+
+  --danger: var(--fl-red);
+  --danger-soft: var(--fl-red-50);
+
+  /* ---------- Type ---------- */
+  /* next/font (fonts.ts) exposes Nunito as --font-nunito. */
+  --font-sans: var(--font-nunito), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: var(--font-nunito), system-ui, sans-serif;
+
+  --fs-display: 56px;
+  --fs-h1: 38px;
+  --fs-h2: 32px;
+  --fs-h3: 24px;
+  --fs-h4: 20px;
+  --fs-body-lg: 18px;
+  --fs-body: 16px;
+  --fs-small: 14px;
+  --fs-caption: 12px;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.3;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.65;
+
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 800;
+
+  --tracking-tight: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+
+  /* ---------- Spacing (4 / 8 grid) ---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+
+  /* ---------- Radii ---------- */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* ---------- Shadows ---------- */
+  --shadow-xs: 0 1px 2px rgba(64, 64, 65, 0.06);
+  --shadow-sm: 0 2px 6px rgba(64, 64, 65, 0.08);
+  --shadow-md: 0 8px 20px rgba(64, 64, 65, 0.1);
+  --shadow-lg: 0 16px 40px rgba(64, 64, 65, 0.14);
+  --shadow-brand: 0 12px 28px rgba(0, 165, 104, 0.22);
+
+  /* ---------- Layered surface tokens (site.css) ----------
+     Surface strategy: LIGHT-FIRST. Dark exists only as the
+     forest footer + one manifesto band. No dark mode. */
+  --c-paper: #ffffff;
+  --c-cream: #f4f1e8;
+  --c-cream-2: #ece7d9;
+  --c-sage: #eef4ef;
+  --c-sage-2: #dce9df;
+
+  --c-forest: #0e1410;
+  --c-forest-2: #1a211c;
+  --c-forest-3: #2a332d;
+
+  --c-ink: #1a1a1b;
+  --c-ink-2: #4a4a4b;
+  --c-ink-3: #8a8a8b;
+
+  --c-line: rgba(26, 26, 27, 0.1);
+  --c-line-2: rgba(26, 26, 27, 0.06);
+
+  --c-yellow: #ffe9a0;
+}
+
+/* ============================================================
+   Expose tokens to Tailwind v4 utilities.
+   `inline` keeps a single source of truth: the utilities resolve
+   to the raw :root vars above rather than emitting duplicates.
+   (radius / shadow / tracking / font-sans use their matching
+   Tailwind namespaces directly via the :root overrides above.)
+   ============================================================ */
+@theme inline {
+  /* Brand palette */
+  --color-fl-green: var(--fl-green);
+  --color-fl-green-50: var(--fl-green-50);
+  --color-fl-green-100: var(--fl-green-100);
+  --color-fl-green-200: var(--fl-green-200);
+  --color-fl-green-600: var(--fl-green-600);
+  --color-fl-green-700: var(--fl-green-700);
+  --color-fl-red: var(--fl-red);
+  --color-fl-red-50: var(--fl-red-50);
+  --color-fl-red-600: var(--fl-red-600);
+  --color-fl-violet: var(--fl-violet);
+  --color-fl-violet-50: var(--fl-violet-50);
+  --color-fl-violet-600: var(--fl-violet-600);
+  --color-fl-gray-100: var(--fl-gray-100);
+  --color-fl-gray-200: var(--fl-gray-200);
+  --color-fl-gray-300: var(--fl-gray-300);
+  --color-fl-gray-500: var(--fl-gray-500);
+  --color-fl-gray-800: var(--fl-gray-800);
+  --color-fl-black: var(--fl-black);
+
+  /* Layered surfaces */
+  --color-paper: var(--c-paper);
+  --color-cream: var(--c-cream);
+  --color-cream-2: var(--c-cream-2);
+  --color-sage: var(--c-sage);
+  --color-sage-2: var(--c-sage-2);
+  --color-forest: var(--c-forest);
+  --color-forest-2: var(--c-forest-2);
+  --color-forest-3: var(--c-forest-3);
+  --color-ink: var(--c-ink);
+  --color-ink-2: var(--c-ink-2);
+  --color-ink-3: var(--c-ink-3);
+  --color-yellow: var(--c-yellow);
+
+  /* Semantic aliases */
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-press: var(--accent-press);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-bg-page: var(--bg-page);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-inverse: var(--bg-inverse);
+  --color-fg-primary: var(--fg-primary);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+  --color-border-subtle: var(--border-subtle);
+
+  /* Type scale */
+  --text-display: var(--fs-display);
+  --text-h1: var(--fs-h1);
+  --text-h2: var(--fs-h2);
+  --text-h3: var(--fs-h3);
+  --text-h4: var(--fs-h4);
+  --text-body-lg: var(--fs-body-lg);
+  --text-body: var(--fs-body);
+  --text-small: var(--fs-small);
+  --text-caption: var(--fs-caption);
+
+  /* Line height */
+  --leading-tight: var(--lh-tight);
+  --leading-snug: var(--lh-snug);
+  --leading-normal: var(--lh-normal);
+  --leading-relaxed: var(--lh-relaxed);
+
+  /* Font weight */
+  --font-weight-light: var(--fw-light);
+  --font-weight-regular: var(--fw-regular);
+  --font-weight-semibold: var(--fw-semibold);
+  --font-weight-bold: var(--fw-bold);
+  --font-weight-black: var(--fw-black);
+}
+
+/* ============================================================
+   Base reset + semantic element styles
+   (colors_and_type.css elements, then site.css body override)
+   ============================================================ */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  color: var(--fg-primary);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--fl-gray-800);
+  background: #fff;
+}
+
+h1,
+.h1 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0 0 var(--sp-4);
+}
+h2,
+.h2 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0 0 var(--sp-3);
+}
+h3,
+.h3 {
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  margin: 0 0 var(--sp-3);
+}
+h4,
+.h4 {
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-h4);
+  line-height: var(--lh-snug);
+  margin: 0 0 var(--sp-2);
+}
+
+p,
+.p {
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  margin: 0 0 var(--sp-4);
+  text-wrap: pretty;
+}
+
+.lead {
+  font-size: var(--fs-body-lg);
+  font-weight: var(--fw-light);
+  line-height: var(--lh-relaxed);
+  color: var(--fg-secondary);
+}
+
+small,
+.small {
+  font-size: var(--fs-small);
+  color: var(--fg-secondary);
+}
+.caption {
+  font-size: var(--fs-caption);
+  color: var(--fg-muted);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  font-weight: var(--fw-bold);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+code,
+.mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  background: var(--bg-subtle);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
+/* ============================================================
+   Type — Nunito, weight-stratified (site.css).
+   Display headings MIX weights: 300 (airy) + 800 italic (charged).
+   ============================================================ */
+.h1 {
+  font-weight: 300;
+  font-size: clamp(56px, 7vw, 100px);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+.h2 {
+  font-weight: 300;
+  font-size: clamp(44px, 5vw, 76px);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.h3 {
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.h4 {
+  font-weight: 800;
+  font-size: 19px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* Heavy italic INSIDE a display heading is the inflection. */
+.h1 em,
+.h2 em,
+.pull em {
+  font-style: italic;
+  font-weight: 800;
+  color: var(--fl-green);
+}
+/* Plain bold inflection (no italic) */
+.h1 strong,
+.h2 strong {
+  font-weight: 800;
+  color: var(--c-ink);
+  font-style: normal;
+}
+
+.lead {
+  font-size: 21px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--c-ink-2);
+  margin: 0;
+  max-width: 56ch;
+  text-wrap: pretty;
+}
+.p {
+  font-size: 16px;
+  line-height: 1.65;
+  font-weight: 400;
+  color: var(--c-ink-2);
+  margin: 0;
+  max-width: 64ch;
+  text-wrap: pretty;
+}
+.pull {
+  font-weight: 300;
+  font-size: clamp(40px, 5vw, 72px);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin: 0;
+  text-wrap: balance;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fl-green-700);
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.eyebrow::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+.eyebrow--on-dark {
+  color: var(--fl-green);
+}
+.eyebrow--on-green {
+  color: var(--c-yellow);
+}
+
+/* Inline emphasis utilities */
+.accent {
+  color: var(--fl-green);
+}
+.accent--yellow {
+  color: var(--c-yellow);
+}
+.italic {
+  font-style: italic;
+  font-weight: 800;
+  color: var(--fl-green);
+}
+
+/* ============================================================
+   Page chrome
+   ============================================================ */
+.page {
+  width: 100%;
+  background: var(--c-paper);
+  color: var(--c-ink);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Default nav is LIGHT — matches the product. */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 56px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--c-line-2);
+  color: var(--c-ink);
+}
+/* Dark nav only on the rare dark-hero page */
+.nav--dark {
+  background: rgba(14, 20, 16, 0.92);
+  border-bottom: 1px solid rgba(244, 241, 232, 0.08);
+  color: var(--c-cream);
+}
+.nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  color: inherit;
+}
+.nav__links {
+  display: flex;
+  gap: 32px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.nav__links a {
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.78;
+  transition: opacity 160ms;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+}
+.nav__links a:hover {
+  opacity: 1;
+}
+.nav__links a.active {
+  opacity: 1;
+  border-bottom-color: var(--fl-green);
+}
+.nav__cta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.nav__signin {
+  font-size: 14px;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.78;
+}
+.nav__signin:hover {
+  opacity: 1;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+}
+.btn--primary {
+  background: var(--fl-green);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0, 165, 104, 0.28);
+}
+.btn--primary:hover {
+  background: var(--fl-green-600);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(0, 165, 104, 0.36);
+}
+.btn--dark {
+  background: var(--c-forest);
+  color: #fff;
+}
+.btn--dark:hover {
+  background: #1a211c;
+  transform: translateY(-1px);
+}
+.btn--ghost {
+  background: transparent;
+  border-color: rgba(64, 64, 65, 0.18);
+  color: inherit;
+}
+.btn--ghost:hover {
+  border-color: rgba(64, 64, 65, 0.4);
+}
+.btn--ghost-light {
+  background: transparent;
+  border-color: rgba(244, 241, 232, 0.24);
+  color: var(--c-cream);
+}
+.btn--ghost-light:hover {
+  border-color: rgba(244, 241, 232, 0.55);
+}
+.btn--lg {
+  padding: 16px 28px;
+  font-size: 16px;
+  border-radius: 14px;
+}
+.btn--sm {
+  padding: 9px 16px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+
+/* Arrow shifts on hover */
+.btn .arr {
+  display: inline-block;
+  transition: transform 200ms;
+}
+.btn:hover .arr {
+  transform: translateX(3px);
+}
+
+/* ============================================================
+   Sections
+   ============================================================ */
+.section {
+  padding: 120px 56px;
+}
+.section--tight {
+  padding: 80px 56px;
+}
+.section--dark {
+  background: var(--c-forest);
+  color: var(--c-cream);
+}
+.section--cream {
+  background: var(--c-cream);
+  color: var(--c-ink);
+}
+.section--sage {
+  background: var(--c-sage);
+  color: var(--c-ink);
+}
+.section--green {
+  background: var(--fl-green);
+  color: #fff;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   Cards
+   ============================================================ */
+.card {
+  background: var(--c-paper);
+  border: 1px solid var(--c-line-2);
+  border-radius: 4px;
+  padding: 32px;
+  transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--c-line);
+}
+.card--dark {
+  background: var(--c-forest-2);
+  border-color: rgba(244, 241, 232, 0.08);
+  color: var(--c-cream);
+}
+.card--dark:hover {
+  border-color: rgba(244, 241, 232, 0.18);
+}
+.card--outline-green {
+  background: var(--c-paper);
+  border: 1.5px solid var(--fl-green);
+}
+
+/* ============================================================
+   Tabular list (offerings, modules, blog list)
+   ============================================================ */
+.t-row {
+  display: grid;
+  grid-template-columns: 80px 140px 1fr 200px;
+  gap: 32px;
+  padding: 40px 0;
+  border-bottom: 1px solid rgba(244, 241, 232, 0.15);
+  align-items: baseline;
+}
+.t-row__num {
+  font-size: 40px;
+  font-weight: 300;
+  color: rgba(244, 241, 232, 0.4);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.t-row__tag {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fl-green);
+}
+.t-row__title {
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: #fff;
+  margin: 0 0 14px;
+}
+.t-row__copy {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(244, 241, 232, 0.7);
+  max-width: 60ch;
+  margin: 0;
+}
+.t-row__cta {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 1.5px solid var(--fl-green);
+  padding-bottom: 4px;
+  justify-self: start;
+}
+
+/* Light variant — default on light surfaces */
+.t-row--light {
+  border-bottom-color: var(--c-line);
+}
+.t-row--light .t-row__num {
+  color: rgba(26, 26, 27, 0.18);
+  font-weight: 300;
+}
+.t-row--light .t-row__tag {
+  color: var(--fl-green-700);
+}
+.t-row--light .t-row__title {
+  color: var(--c-ink);
+}
+.t-row--light .t-row__copy {
+  color: var(--c-ink-2);
+}
+.t-row--light .t-row__cta {
+  color: var(--c-ink);
+}
+
+/* ============================================================
+   Chips / tags
+   ============================================================ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--c-paper);
+  color: var(--c-ink-2);
+}
+.chip--green {
+  background: rgba(0, 165, 104, 0.1);
+  border-color: rgba(0, 165, 104, 0.25);
+  color: var(--fl-green-700);
+}
+.chip--dark {
+  background: transparent;
+  border-color: rgba(244, 241, 232, 0.18);
+  color: rgba(244, 241, 232, 0.85);
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+  background: var(--c-forest);
+  color: rgba(244, 241, 232, 0.7);
+  padding: 96px 56px 40px;
+}
+.footer__cta {
+  border: 1px solid rgba(244, 241, 232, 0.12);
+  border-radius: 4px;
+  padding: 48px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 80px;
+}
+.footer__cta h3 {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  color: #fff;
+  margin: 12px 0 0;
+}
+.footer__cta p {
+  font-size: 16px;
+  color: rgba(244, 241, 232, 0.6);
+  margin-top: 16px;
+  max-width: 50ch;
+}
+.footer__cta-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+.footer__cols {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(4, 1fr);
+  gap: 40px;
+}
+.footer h5 {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(244, 241, 232, 0.5);
+  margin: 0 0 16px;
+}
+.footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.footer ul a {
+  color: rgba(244, 241, 232, 0.78);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+.footer ul a:hover {
+  color: #fff;
+}
+.footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 18px;
+  color: #fff;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.footer__bottom {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(244, 241, 232, 0.1);
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: rgba(244, 241, 232, 0.4);
+}
+
+/* ============================================================
+   Marquee strip
+   ============================================================ */
+.marquee {
+  padding: 24px 0;
+  border-top: 1px solid var(--c-line);
+  border-bottom: 1px solid var(--c-line);
+  overflow: hidden;
+}
+.marquee--dark {
+  border-top-color: rgba(244, 241, 232, 0.12);
+  border-bottom-color: rgba(244, 241, 232, 0.12);
+}
+.marquee__track {
+  display: flex;
+  gap: 56px;
+  align-items: center;
+  white-space: nowrap;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--c-ink-3);
+  animation: marquee 32s linear infinite;
+}
+.marquee--dark .marquee__track {
+  color: rgba(244, 241, 232, 0.6);
+}
+.marquee__star {
+  color: var(--fl-green);
+  font-size: 14px;
+  opacity: 0.8;
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ============================================================
+   Form primitives
+   ============================================================ */
+.form-row {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.form-row--2 {
+  grid-template-columns: 1fr 1fr;
+}
+.field {
+  display: grid;
+  gap: 6px;
+}
+.field__label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-ink-2);
+}
+.input,
+.textarea,
+.select {
+  font-family: inherit;
+  font-size: 15px;
+  padding: 12px 14px;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--c-ink);
+  transition: border-color 160ms;
+  width: 100%;
+}
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--fl-green);
+}
+.textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* ============================================================
+   Utility
+   ============================================================ */
+.dim {
+  opacity: 0.7;
+}
+.dim-2 {
+  opacity: 0.5;
+}
+.flex {
+  display: flex;
+}
+.flex-c {
+  display: flex;
+  align-items: center;
+}
+.gap-12 {
+  gap: 12px;
+}
+.gap-16 {
+  gap: 16px;
+}
+.gap-24 {
+  gap: 24px;
+}
+.gap-32 {
+  gap: 32px;
+}
+.gap-48 {
+  gap: 48px;
+}
+.gap-64 {
+  gap: 64px;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.mt-16 {
+  margin-top: 16px;
+}
+.mt-24 {
+  margin-top: 24px;
+}
+.mt-32 {
+  margin-top: 32px;
+}
+.mt-48 {
+  margin-top: 48px;
+}
+.mt-64 {
+  margin-top: 64px;
+}
+.mb-16 {
+  margin-bottom: 16px;
+}
+.mb-24 {
+  margin-bottom: 24px;
+}
+.mb-32 {
+  margin-bottom: 32px;
+}
+.mb-48 {
+  margin-bottom: 48px;
+}
+.mb-64 {
+  margin-bottom: 64px;
+}
+.text-c {
+  text-align: center;
+}
+
+/* ============================================================
+   Mobile nav (hamburger) — drawer is display:contents on desktop
+   so brand | links | cta keep their original flex layout.
+   ============================================================ */
+.nav__burger {
+  display: none;
+  background: none;
+  border: 0;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+  padding: 6px 8px;
+  margin: -6px -8px -6px 0;
+}
+.nav__drawer {
+  display: contents;
+}
+
+/* ============================================================
+   RESPONSIVE — comp authored at a fixed 1280px width.
+   ============================================================ */
+
+/* ---------- Tablet ---------- */
+@media (max-width: 960px) {
+  .section {
+    padding: 88px 40px;
+  }
+  .section--tight {
+    padding: 64px 40px;
+  }
+  .nav {
+    padding: 16px 28px;
+  }
+  .footer {
+    padding: 72px 40px 36px;
+  }
+
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .footer__cols {
+    grid-template-columns: 1.4fr 1fr 1fr;
+    row-gap: 40px;
+  }
+  .footer__cta {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .footer__cta-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* ---------- Phone ---------- */
+@media (max-width: 680px) {
+  /* Horizontal gutters — beat inline 56px padding on every section/footer */
+  section,
+  .footer {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  .section,
+  .section--tight {
+    padding-top: 64px;
+    padding-bottom: 64px;
+  }
+
+  /* Collapse EVERY grid (class-based AND inline-styled) to one column */
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+  [style*='grid-template-columns'] {
+    grid-template-columns: 1fr !important;
+  }
+  .form-row--2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Footer: brand full width, link groups in two columns */
+  .footer__cols {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 32px 24px;
+  }
+  .footer__cols > div:first-child {
+    grid-column: 1 / -1;
+  }
+  .footer__bottom {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  /* A11y-driven responsive amendment to the reference (WCAG 1.4.10 reflow).
+     site.css's phone rules cover .nav__cta but not .footer__cta: the CTA band
+     keeps 48px inset padding and a nowrap two-button actions row, whose
+     min-content pushes past a 390px viewport and clips content. Mirror the
+     established .nav__cta phone pattern — stack the actions into full-width
+     buttons — and trim the band padding to --sp-6 (24px, spacing scale). */
+  .footer__cta {
+    padding: 24px;
+  }
+  .footer__cta-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .footer__cta-actions .btn {
+    width: 100%;
+  }
+
+  /* Tabular list rows stack */
+  .t-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+    padding: 28px 0;
+  }
+  .t-row__num {
+    font-size: 28px;
+  }
+  .t-row__title {
+    font-size: 24px;
+  }
+  .t-row__cta {
+    margin-top: 4px;
+  }
+
+  /* Headings — lower the clamp floors so long words don't overflow */
+  .h1 {
+    font-size: clamp(38px, 11vw, 58px);
+  }
+  .h2 {
+    font-size: clamp(30px, 8.5vw, 46px);
+  }
+  .pull {
+    font-size: clamp(30px, 9vw, 44px);
+  }
+  .footer__cta h3 {
+    font-size: 30px;
+  }
+  .lead {
+    font-size: 18px !important;
+  }
+
+  /* ---- Nav becomes a hamburger drawer ---- */
+  .nav {
+    padding: 14px 20px !important;
+  }
+  .nav__burger {
+    display: block;
+  }
+  .nav__drawer {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--c-line);
+    padding: 12px 20px 22px;
+    box-shadow: 0 24px 40px -20px rgba(14, 20, 16, 0.25);
+  }
+  .nav__drawer.is-open {
+    display: flex;
+  }
+  .nav--dark .nav__drawer {
+    background: rgba(14, 20, 16, 0.98);
+    border-bottom-color: rgba(244, 241, 232, 0.1);
+  }
+  .nav__links {
+    flex-direction: column;
+    gap: 0;
+    font-size: 16px;
+  }
+  .nav__links a {
+    padding: 13px 0;
+    border-bottom: 1px solid var(--c-line-2);
+    opacity: 1;
+  }
+  .nav__links a.active {
+    border-bottom-color: var(--c-line-2);
+    color: var(--fl-green-700);
+  }
+  .nav__cta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .nav__signin {
+    padding: 6px 0;
+  }
+  .nav__cta .btn {
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   Accessibility — additions not in the source comp.
+   The design system defines no focus-ring or skip-link tokens;
+   both are required for WCAG 2.1 AA and reuse the brand accent
+   (no invented colors).
+   ============================================================ */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -80px;
+  z-index: 100;
+  background: var(--fl-green);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  transition: top 160ms ease;
+}
+.skip-link:focus {
+  top: 12px;
+}
+
+/* Skip-to-content target: offset the scroll so focused content clears the
+   sticky nav (~62px), and suppress the container focus ring (main is not
+   interactive; tabindex=-1 only makes it programmatically focusable). */
+#main-content {
+  scroll-margin-top: var(--sp-16);
+}
+#main-content:focus {
+  outline: none;
+}
+
+:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--fl-green);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
