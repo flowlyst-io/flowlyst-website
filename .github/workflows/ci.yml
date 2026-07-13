@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs on the same ref to save minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, typecheck, test, build, e2e
+    runs-on: ubuntu-latest
+
+    # Postgres 16 to match local docker-compose and the intended Neon database.
+    # The job is not containerized, so the service is reachable at localhost:5432.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: flowlyst
+          POSTGRES_PASSWORD: flowlyst
+          POSTGRES_DB: flowlyst
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U flowlyst -d flowlyst"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # CI is set to true automatically by GitHub Actions; the Payload config reads
+      # it to disable schema push, so the schema comes only from committed migrations.
+      DATABASE_URL: postgres://flowlyst:flowlyst@localhost:5432/flowlyst
+      NEXT_TELEMETRY_DISABLED: '1'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # PAYLOAD_SECRET is required for Payload to boot. It protects nothing real in
+      # CI (throwaway database, no persisted data), so we generate an ephemeral value
+      # per run rather than store a secret. Production uses a real secret in Vercel.
+      - name: Generate ephemeral PAYLOAD_SECRET
+        run: echo "PAYLOAD_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Format check
+        run: pnpm format:check
+
+      # Apply migrations to the empty service DB. push is disabled in CI, so this is
+      # the only thing that creates the schema — the exact production/Neon path.
+      - name: Run database migrations
+        run: pnpm migrate
+
+      - name: Unit & integration tests
+        run: pnpm test:int
+
+      - name: Build
+        run: pnpm build
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Playwright's webServer runs `pnpm start` (production build) in CI against the
+      # already-migrated schema.
+      - name: E2E tests
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
