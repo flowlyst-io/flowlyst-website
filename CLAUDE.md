@@ -42,8 +42,8 @@ Nothing is **"done"**, **"verified"**, or **"working"** without **ran-X-observed
 - **Trunk-based**, feature branches `feature/<issue>-<slug>`, **squash merge**, `main` always deployable to staging.
 - **PRs self-merge** once the code-review, quality, and (where applicable) UI-evidence gates pass.
 - **User-visible changes require a walkthrough note** for Tural: what changed, the staging URL, and what to try. He reviews by using it; his feedback becomes issues.
-- **Decisions that are Tural's** — production/domain cutover, spending money, deleting anything outside this repo, any outward-facing act (emails, publishing), **operating the Vercel or Neon accounts** (agents prepare a runbook; he executes), and brand/positioning calls not settled in the PRD — **stop the item**: leave a decision note on the issue, ping him if a channel is available, and continue other work.
-- **Unattended runs use `acceptEdits`, never `bypassPermissions`.** Overnight/autonomous sessions run in **acceptEdits** permission mode — `bypassPermissions` would void the Vercel/Neon ask-gates and the `.claude/hooks/infra-guard.sh` guard that make unattended runs safe. An unattended run that hits an ask-gate simply stops on that item, which is the intended fail-closed behavior.
+- **Decisions that are Tural's** — production/domain cutover, spending money, deleting anything outside this repo, any outward-facing act (emails, publishing), and brand/positioning calls not settled in the PRD — **stop the item**: leave a decision note on the issue, ping him if a channel is available, and continue other work.
+- **Sessions run in auto mode, never `bypassPermissions`** *(amended 2026-07-13, Tural's steer: full auto, no permission prompts)*. The former Vercel/Neon ask-gates and `infra-guard.sh` hook are removed; `bypassPermissions` stays off because it would void the secrets `deny` rules in `.claude/settings.json`.
 
 ## Phase discipline
 
@@ -53,6 +53,6 @@ Issues are roughly sequenced. **Don't start a phase until the previous one's acc
 
 - **Next.js — latest stable, App Router** (decided by Tural, 2026-07-12), **TypeScript** throughout, on Vercel.
 - **Every other technology choice is made in-project, agile — as the work reaches it, not upfront.** Neon Postgres is the intended DB if one is warranted; the CMS, testing stack, form/email delivery, and styling approach are each decided when a work item forces the call and recorded with a short rationale (backlog issue 01 is the running home for those decisions). Whatever CMS is picked must clear PRD §9's hard requirements.
-- **Vercel and Neon are Tural-operated** — agents prepare config files, env-var lists, and migration scripts and hand him exact steps; they never run `vercel` / `neonctl` or touch those accounts.
+- **Vercel and Neon are agent-operated** *(amended 2026-07-13; supersedes the 2026-07-12 Tural-operated steer)* — agents run `vercel` / `neonctl` directly as work requires. Production/domain cutover and spending still require Tural's word.
 - **Design** — two Claude Design projects (see [`design/README.md`](design/README.md)): the **"Flowlyst Design System"** project is the brand source (the `colors_and_type.css` token contract, component kit, brand assets); the **"flowlyst Website"** project holds the hi-fi **page designs** — the reference each page implementation is checked against. Nothing is mirrored locally at setup: the lead session **pulls what a task needs on demand** into `design/` before delegating (DesignSync reaches the main session, not subagents). Styles are never invented.
 - The **legacy flowlyst.io** (Next.js on EC2/RDS, repo `naysaziz/flowlyst-landing`) stays untouched in production **until cutover**.
