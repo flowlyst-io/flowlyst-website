@@ -110,7 +110,11 @@ export default buildConfig({
     // (overrideAccess:false + user), so the Admin-only inboxes are the real gate.
     importExportPlugin({
       collections: [
-        { slug: 'demo-requests', import: false, export: { disableJobsQueue: true, disableSave: true } },
+        {
+          slug: 'demo-requests',
+          import: false,
+          export: { disableJobsQueue: true, disableSave: true },
+        },
         {
           slug: 'newsletter-subscribers',
           import: false,

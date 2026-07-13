@@ -28,7 +28,11 @@ export const Testimonials: CollectionConfig = {
   fields: [
     { name: 'quote', type: 'textarea', required: true },
     { name: 'clientName', type: 'text', required: true },
-    { name: 'roleTitle', type: 'text', admin: { description: 'Role / title of the person quoted.' } },
+    {
+      name: 'roleTitle',
+      type: 'text',
+      admin: { description: 'Role / title of the person quoted.' },
+    },
     {
       name: 'organization',
       type: 'text',
@@ -68,7 +72,10 @@ export const Testimonials: CollectionConfig = {
         { label: 'Draft', value: 'draft' },
         { label: 'Published', value: 'published' },
       ],
-      admin: { position: 'sidebar', description: 'Only Published testimonials appear on the site.' },
+      admin: {
+        position: 'sidebar',
+        description: 'Only Published testimonials appear on the site.',
+      },
     },
   ],
 }

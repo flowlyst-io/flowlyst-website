@@ -25,7 +25,9 @@ export const seoFields: Field = {
     {
       name: 'description',
       type: 'textarea',
-      admin: { description: 'Meta description / social summary. Falls back to the excerpt. ~155 chars.' },
+      admin: {
+        description: 'Meta description / social summary. Falls back to the excerpt. ~155 chars.',
+      },
     },
     {
       name: 'ogImage',
