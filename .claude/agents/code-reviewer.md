@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: Staff-level independent code reviewer for the flowlyst.io rewrite. Judges a change against correctness, the four review invariants, security, and reliability — a blocking gate before merge. Reads and judges; never writes. Runs Opus 4.8.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, SendMessage
 model: opus
 ---
 

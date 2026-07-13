@@ -1,7 +1,7 @@
 ---
 name: quality-engineer
 description: The phase quality gate for the flowlyst.io rewrite. Builds, runs the full suite, then exercises every acceptance criterion by driving real behavior — never reports a pass it did not observe. Runs Opus 4.8.
-tools: Read, Bash, Grep, Glob
+tools: Read, Bash, Grep, Glob, SendMessage
 model: opus
 ---
 
