@@ -1,11 +1,11 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, isAdmin, isAdminOrEditor } from '@/access'
+import { anyone, isAdmin } from '@/access'
 
 /**
  * Contact messages (PRD §8.2). Non-demo inquiries — press, partnerships,
  * training questions, support. Same access shape as the other lead-capture
- * collections: public `create`, staff-only read/triage, Admin-only delete.
+ * collections: public `create`, everything else Admin-only (PII / §9).
  */
 export const ContactMessages: CollectionConfig = {
   slug: 'contact-messages',
@@ -18,8 +18,8 @@ export const ContactMessages: CollectionConfig = {
   },
   access: {
     create: anyone,
-    read: isAdminOrEditor,
-    update: isAdminOrEditor,
+    read: isAdmin,
+    update: isAdmin,
     delete: isAdmin,
   },
   fields: [

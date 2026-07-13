@@ -1,13 +1,13 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, isAdmin, isAdminOrEditor } from '@/access'
+import { anyone, isAdmin } from '@/access'
 
 /**
  * Demo requests inbox (PRD §8.1, §9). The highest-intent lead.
  *
- * Access (DECISION — orchestrator to ratify): `create` is public so the Phase-2
- * demo form can POST anonymously; anti-abuse (reCAPTCHA, rate-limiting) lands
- * with that form. Read/triage is staff-only; only Admins may delete.
+ * Access: `create` is public so the demo form can POST anonymously (anti-abuse
+ * lands with that form). Everything else is **Admin-only** — lead data is PII
+ * and PRD §9 scopes Editors to content only, not the lead inboxes.
  *
  * Triage: a status workflow (pending → scheduled → completed/canceled) plus an
  * internal-notes field, with list columns/filters chosen so the inbox is usable
@@ -28,8 +28,8 @@ export const DemoRequests: CollectionConfig = {
   },
   access: {
     create: anyone,
-    read: isAdminOrEditor,
-    update: isAdminOrEditor,
+    read: isAdmin,
+    update: isAdmin,
     delete: isAdmin,
   },
   fields: [

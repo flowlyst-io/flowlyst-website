@@ -1,13 +1,13 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, isAdmin, isAdminOrEditor } from '@/access'
+import { anyone, isAdmin } from '@/access'
 
 /**
  * Newsletter subscribers (PRD §8.3, §9). Email list with subscribe/unsubscribe
- * status, exportable to an external mail tool.
+ * status, exportable to CSV (see the import-export plugin in payload.config.ts).
  *
  * Access mirrors the other lead-capture collections: public `create` (the
- * Phase-2 signup form POSTs here), staff-only read, Admin-only delete.
+ * signup form POSTs here), everything else Admin-only (PII / §9).
  */
 export const NewsletterSubscribers: CollectionConfig = {
   slug: 'newsletter-subscribers',
@@ -20,8 +20,8 @@ export const NewsletterSubscribers: CollectionConfig = {
   },
   access: {
     create: anyone,
-    read: isAdminOrEditor,
-    update: isAdminOrEditor,
+    read: isAdmin,
+    update: isAdmin,
     delete: isAdmin,
   },
   fields: [
