@@ -10,6 +10,8 @@ Pulled via DesignSync by the lead session on 2026-07-13, for issues #3 (design f
 | site/site.jsx | flowlyst Website | site.jsx — settled shared chrome: Nav, Footer, FinalCTA, PageHero, SectionHead, Marquee |
 | site/shell.jsx | flowlyst Website | shell.jsx — wireframe-stage shared shell; IA reference only (nav items, footer column structure) |
 | assets/flowlyst-logo.svg | Flowlyst Design System | assets/flowlyst-logo.svg — the brand mark as vector; white variant = same path, white fill (design uses a CSS invert filter on the PNG mark for dark surfaces) |
+| site/home.jsx | flowlyst Website | home.jsx — the settled homepage composition (Direction C productionized); `flowlyst-homepage-hifi.html` upstream is only the A/B/C exploration canvas, NOT the settled page — `index.html` + `home.jsx` + `site.jsx` + `site.css` is the real reference (pulled 2026-07-13 for #6) |
+| site/index.html | flowlyst Website | index.html — thin render harness for home.jsx (CDN React + Babel); open locally to render the reference for pixel comparison |
 
 Findings recorded at pull time:
 - **Light theme only.** The token contract defines no dark-mode tokens, and site.css declares "Surface strategy: LIGHT-FIRST" (dark exists only as the forest footer + one manifesto band). UI verification checks light theme at both viewports; a site-wide dark mode does not exist by design.
