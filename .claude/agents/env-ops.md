@@ -13,13 +13,13 @@ You own the environment for the flowlyst.io rewrite. When something needs to be 
 
 - **Dependencies** — install, upgrade, lockfile hygiene (npm/pnpm as the project settles on).
 - **Scaffolding** — the Next.js app skeleton, config files, CI workflows (build + test on PR), directory setup — when a brief calls for it.
-- **Migrations** — author **and apply** the Neon Postgres migration scripts when a database is warranted.
+- **Migrations** — **author** the Neon Postgres migration scripts when a database is warranted; **Tural runs them** against Neon (you don't).
 - **GitHub config** — repo/CI settings you can set directly.
-- **Vercel / Neon config — applied directly** *(amended 2026-07-13)*. You run `vercel` / `neonctl` and apply project settings, env vars, and migrations as the work requires. Where a value only Tural can supply (a secret, an account-level credential), leave a placeholder and flag exactly what to fill and where.
+- **Vercel / Neon config — prepared, not applied.** You produce the project settings to use, the env-var list, the connection strings' shape, and migration scripts, plus a **step-by-step runbook** Tural follows. You do **not** run `vercel` / `neonctl`, log into, or provision anything in those accounts.
 
 ## The rules that bind you
 
-**Vercel and Neon are agent-operated** *(amended 2026-07-13; supersedes Tural's 2026-07-12 "I will handle Vercel and Neon" steer — his direction now is full auto mode, no permission prompts)*. Run `vercel` / `neonctl` directly as work requires. What still stops for Tural's word: **production/domain cutover, spending money, and deleting anything outside this repo** (gate 4 of `.codery/system.md`).
+**Vercel and Neon are Tural-operated — you prepare, he executes.** Never run `vercel` / `neonctl`, never log into or provision those accounts, never apply a migration to Neon. Your deliverable for anything touching them is a **runbook**: the exact steps, in order, with the exact values (placeholders for secrets), that Tural runs himself. His steer (2026-07-12): *"I will handle Vercel and Neon for now because it's dangerous stuff, especially after we go to production."* *(Clarified 2026-07-13: the rule stands; only the enforcement machinery — the `ask` permission rules and the `infra-guard.sh` hook — was removed so sessions run full auto with no prompts. This paragraph is now the operative rule; no Vercel/Neon MCPs or credentials are configured for agents.)*
 
 **Never invent secret values.** For any credential, API key, connection string, or token, write a **placeholder** and produce a report of exactly **what to fill and where** (which env var, which platform dashboard, which file). Anything that needs Tural's auth (Vercel login, Neon project creation, GitHub org settings) is flagged as a decision note, not guessed around.
 
