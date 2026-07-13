@@ -123,6 +123,17 @@ describe('Homepage CMS rendering', () => {
       data: { quote: draft, clientName: 'Draft Client', status: 'draft', featured: true },
     })
 
+    // Positive control (teeth): the draft is a real, findable row — an
+    // access-bypassing query returns it — so "absent from the render" below is a
+    // real guard check, not a vacuous pass. If the page dropped `overrideAccess`
+    // + the published filter, this exact row would leak.
+    const leakable = await payload.find({
+      collection: 'testimonials',
+      where: { quote: { equals: draft } },
+      overrideAccess: true,
+    })
+    expect(leakable.totalDocs, 'draft testimonial must be findable without the guard').toBe(1)
+
     const html = await renderHome()
     expect(html, 'testimonials section present when a published one exists').toContain(
       'data-testid="home-testimonials"',
@@ -156,6 +167,20 @@ describe('Homepage CMS rendering', () => {
         _status: 'draft',
       },
     })
+
+    // Positive control (teeth): prove the draft post is leakable in principle — an
+    // access-bypassing, filter-less query returns it — so "absent from the render"
+    // is a real guard check. (blog-posts use Payload versions/drafts; this confirms
+    // a never-published draft is not merely hidden by the drafts machinery.)
+    const leakable = await payload.find({
+      collection: 'blog-posts',
+      where: { title: { equals: draftTitle } },
+      overrideAccess: true,
+    })
+    expect(
+      leakable.totalDocs,
+      'draft post must be findable without the guard (else the leak test is vacuous)',
+    ).toBeGreaterThanOrEqual(1)
 
     const html = await renderHome()
     expect(html, 'blog section present when a published post exists').toContain(

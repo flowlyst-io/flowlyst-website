@@ -210,14 +210,20 @@ test.describe('Homepage — accessibility smoke', () => {
     }
   })
 
-  test('the hero primary CTA is keyboard-focusable (reachable)', async ({ page }) => {
+  test('the hero primary CTA is keyboard-reachable (in the tab order)', async ({ page }) => {
     await page.goto('/')
-    // Scope to the hero section — "Request a demo" also appears in the nav and the
-    // offerings list. Native anchors are focusable; prove the hero CTA can actually
-    // take focus (not removed from the tab order via tabindex=-1 or aria-hidden).
+    // Scope to the hero — "Request a demo" also appears in the nav and offerings.
     const cta = page
       .locator('[data-testid="home-hero"]')
       .getByRole('link', { name: /request a demo/i })
+    // `.focus()` alone only proves focusability (a tabindex=-1 element passes it).
+    // Assert the CTA is a native anchor NOT pulled out of the tab order, so
+    // "keyboard-reachable" is honest, then confirm it can actually take focus.
+    const tabindex = await cta.getAttribute('tabindex')
+    expect(
+      tabindex === null || Number(tabindex) >= 0,
+      'hero CTA must not have a negative tabindex',
+    ).toBe(true)
     await cta.focus()
     await expect(cta).toBeFocused()
   })
