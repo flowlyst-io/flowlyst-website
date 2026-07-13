@@ -19,13 +19,17 @@ Grouped as they appear in the admin nav.
 | **Authors**           | Name, title, photo, bio, links — referenced by blog posts               | Public                |
 | **Media**             | Image library; **alt text required (validated)**; auto image sizes      | Public read           |
 
-### Leads (inbox)
+### Leads (inbox) — **Admin-only** (PII)
+
+`create` is public (forms POST here); read/update/delete are **Admin-only**.
+PRD §9 scopes Editors to content, and lead records are PII, so Editors cannot
+see these inboxes.
 
 | Collection                 | Purpose                                                              |
 | -------------------------- | ------------------------------------------------------------------- |
-| **Demo Requests**          | Highest-intent lead. Status workflow `pending → scheduled → completed/canceled`, internal notes, triage list columns + search. |
+| **Demo Requests**          | Highest-intent lead. Status workflow `pending → scheduled → completed/canceled`, internal notes, triage list columns + search. CSV export. |
 | **Contact Messages**       | Non-demo inquiries; reason dropdown; `new/handled` status.          |
-| **Newsletter Subscribers** | Email + `subscribed/unsubscribed` status.                          |
+| **Newsletter Subscribers** | Email + `subscribed/unsubscribed` status. CSV export.              |
 
 ### Admin
 
@@ -36,8 +40,9 @@ Grouped as they appear in the admin nav.
 
 Two roles, enforced through Payload access control (`src/access/index.ts`):
 
-- **Admin** — everything, including Users and Site Settings.
-- **Editor** — content only. Cannot see or edit Users; cannot edit Site Settings.
+- **Admin** — everything, including Users, Site Settings, and the lead inboxes.
+- **Editor** — content only. Cannot see or edit Users, Site Settings, or the
+  lead inboxes (demo requests, contact messages, newsletter subscribers).
 
 Guardrails:
 
@@ -89,6 +94,26 @@ endpoint, or in code via `payload.jobs.run()`.
 
 `alwaysInsertFields: true` keeps the media DB schema identical in both modes, so a
 single committed migration is valid everywhere.
+
+## CSV export (lead inboxes)
+
+`@payloadcms/plugin-import-export`, scoped to **demo requests** and **newsletter
+subscribers**, export-only (`import: false`), synchronous and download-only
+(`disableJobsQueue` + `disableSave`) — nothing depends on the cron and no lead
+PII is written to disk. Admins export from the collection's list view; the CSV
+downloads directly.
+
+**Admins only**, enforced in depth: the inboxes are Admin-only read (export reads
+run with the user's own access), the plugin's `exports`/`imports` collections are
+locked to Admins (`imports` fully hidden — inert here), and the plugin's custom
+`/download` + `/export-preview` endpoints are wrapped with an admin guard (they
+are otherwise open and would hang for a non-admin — see `adminOnlyEndpoints` in
+`payload.config.ts`).
+
+> The plugin always registers an `exports` and an `imports` upload collection
+> plus two jobs tasks, even though we only use export. Both collections are
+> Admin-locked; `imports` is hidden. Their tables live in the
+> `add_import_export_collections` migration.
 
 ## Environment variables
 
