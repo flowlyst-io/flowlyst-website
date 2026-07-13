@@ -17,8 +17,8 @@ import { beforeAll, describe, expect, it } from 'vitest'
  */
 
 let payload: Payload
-let admin: { id: string | number; role?: string | null }
-let editor: { id: string | number; role?: string | null }
+let admin: { id: number; role?: string | null }
+let editor: { id: number; role?: string | null }
 
 const stamp = Date.now()
 const pw = 'test-password-123'
@@ -228,6 +228,41 @@ describe('Blog post drafts & visibility', () => {
     })
     expect(anon.totalDocs).toBe(1)
     expect(anon.docs[0].publishedAt).toBeTruthy() // set on first publish
+  })
+})
+
+describe('Scheduled publishing', () => {
+  it('publishes a scheduled draft when its due job runs', async () => {
+    const slug = `scheduled-${stamp}`
+    const post = await payload.create({
+      collection: 'blog-posts',
+      data: { title: 'Scheduled', slug, body: lexicalBody, serviceCategory: 'general', _status: 'draft' },
+    })
+
+    // Not public yet.
+    const before = await payload.find({
+      collection: 'blog-posts',
+      where: { slug: { equals: slug } },
+      overrideAccess: false,
+    })
+    expect(before.totalDocs).toBe(0)
+
+    // Enqueue a past-due publish job — exactly what the admin "Schedule Publish"
+    // action does — then run the queue (what the production Vercel Cron triggers).
+    await payload.jobs.queue({
+      task: 'schedulePublish',
+      input: { type: 'publish', doc: { relationTo: 'blog-posts', value: post.id }, user: admin.id },
+      waitUntil: new Date(Date.now() - 60_000),
+    })
+    await payload.jobs.run()
+
+    const after = await payload.find({
+      collection: 'blog-posts',
+      where: { slug: { equals: slug } },
+      overrideAccess: false,
+    })
+    expect(after.totalDocs).toBe(1) // now visible to the public
+    expect(after.docs[0]._status).toBe('published')
   })
 })
 
