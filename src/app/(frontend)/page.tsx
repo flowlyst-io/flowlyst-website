@@ -149,6 +149,8 @@ export default async function HomePage() {
       overrideAccess: false,
       depth: 1,
       limit: 3,
+      // Deterministic order when more than 3 featured testimonials exist.
+      sort: '-createdAt',
     }),
     payload.find({
       collection: 'blog-posts',
