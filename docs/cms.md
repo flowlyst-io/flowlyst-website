@@ -100,8 +100,8 @@ Local dev needs none of these (sensible fallbacks). Staging/prod:
 | `CRON_SECRET`           | Scheduled publishing (cron)   | Secures `/api/payload-jobs/run`. Absent → cron denied. |
 | `PREVIEW_SECRET`        | Draft preview                 | Optional; falls back to `PAYLOAD_SECRET`.              |
 
-> `.env.example` should gain these three keys (all optional locally). It is
-> currently protected from automated edits by the repo's secrets guard.
+These three keys are documented in `.env.example` under the "CMS (issue #4)"
+section (all optional locally).
 
 ## Migrations
 
