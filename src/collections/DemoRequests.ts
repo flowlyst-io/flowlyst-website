@@ -11,7 +11,11 @@ import { anyone, isAdmin, isAdminOrEditor } from '@/access'
  *
  * Triage: a status workflow (pending → scheduled → completed/canceled) plus an
  * internal-notes field, with list columns/filters chosen so the inbox is usable
- * at a glance. CSV export is available via the admin's built-in row selection.
+ * at a glance.
+ *
+ * CSV export (PRD §9) is intentionally NOT hand-built. Add
+ * `@payloadcms/plugin-import-export` if the team wants one-click export — a
+ * decision for the orchestrator, not scope for this issue.
  */
 export const DemoRequests: CollectionConfig = {
   slug: 'demo-requests',
