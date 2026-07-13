@@ -54,6 +54,26 @@ pnpm dev
 the Docker Postgres credentials in `docker-compose.yml`, so you only need to fill
 in `PAYLOAD_SECRET`.
 
+### Environment variables
+
+| Variable                 | Required | Notes                                                                                                                              |
+| ------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`           | yes      | Postgres connection string. Local default matches `docker-compose.yml`.                                                            |
+| `PAYLOAD_SECRET`         | yes      | Secret for Payload auth/JWT. Generate with `openssl rand -hex 32`.                                                                 |
+| `NEXT_PUBLIC_SERVER_URL` | no       | Explicit override for Payload's `serverURL` — the origin used to build absolute URLs (admin meta/OG tags, email links). See below. |
+
+`NEXT_PUBLIC_SERVER_URL` is optional. When unset, `src/payload.config.ts` derives
+`serverURL` automatically:
+
+1. `NEXT_PUBLIC_SERVER_URL` if set (explicit override, e.g. `https://flowlyst.io`).
+2. Otherwise, on Vercel, `https://` + `VERCEL_PROJECT_PRODUCTION_URL` — a Vercel
+   system env var (the production domain, no protocol) present at build and
+   runtime on every deployment, so no Vercel dashboard step is needed.
+3. Otherwise `http://localhost:3000` for local development.
+
+Set `NEXT_PUBLIC_SERVER_URL` only to override the derived origin (e.g. to pin a
+preview deployment to the production domain).
+
 Then open **http://localhost:3000**. In development, Payload auto-creates the
 database schema on first boot (Drizzle "push"), so there is no migration step for
 local work.
