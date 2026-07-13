@@ -274,6 +274,13 @@ Notes:
 
 ## Part 7 — Deploy
 
+> **⚠️ Hobby-plan users — resolve the Part 8 plan decision _before_ deploying.**
+> The committed `vercel.json` cron (`*/5 * * * *`) **fails deployment on the Hobby
+> plan** (Vercel: *"Cron expressions that would run more frequently than once per
+> day will fail during deployment."*). The build will **not** succeed until you
+> either upgrade to **Pro** or the committed schedule is changed to a daily
+> expression (a repo change — see Part 8). On **Pro**, proceed as-is.
+
 1. Trigger a deployment: Vercel project → **Deployments** → **Redeploy** the latest
    (or push/merge anything to `main`). This build now has `DATABASE_URL` +
    `PAYLOAD_SECRET`, so it succeeds.
@@ -304,16 +311,19 @@ unset, the runner denies the request and scheduled posts never publish.**
 2. Deploy (Part 7). Vercel reads the committed `vercel.json` and registers the cron
    automatically. No repo change is required.
 
-> ### ⚠️ Plan decision — Tural's call (do not assume Pro)
-> Minute-level cron frequency (`*/5 * * * *`) **requires the Vercel Pro plan**. On
-> the **Hobby** plan, cron jobs run at most **once per day**, so the committed
-> schedule will not fire every 5 minutes. Choose:
-> - **Pro** — the committed `*/5` schedule runs as written; scheduled posts go live
->   within ~5 minutes of their time. (Costs money — a Tural decision.)
-> - **Hobby** — accept **daily** granularity. The `*/5` schedule must then be
->   changed to a daily expression (e.g. `0 8 * * *`) in `vercel.json`, which is a
->   **repo change, out of scope for this runbook** — flag it back to the team so
->   issue #4 adjusts the committed schedule to match the plan.
+> ### ⚠️ Plan decision — Tural's call, and it GATES the deploy (do not assume Pro)
+> Sub-daily cron frequency (`*/5 * * * *`) **requires the Vercel Pro plan**. On the
+> **Hobby** plan a more-frequent-than-daily expression **fails the deployment** with
+> the error: *"Hobby accounts are limited to daily cron jobs. This cron expression
+> would run more than once per day."* So the committed `vercel.json` **will not
+> deploy on Hobby** until the schedule or the plan changes — decide this **before
+> Part 7**. Choose:
+> - **Pro** — the committed `*/5` schedule deploys and runs as written; scheduled
+>   posts go live within ~5 minutes of their time. (Costs money — a Tural decision.)
+> - **Hobby** — the deploy is blocked until the committed `*/5` schedule is changed
+>   to a daily expression (e.g. `0 8 * * *`) in `vercel.json`. That is a **repo
+>   change, out of scope for this runbook** — flag it back to the team so issue #4
+>   adjusts the committed schedule; scheduled posts then publish once daily.
 >
 > **Regardless of plan**, an authenticated **Admin** can trigger the queue at any
 > time by hitting `GET /api/payload-jobs/run` while logged in (or via
