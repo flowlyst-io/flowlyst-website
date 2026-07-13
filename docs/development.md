@@ -134,6 +134,12 @@ never touches this path. The gate is `VERCEL_ENV === "production"` plus a requir
 integration injects) — migrations run against that string, not the pooled runtime
 `DATABASE_URL`. See `scripts/vercel-build.mjs` and `scripts/migrate-gate.mjs`.
 
+> **Keep migrations backward-compatible (expand-contract / additive).** The
+> migration runs _before_ the new code deploys, so for the minutes the build takes
+> the **previous** deployment keeps serving traffic against the already-migrated
+> schema — add columns/tables in one deploy and only drop or rename the old ones in
+> a later deploy, once nothing live references them.
+
 ### Resetting the local database
 
 ```bash
