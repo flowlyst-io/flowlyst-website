@@ -38,7 +38,7 @@ before you can attach a Blob store):
 | 5 | Create + attach the Vercel Blob store | Vercel dashboard |
 | 6 | Set environment variables | Vercel dashboard |
 | 7 | Deploy | Vercel dashboard |
-| 8 | Scheduled publishing trigger (set `CRON_SECRET`; plan decision) | Vercel dashboard |
+| 8 | Scheduled publishing trigger (set `CRON_SECRET`; daily cron default) | Vercel dashboard |
 | 9 | End-state verification | browser |
 
 ---
@@ -274,12 +274,10 @@ Notes:
 
 ## Part 7 — Deploy
 
-> **⚠️ Hobby-plan users — resolve the Part 8 plan decision _before_ deploying.**
-> The committed `vercel.json` cron (`*/5 * * * *`) **fails deployment on the Hobby
-> plan** (Vercel: *"Cron expressions that would run more frequently than once per
-> day will fail during deployment."*). The build will **not** succeed until you
-> either upgrade to **Pro** or the committed schedule is changed to a daily
-> expression (a repo change — see Part 8). On **Pro**, proceed as-is.
+> **Cron cadence — no action needed to deploy.** The committed `vercel.json` runs
+> the scheduled-publishing job **daily at 06:00 UTC** (`0 6 * * *`), which deploys
+> on **Hobby and Pro alike** — no plan prerequisite. Tightening the cadence is an
+> optional, Pro-only choice covered in Part 8; nothing to change here to deploy.
 
 1. Trigger a deployment: Vercel project → **Deployments** → **Redeploy** the latest
    (or push/merge anything to `main`). This build now has `DATABASE_URL` +
@@ -300,43 +298,40 @@ GET /api/payload-jobs/run
 ```
 
 **How it's wired (issue #4):** the committed [`vercel.json`](../../vercel.json)
-registers a **Vercel Cron** that calls that endpoint every 5 minutes
-(`"schedule": "*/5 * * * *"`). Vercel automatically attaches
-`Authorization: Bearer <CRON_SECRET>` to cron requests when `CRON_SECRET` is set,
-and the config's `jobs.access.run` verifies that header. **If `CRON_SECRET` is
-unset, the runner denies the request and scheduled posts never publish.**
+registers a **Vercel Cron** that calls that endpoint **daily at 06:00 UTC**
+(`"schedule": "0 6 * * *"`). This daily cadence deploys and runs on **every Vercel
+plan** (Hobby and Pro), so there's no plan prerequisite. Vercel automatically
+attaches `Authorization: Bearer <CRON_SECRET>` to cron requests when `CRON_SECRET`
+is set, and the config's `jobs.access.run` verifies that header. **If `CRON_SECRET`
+is unset, the runner denies the request and scheduled posts never publish.**
 
 **Setup — nothing new to do beyond env + deploy:**
 1. Set `CRON_SECRET` in the Vercel project (Production) — done in **Part 6**.
 2. Deploy (Part 7). Vercel reads the committed `vercel.json` and registers the cron
    automatically. No repo change is required.
 
-> ### ⚠️ Plan decision — Tural's call, and it GATES the deploy (do not assume Pro)
-> Sub-daily cron frequency (`*/5 * * * *`) **requires the Vercel Pro plan**. On the
-> **Hobby** plan a more-frequent-than-daily expression **fails the deployment** with
-> the error: *"Hobby accounts are limited to daily cron jobs. This cron expression
-> would run more than once per day."* So the committed `vercel.json` **will not
-> deploy on Hobby** until the schedule or the plan changes — decide this **before
-> Part 7**. Choose:
-> - **Pro** — the committed `*/5` schedule deploys and runs as written; scheduled
->   posts go live within ~5 minutes of their time. (Costs money — a Tural decision.)
-> - **Hobby** — the deploy is blocked until the committed `*/5` schedule is changed
->   to a daily expression (e.g. `0 8 * * *`) in `vercel.json`. That is a **repo
->   change, out of scope for this runbook** — flag it back to the team so issue #4
->   adjusts the committed schedule; scheduled posts then publish once daily.
+> ### Publish cadence — optional, Tural's choice (not a prerequisite)
+> The committed default publishes **once daily at 06:00 UTC**, so a scheduled post
+> goes live at the next 06:00 UTC after its scheduled time — fine for a marketing
+> site, and it works on every plan. If you want **near-real-time** publishing (posts
+> live within ~5 minutes of their time), that requires the **Vercel Pro plan**:
+> change the one line in `vercel.json` to `"schedule": "*/5 * * * *"` and redeploy.
+> This is a cadence preference, **not** a requirement to stand up staging.
 >
-> **Regardless of plan**, an authenticated **Admin** can trigger the queue at any
+> **Regardless of cadence**, an authenticated **Admin** can trigger the queue at any
 > time by hitting `GET /api/payload-jobs/run` while logged in (or via
-> `payload.jobs.run()` in code) — a manual fallback for demos/testing.
+> `payload.jobs.run()` in code) — a manual fallback for demos/testing and the
+> fastest way to verify below.
 
 **Verify:**
 1. Vercel → project → **Settings → Cron Jobs** shows the `/api/payload-jobs/run`
-   job registered with its schedule.
-2. In `/admin`, open a Blog Post (or Case Study), set the publish date a few minutes
-   ahead, and save it as scheduled.
-3. After the cron fires (Pro) — or after you trigger the endpoint manually — reload:
-   the document flips to **published** and becomes visible to anonymous site/API
-   callers.
+   job registered with its schedule (`0 6 * * *`).
+2. In `/admin`, open a Blog Post (or Case Study), set the publish date to a moment
+   already passed (or a minute ago), and save it as scheduled.
+3. Trigger the runner immediately rather than waiting for 06:00 UTC — as the
+   logged-in Admin, request `GET /api/payload-jobs/run` (e.g. in the browser).
+   Reload the document: it flips to **published** and becomes visible to anonymous
+   site/API callers. (The daily cron does the same automatically at 06:00 UTC.)
 
 ---
 
@@ -371,10 +366,10 @@ Confirm staging is live and self-deploying.
    Blob store → **Browser** the uploaded object appears. This proves media persists
    to Blob (the adapter routes to Blob because `BLOB_READ_WRITE_TOKEN` is present).
 
-5. **Scheduled publishing.** Follow **Part 8 → Verify** — confirm the cron is
-   registered and a post scheduled for a near-future time flips to **published**
-   after the runner fires (or after a manual admin trigger). Subject to the Part 8
-   plan decision.
+5. **Scheduled publishing.** Follow **Part 8 → Verify** — confirm the daily
+   `/api/payload-jobs/run` cron is registered and that a scheduled post flips to
+   **published** when the runner fires (trigger it manually to check right away, or
+   let the 06:00 UTC cron do it).
 
 ### Done when
 - [ ] `/` renders the marketing homepage over HTTPS.
@@ -382,5 +377,5 @@ Confirm staging is live and self-deploying.
       the Content / Leads / Admin nav.
 - [ ] A merge to `main` produced an automatic Production deployment.
 - [ ] A media upload in `/admin` lands as an object in the Vercel Blob store.
-- [ ] The `/api/payload-jobs/run` cron is registered, and a scheduled post
-      publishes when the runner fires (per the Part 8 plan choice).
+- [ ] The `/api/payload-jobs/run` cron is registered (daily at 06:00 UTC), and a
+      scheduled post publishes when the runner fires (verify via manual trigger).
