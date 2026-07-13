@@ -49,7 +49,7 @@ this is a human runbook; staging does not exist until Tural runs it.
 
 ## What surprised us
 
-- **`pnpm format:check` is CI's first gate and bit BOTH #4 and #5.** It runs before
+- **`pnpm format:check` runs early in CI (third step, before tests/build) and bit BOTH #4 and #5.** It runs before
   tests/build, so an otherwise-green branch goes red on formatting alone. Run
   `pnpm format` (and confirm `pnpm format:check` exits 0) on **every** branch before
   calling it done — **even docs-only**: the #5 runbook, pure markdown, failed on it.
