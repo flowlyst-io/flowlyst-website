@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, isAdmin } from '@/access'
+import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
 
 /**
  * Demo requests inbox (PRD §8.1, §9). The highest-intent lead.
@@ -39,6 +39,9 @@ export const DemoRequests: CollectionConfig = {
       type: 'select',
       // Not `required`: a public submitter never sends it — the default applies
       // server-side. Staff drive it through the triage workflow thereafter.
+      // Field-level access locks it to Admins so an anonymous `create` can't
+      // inject a triage status; the default wins instead.
+      access: { create: isAdminFieldLevel, update: isAdminFieldLevel },
       defaultValue: 'pending',
       options: [
         { label: 'Pending', value: 'pending' },
@@ -51,6 +54,8 @@ export const DemoRequests: CollectionConfig = {
     {
       name: 'internalNotes',
       type: 'textarea',
+      // Admin-only field — a public submitter can never write internal notes.
+      access: { create: isAdminFieldLevel, update: isAdminFieldLevel },
       admin: {
         position: 'sidebar',
         description: 'Internal only — never shown to the requester.',

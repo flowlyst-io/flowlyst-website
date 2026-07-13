@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, isAdmin } from '@/access'
+import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
 
 /**
  * Newsletter subscribers (PRD §8.3, §9). Email list with subscribe/unsubscribe
@@ -35,7 +35,9 @@ export const NewsletterSubscribers: CollectionConfig = {
     {
       name: 'status',
       type: 'select',
-      // Not `required` — defaulted server-side (public signup doesn't send it).
+      // Not `required` — defaulted server-side. Field-level access locks it to
+      // Admins so an anonymous signup can't set itself to a chosen status.
+      access: { create: isAdminFieldLevel, update: isAdminFieldLevel },
       defaultValue: 'subscribed',
       options: [
         { label: 'Subscribed', value: 'subscribed' },

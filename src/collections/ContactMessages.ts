@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, isAdmin } from '@/access'
+import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
 
 /**
  * Contact messages (PRD §8.2). Non-demo inquiries — press, partnerships,
@@ -26,7 +26,9 @@ export const ContactMessages: CollectionConfig = {
     {
       name: 'status',
       type: 'select',
-      // Not `required` — defaulted server-side (public submitters don't send it).
+      // Not `required` — defaulted server-side. Field-level access locks it to
+      // Admins so an anonymous `create` can't inject a triage status.
+      access: { create: isAdminFieldLevel, update: isAdminFieldLevel },
       defaultValue: 'new',
       options: [
         { label: 'New', value: 'new' },
@@ -37,6 +39,7 @@ export const ContactMessages: CollectionConfig = {
     {
       name: 'internalNotes',
       type: 'textarea',
+      access: { create: isAdminFieldLevel, update: isAdminFieldLevel },
       admin: { position: 'sidebar', description: 'Internal only.' },
     },
     { name: 'name', type: 'text', required: true },

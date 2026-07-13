@@ -2,7 +2,7 @@
 // These exercise the Payload Local API (a backend concern) — run them in Node,
 // not jsdom. Under jsdom the file-type library's `instanceof Uint8Array` checks
 // fail across realms, breaking upload validation.
-import { getPayload, type Payload } from 'payload'
+import { getPayload, type Payload, type PayloadRequest } from 'payload'
 import config from '@/payload.config'
 import type { BlogPost } from '@/payload-types'
 
@@ -71,13 +71,23 @@ beforeAll(async () => {
   // deliberately submit role: 'editor' here (proves the hook overrides input).
   admin = await payload.create({
     collection: 'users',
-    data: { email: `admin-${stamp}@flowlyst.test`, password: pw, name: 'Test Admin', role: 'editor' },
+    data: {
+      email: `admin-${stamp}@flowlyst.test`,
+      password: pw,
+      name: 'Test Admin',
+      role: 'editor',
+    },
   })
 
   // Second user → not force-admin; explicitly an Editor.
   editor = await payload.create({
     collection: 'users',
-    data: { email: `editor-${stamp}@flowlyst.test`, password: pw, name: 'Test Editor', role: 'editor' },
+    data: {
+      email: `editor-${stamp}@flowlyst.test`,
+      password: pw,
+      name: 'Test Editor',
+      role: 'editor',
+    },
   })
 })
 
@@ -152,7 +162,12 @@ describe('Media', () => {
       payload.create({
         collection: 'media',
         data: {},
-        file: { data: pngBuffer, mimetype: 'image/png', name: `noalt-${stamp}.png`, size: pngBuffer.length },
+        file: {
+          data: pngBuffer,
+          mimetype: 'image/png',
+          name: `noalt-${stamp}.png`,
+          size: pngBuffer.length,
+        },
       }),
       // The file itself is valid, so the rejection is specifically about `alt`.
     ).rejects.toThrow(/alt/i)
@@ -162,7 +177,12 @@ describe('Media', () => {
     const created = await payload.create({
       collection: 'media',
       data: { alt: 'A test pixel' },
-      file: { data: pngBuffer, mimetype: 'image/png', name: `alt-${stamp}.png`, size: pngBuffer.length },
+      file: {
+        data: pngBuffer,
+        mimetype: 'image/png',
+        name: `alt-${stamp}.png`,
+        size: pngBuffer.length,
+      },
     })
     expect(created.alt).toBe('A test pixel')
   })
@@ -236,7 +256,13 @@ describe('Scheduled publishing', () => {
     const slug = `scheduled-${stamp}`
     const post = await payload.create({
       collection: 'blog-posts',
-      data: { title: 'Scheduled', slug, body: lexicalBody, serviceCategory: 'general', _status: 'draft' },
+      data: {
+        title: 'Scheduled',
+        slug,
+        body: lexicalBody,
+        serviceCategory: 'general',
+        _status: 'draft',
+      },
     })
 
     // Not public yet.
@@ -276,6 +302,21 @@ describe('Lead capture (demo requests inbox)', () => {
     expect(created.status).toBe('pending')
   })
 
+  it('ignores anon-injected status / internalNotes (field-level admin lock)', async () => {
+    const created = await payload.create({
+      collection: 'demo-requests',
+      data: {
+        fullName: 'Injector',
+        workEmail: `inject-${stamp}@district.k12.us`,
+        status: 'completed', // attacker-supplied triage status …
+        internalNotes: 'i set this myself', // … and internal notes
+      },
+      overrideAccess: false, // anonymous
+    })
+    expect(created.status).toBe('pending') // injected status ignored → default
+    expect(created.internalNotes).toBeFalsy() // notes stripped
+  })
+
   it('does not expose the inbox to the public', async () => {
     await expect(
       payload.find({ collection: 'demo-requests', overrideAccess: false }),
@@ -289,7 +330,11 @@ describe('Lead capture (demo requests inbox)', () => {
   })
 
   it('lets an Admin read the inbox', async () => {
-    const res = await payload.find({ collection: 'demo-requests', overrideAccess: false, user: admin })
+    const res = await payload.find({
+      collection: 'demo-requests',
+      overrideAccess: false,
+      user: admin,
+    })
     expect(res.totalDocs).toBeGreaterThanOrEqual(1)
   })
 })
@@ -301,7 +346,27 @@ describe('CSV export (import-export plugin)', () => {
     await expect(
       payload.find({ collection: 'exports', overrideAccess: false, user: editor }),
     ).rejects.toThrow()
-    const asAdmin = await payload.find({ collection: 'exports', overrideAccess: false, user: admin })
+    const asAdmin = await payload.find({
+      collection: 'exports',
+      overrideAccess: false,
+      user: admin,
+    })
     expect(asAdmin).toBeDefined()
+  })
+
+  it('guards the export endpoints against non-admins (plugin-upgrade regression)', async () => {
+    // The plugin's /download + /export-preview endpoints are not gated by
+    // collection access; our `adminOnlyEndpoints` wrapper must 403 non-admins
+    // (otherwise a non-admin request hangs). This asserts the wrapper survives.
+    const exportsCollection = payload.config.collections.find((c) => c.slug === 'exports')
+    const download = exportsCollection?.endpoints
+      ? exportsCollection.endpoints.find((e) => e.path === '/download')
+      : undefined
+    expect(download).toBeDefined()
+
+    const asEditor = await download!.handler({ user: editor } as unknown as PayloadRequest)
+    expect(asEditor.status).toBe(403)
+    const asAnon = await download!.handler({ user: undefined } as unknown as PayloadRequest)
+    expect(asAnon.status).toBe(403)
   })
 })
