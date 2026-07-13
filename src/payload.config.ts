@@ -45,7 +45,21 @@ import { SiteSettings } from './globals/SiteSettings'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// The canonical origin Payload uses to build absolute URLs (admin meta/OG tags,
+// email links). Prefer an explicit override; otherwise derive it from Vercel's
+// system env var `VERCEL_PROJECT_PRODUCTION_URL` (the production domain, no
+// protocol — hence the `https://` prefix), which is present at build and runtime
+// on every Vercel deployment. Falls back to localhost for local dev. Without
+// this, Payload defaults to http://localhost:3000 and renders localhost URLs on
+// deployed admin pages.
+const serverURL =
+  process.env.NEXT_PUBLIC_SERVER_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'http://localhost:3000')
+
 export default buildConfig({
+  serverURL,
   admin: {
     user: Users.slug,
     importMap: {
