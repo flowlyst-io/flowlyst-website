@@ -118,6 +118,32 @@ pnpm migrate
 > only lives in the config (works locally via push) will **not** apply in CI — you
 > must generate and commit a migration.
 
+### Schema changes deploy themselves (production)
+
+You don't run migrations by hand against Neon. **Production builds on Vercel apply
+committed migrations automatically, before the app build**:
+
+1. Change the data model, then `pnpm migrate:create <short_name>` and commit the
+   generated file in `src/migrations/`.
+2. Open a PR. CI applies the migration to a throwaway database and runs the full
+   suite against it, so a broken migration fails the check.
+3. Merge to `main`. The production deploy runs `scripts/vercel-build.mjs`, which
+   applies any pending migrations and **then** builds the app. If the migration
+   fails, the build fails and the previous deployment stays live.
+
+Only production deploys migrate. **Preview** deploys skip migration (they share the
+staging database and their branch schema isn't merged yet) and local `pnpm build`
+never touches this path. The gate is `VERCEL_ENV === "production"` plus a required
+`DATABASE_URL_UNPOOLED` (the direct, non-pooled Neon connection the Neon↔Vercel
+integration injects) — migrations run against that string, not the pooled runtime
+`DATABASE_URL`. See `scripts/vercel-build.mjs` and `scripts/migrate-gate.mjs`.
+
+> **Keep migrations backward-compatible (expand-contract / additive).** The
+> migration runs _before_ the new code deploys, so for the minutes the build takes
+> the **previous** deployment keeps serving traffic against the already-migrated
+> schema — add columns/tables in one deploy and only drop or rename the old ones in
+> a later deploy, once nothing live references them.
+
 ### Resetting the local database
 
 ```bash
@@ -127,10 +153,12 @@ docker compose up -d     # start fresh (dev push recreates the schema on next bo
 
 ## Deployment
 
-Production runs on **Vercel + Neon Postgres**. Provisioning those (project setup,
-env vars, connection string, running the initial migration against Neon) is
-handled separately and operated by Tural — see issue #5. Nothing in this repo
-connects to Neon or Vercel automatically.
+Production runs on **Vercel + Neon Postgres**. Initial provisioning (project
+setup, env vars, connection strings, the first migration against Neon) is operated
+by Tural — see issue #5. After that, deploys are automatic: every build on `main`
+applies committed migrations to Neon and then builds the app (see "Schema changes
+deploy themselves" above). Local development and CI never connect to Neon or
+Vercel.
 
 ## Troubleshooting
 
