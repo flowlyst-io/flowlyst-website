@@ -67,16 +67,40 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    'blog-posts': BlogPost;
+    'case-studies': CaseStudy;
+    testimonials: Testimonial;
+    'training-programs': TrainingProgram;
+    authors: Author;
+    media: Media;
+    'demo-requests': DemoRequest;
+    'contact-messages': ContactMessage;
+    'newsletter-subscribers': NewsletterSubscriber;
     users: User;
+    exports: Export;
+    imports: Import;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {};
   collectionsSelect: {
+    'blog-posts': BlogPostsSelect<false> | BlogPostsSelect<true>;
+    'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
+    testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
+    'training-programs': TrainingProgramsSelect<false> | TrainingProgramsSelect<true>;
+    authors: AuthorsSelect<false> | AuthorsSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
+    'demo-requests': DemoRequestsSelect<false> | DemoRequestsSelect<true>;
+    'contact-messages': ContactMessagesSelect<false> | ContactMessagesSelect<true>;
+    'newsletter-subscribers': NewsletterSubscribersSelect<false> | NewsletterSubscribersSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    exports: ExportsSelect<false> | ExportsSelect<true>;
+    imports: ImportsSelect<false> | ImportsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -85,15 +109,27 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'site-settings': SiteSetting;
+  };
+  globalsSelect: {
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
   };
   user: User;
   jobs: {
-    tasks: unknown;
+    tasks: {
+      createCollectionExport: TaskCreateCollectionExport;
+      createCollectionImport: TaskCreateCollectionImport;
+      schedulePublish: TaskSchedulePublish;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -117,10 +153,429 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-posts".
+ */
+export interface BlogPost {
+  id: number;
+  title: string;
+  /**
+   * URL path segment. Auto-generated from the title if left blank.
+   */
+  slug: string;
+  /**
+   * Short summary for cards and as an SEO/meta fallback.
+   */
+  excerpt?: string | null;
+  body: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  featuredImage?: (number | null) | Media;
+  author?: (number | null) | Author;
+  serviceCategory: 'ai-training' | 'budget-software' | 'general';
+  /**
+   * Free-form tags. Press enter after each.
+   */
+  tags?: string[] | null;
+  /**
+   * Auto-calculated from the body (words ÷ 200) on save.
+   */
+  readingTime?: number | null;
+  /**
+   * Display date. Defaults to first publish.
+   */
+  publishedAt?: string | null;
+  /**
+   * Controls the page <title>, meta description, and social share image.
+   */
+  meta?: {
+    /**
+     * Overrides the <title> tag. Falls back to the post title. ~60 chars.
+     */
+    title?: string | null;
+    /**
+     * Meta description / social summary. Falls back to the excerpt. ~155 chars.
+     */
+    description?: string | null;
+    /**
+     * Image used when the page is shared on social. Ideally 1200×630.
+     */
+    ogImage?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  /**
+   * Describe the image for screen readers and SEO. Required (WCAG 2.1 AA).
+   */
+  alt: string;
+  /**
+   * Optional visible caption.
+   */
+  caption?: string | null;
+  prefix?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    feature?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    og?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors".
+ */
+export interface Author {
+  id: number;
+  name: string;
+  /**
+   * URL path segment. Auto-generated from the title if left blank.
+   */
+  slug: string;
+  /**
+   * Role / job title shown next to the byline.
+   */
+  title?: string | null;
+  photo?: (number | null) | Media;
+  bio?: string | null;
+  links?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "case-studies".
+ */
+export interface CaseStudy {
+  id: number;
+  title: string;
+  /**
+   * URL path segment. Auto-generated from the title if left blank.
+   */
+  slug: string;
+  heroImage?: (number | null) | Media;
+  serviceCategory: 'ai-training' | 'budget-software' | 'consulting' | 'general';
+  districtInfo?: {
+    /**
+     * District / organization name.
+     */
+    name?: string | null;
+    state?: string | null;
+    /**
+     * Enrollment / size.
+     */
+    studentCount?: number | null;
+  };
+  intro?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  challenge?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  solution?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  results?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Headline outcome numbers, e.g. "Hours saved" → "1,200/yr".
+   */
+  metrics?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Display date. Defaults to first publish.
+   */
+  publishedAt?: string | null;
+  /**
+   * Controls the page <title>, meta description, and social share image.
+   */
+  meta?: {
+    /**
+     * Overrides the <title> tag. Falls back to the post title. ~60 chars.
+     */
+    title?: string | null;
+    /**
+     * Meta description / social summary. Falls back to the excerpt. ~155 chars.
+     */
+    description?: string | null;
+    /**
+     * Image used when the page is shared on social. Ideally 1200×630.
+     */
+    ogImage?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials".
+ */
+export interface Testimonial {
+  id: number;
+  quote: string;
+  clientName: string;
+  /**
+   * Role / title of the person quoted.
+   */
+  roleTitle?: string | null;
+  /**
+   * District or organization.
+   */
+  organization?: string | null;
+  industry?: string | null;
+  serviceCategory?: ('ai-training' | 'budget-software' | 'consulting' | 'general') | null;
+  /**
+   * Optional link to a video testimonial.
+   */
+  videoUrl?: string | null;
+  photo?: (number | null) | Media;
+  /**
+   * Surface on the homepage / featured slots.
+   */
+  featured?: boolean | null;
+  /**
+   * Only Published testimonials appear on the site.
+   */
+  status: 'draft' | 'published';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "training-programs".
+ */
+export interface TrainingProgram {
+  id: number;
+  title: string;
+  /**
+   * URL path segment. Auto-generated from the title if left blank.
+   */
+  slug: string;
+  description?: string | null;
+  level?: ('introductory' | 'intermediate' | 'advanced') | null;
+  format?: ('in-person' | 'virtual' | 'hybrid' | 'self-paced') | null;
+  /**
+   * e.g. "2 days" or "6 weeks".
+   */
+  duration?: string | null;
+  /**
+   * Ordered modules within this program.
+   */
+  modules?:
+    | {
+        title: string;
+        description?: string | null;
+        /**
+         * e.g. "45 min".
+         */
+        duration?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Only Published programs appear on the site.
+   */
+  status: 'draft' | 'published';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "demo-requests".
+ */
+export interface DemoRequest {
+  id: number;
+  status?: ('pending' | 'scheduled' | 'completed' | 'canceled') | null;
+  /**
+   * Internal only — never shown to the requester.
+   */
+  internalNotes?: string | null;
+  fullName: string;
+  title?: string | null;
+  district?: string | null;
+  workEmail: string;
+  phone?: string | null;
+  interests?: ('ai-training' | 'budget-software' | 'consulting')[] | null;
+  /**
+   * Requester’s preferred date/time (free text).
+   */
+  datePreference?: string | null;
+  message?: string | null;
+  /**
+   * Optional — student count or number of schools.
+   */
+  districtSize?: string | null;
+  heardAboutUs?: ('google' | 'ai-assistant' | 'referral' | 'event' | 'social' | 'other') | null;
+  anythingElse?: string | null;
+  /**
+   * Requester consented to be contacted.
+   */
+  consent?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-messages".
+ */
+export interface ContactMessage {
+  id: number;
+  status?: ('new' | 'handled') | null;
+  /**
+   * Internal only.
+   */
+  internalNotes?: string | null;
+  name: string;
+  email: string;
+  reason?: ('general' | 'press' | 'partnerships' | 'training' | 'support') | null;
+  message: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter-subscribers".
+ */
+export interface NewsletterSubscriber {
+  id: number;
+  email: string;
+  status?: ('subscribed' | 'unsubscribed') | null;
+  /**
+   * Where the signup came from (e.g. /blog).
+   */
+  source?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
   id: number;
+  name: string;
+  /**
+   * Admin: full access, incl. users and settings. Editor: content only.
+   */
+  role: 'admin' | 'editor';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -142,6 +597,80 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exports".
+ */
+export interface Export {
+  id: number;
+  name?: string | null;
+  format: 'csv' | 'json';
+  limit?: number | null;
+  page?: number | null;
+  sort?: string | null;
+  sortOrder?: ('asc' | 'desc') | null;
+  drafts?: ('yes' | 'no') | null;
+  selectionToUse?: ('currentSelection' | 'currentFilters' | 'all') | null;
+  fields?: string[] | null;
+  collectionSlug: string;
+  where?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "imports".
+ */
+export interface Import {
+  id: number;
+  collectionSlug: string;
+  importMode?: ('create' | 'update' | 'upsert') | null;
+  matchField?: string | null;
+  status?: ('pending' | 'completed' | 'partial' | 'failed') | null;
+  summary?: {
+    imported?: number | null;
+    updated?: number | null;
+    total?: number | null;
+    issues?: number | null;
+    issueDetails?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -159,14 +688,143 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'createCollectionExport' | 'createCollectionImport' | 'schedulePublish';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'createCollectionExport' | 'createCollectionImport' | 'schedulePublish') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
   id: number;
-  document?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
+  document?:
+    | ({
+        relationTo: 'blog-posts';
+        value: number | BlogPost;
+      } | null)
+    | ({
+        relationTo: 'case-studies';
+        value: number | CaseStudy;
+      } | null)
+    | ({
+        relationTo: 'testimonials';
+        value: number | Testimonial;
+      } | null)
+    | ({
+        relationTo: 'training-programs';
+        value: number | TrainingProgram;
+      } | null)
+    | ({
+        relationTo: 'authors';
+        value: number | Author;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'demo-requests';
+        value: number | DemoRequest;
+      } | null)
+    | ({
+        relationTo: 'contact-messages';
+        value: number | ContactMessage;
+      } | null)
+    | ({
+        relationTo: 'newsletter-subscribers';
+        value: number | NewsletterSubscriber;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
@@ -211,9 +869,248 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-posts_select".
+ */
+export interface BlogPostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  body?: T;
+  featuredImage?: T;
+  author?: T;
+  serviceCategory?: T;
+  tags?: T;
+  readingTime?: T;
+  publishedAt?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        ogImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "case-studies_select".
+ */
+export interface CaseStudiesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  heroImage?: T;
+  serviceCategory?: T;
+  districtInfo?:
+    | T
+    | {
+        name?: T;
+        state?: T;
+        studentCount?: T;
+      };
+  intro?: T;
+  challenge?: T;
+  solution?: T;
+  results?: T;
+  metrics?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  publishedAt?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        ogImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials_select".
+ */
+export interface TestimonialsSelect<T extends boolean = true> {
+  quote?: T;
+  clientName?: T;
+  roleTitle?: T;
+  organization?: T;
+  industry?: T;
+  serviceCategory?: T;
+  videoUrl?: T;
+  photo?: T;
+  featured?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "training-programs_select".
+ */
+export interface TrainingProgramsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  level?: T;
+  format?: T;
+  duration?: T;
+  modules?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        duration?: T;
+        id?: T;
+      };
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors_select".
+ */
+export interface AuthorsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  title?: T;
+  photo?: T;
+  bio?: T;
+  links?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  caption?: T;
+  prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        feature?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        og?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "demo-requests_select".
+ */
+export interface DemoRequestsSelect<T extends boolean = true> {
+  status?: T;
+  internalNotes?: T;
+  fullName?: T;
+  title?: T;
+  district?: T;
+  workEmail?: T;
+  phone?: T;
+  interests?: T;
+  datePreference?: T;
+  message?: T;
+  districtSize?: T;
+  heardAboutUs?: T;
+  anythingElse?: T;
+  consent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-messages_select".
+ */
+export interface ContactMessagesSelect<T extends boolean = true> {
+  status?: T;
+  internalNotes?: T;
+  name?: T;
+  email?: T;
+  reason?: T;
+  message?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter-subscribers_select".
+ */
+export interface NewsletterSubscribersSelect<T extends boolean = true> {
+  email?: T;
+  status?: T;
+  source?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -233,11 +1130,100 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exports_select".
+ */
+export interface ExportsSelect<T extends boolean = true> {
+  name?: T;
+  format?: T;
+  limit?: T;
+  page?: T;
+  sort?: T;
+  sortOrder?: T;
+  drafts?: T;
+  selectionToUse?: T;
+  fields?: T;
+  collectionSlug?: T;
+  where?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "imports_select".
+ */
+export interface ImportsSelect<T extends boolean = true> {
+  collectionSlug?: T;
+  importMode?: T;
+  matchField?: T;
+  status?: T;
+  summary?:
+    | T
+    | {
+        imported?: T;
+        updated?: T;
+        total?: T;
+        issues?: T;
+        issueDetails?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -273,6 +1259,58 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  /**
+   * Public contact address shown across the site.
+   */
+  contactEmail?: string | null;
+  hero?: {
+    headline?: string | null;
+    subheadline?: string | null;
+  };
+  /**
+   * Copyright / footer blurb.
+   */
+  footerText?: string | null;
+  socialLinks?:
+    | {
+        platform: 'linkedin' | 'twitter' | 'facebook' | 'youtube' | 'instagram';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  contactEmail?: T;
+  hero?:
+    | T
+    | {
+        headline?: T;
+        subheadline?: T;
+      };
+  footerText?: T;
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
@@ -280,6 +1318,90 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCreateCollectionExport".
+ */
+export interface TaskCreateCollectionExport {
+  input: {
+    id: string;
+    name: string;
+    batchSize?: number | null;
+    collectionSlug:
+      | 'blog-posts'
+      | 'case-studies'
+      | 'testimonials'
+      | 'training-programs'
+      | 'authors'
+      | 'media'
+      | 'demo-requests'
+      | 'contact-messages'
+      | 'newsletter-subscribers'
+      | 'users'
+      | 'exports'
+      | 'imports';
+    drafts?: ('yes' | 'no') | null;
+    exportCollection: string;
+    fields?: string[] | null;
+    format: 'csv' | 'json';
+    limit?: number | null;
+    locale?: string | null;
+    maxLimit?: number | null;
+    page?: number | null;
+    sort?: string | null;
+    userCollection?: string | null;
+    userID?: string | null;
+    where?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCreateCollectionImport".
+ */
+export interface TaskCreateCollectionImport {
+  input: {
+    importId: string;
+    importCollection: string;
+    userID?: string | null;
+    userCollection?: string | null;
+    batchSize?: number | null;
+    debug?: boolean | null;
+    defaultVersionStatus?: ('draft' | 'published') | null;
+    maxLimit?: number | null;
+  };
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSchedulePublish".
+ */
+export interface TaskSchedulePublish {
+  input: {
+    type?: ('publish' | 'unpublish') | null;
+    locale?: string | null;
+    doc?:
+      | ({
+          relationTo: 'blog-posts';
+          value: number | BlogPost;
+        } | null)
+      | ({
+          relationTo: 'case-studies';
+          value: number | CaseStudy;
+        } | null);
+    global?: string | null;
+    user?: (number | null) | User;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

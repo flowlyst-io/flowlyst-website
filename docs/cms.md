@@ -1,0 +1,154 @@
+# CMS content model
+
+The Payload content model that backs flowlyst.io (PRD §9). Everything marketing
+content is CMS-driven — adding a testimonial, post, or case study never needs a
+code change or redeploy.
+
+## Collections & global
+
+Grouped as they appear in the admin nav.
+
+### Content
+
+| Collection            | Purpose                                                                                                             | Publishing                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| **Blog Posts**        | Lexical body, excerpt, featured + OG image, author, tags, service category, auto reading-time, SEO meta             | Drafts + scheduled publish + preview |
+| **Case Studies**      | Structured long-form: intro / challenge / solution / results (each Lexical), district info, metrics, hero, SEO meta | Drafts + scheduled publish + preview |
+| **Testimonials**      | Quote, client, org/district, industry, service category, video URL, photo, featured flag                            | Plain `status` (draft/published)     |
+| **Training Programs** | Hierarchical: program → ordered modules; level, format, duration                                                    | Plain `status`                       |
+| **Authors**           | Name, title, photo, bio, links — referenced by blog posts                                                           | Public                               |
+| **Media**             | Image library; **alt text required (validated)**; auto image sizes                                                  | Public read                          |
+
+### Leads (inbox) — **Admin-only** (PII)
+
+`create` is public (forms POST here); read/update/delete are **Admin-only**.
+PRD §9 scopes Editors to content, and lead records are PII, so Editors cannot
+see these inboxes.
+
+| Collection                 | Purpose                                                                                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Demo Requests**          | Highest-intent lead. Status workflow `pending → scheduled → completed/canceled`, internal notes, triage list columns + search. CSV export. |
+| **Contact Messages**       | Non-demo inquiries; reason dropdown; `new/handled` status.                                                                                 |
+| **Newsletter Subscribers** | Email + `subscribed/unsubscribed` status. CSV export.                                                                                      |
+
+### Admin
+
+- **Users** — auth collection with an enforced `role` (see Roles).
+- **Site Settings** (global) — contact email, hero copy, footer text, social links. Admin-only.
+
+## Roles (enforced)
+
+Two roles, enforced through Payload access control (`src/access/index.ts`):
+
+- **Admin** — everything, including Users, Site Settings, and the lead inboxes.
+- **Editor** — content only. Cannot see or edit Users, Site Settings, or the
+  lead inboxes (demo requests, contact messages, newsletter subscribers).
+
+Guardrails:
+
+- The `role` field is locked at the field level to Admins, so an Editor editing
+  their own profile can never self-escalate.
+- The **first user ever created** (bootstrap screen) is forced to Admin.
+- Public content collections return only `published` docs to anonymous
+  callers (drafts never leak through the API); staff see everything.
+
+## Drafts, scheduled publishing, preview
+
+- **Drafts** — Blog Posts and Case Studies use Payload versions/drafts; unpublished
+  work is invisible to the public. Testimonials/Training use a simple `status` select.
+- **Scheduled publishing** — enabled via `versions.drafts.schedulePublish` on Blog
+  Posts and Case Studies. Setting a future publish date enqueues a `schedulePublish`
+  job. **The job only runs when the jobs queue is triggered** (see below).
+- **Preview** — `admin.preview` → `/preview` route handler → validates
+  `PREVIEW_SECRET`, enables Next.js Draft Mode, redirects to a server-rendered
+  (and `noindex`) draft page. The page is an intentional placeholder until the
+  Phase-2 templates exist. **`PREVIEW_SECRET` is required** — with it unset, no
+  preview link is minted and every `/preview` request is denied (fail closed; it
+  never falls back to `PAYLOAD_SECRET`).
+
+### Production trigger for scheduled publishing — REQUIRED
+
+Scheduled publishing does nothing until something calls the jobs runner:
+
+```
+GET /api/payload-jobs/run
+```
+
+On Vercel this is wired by [`vercel.json`](../vercel.json) as a Cron. Vercel
+automatically sends `Authorization: Bearer <CRON_SECRET>` when the `CRON_SECRET`
+env var is set, which the config's `jobs.access.run` checks.
+
+**Runbook (issue #5 / staging & prod):**
+
+1. Set `CRON_SECRET` to a random secret in the Vercel project env.
+2. Deploy — `vercel.json` registers the cron automatically.
+
+### Cron schedule — daily by default, and why
+
+The committed schedule is **`0 6 * * *`** (daily at 06:00 UTC ≈ 1–2am ET, a quiet
+window). This is deliberate: **Vercel's Hobby plan hard-fails the deployment for
+any cron more frequent than once per day** (it's a deploy-time error, not a
+throttle), so a sub-daily default would brick staging on Hobby. A daily default
+deploys on every plan.
+
+Consequence: on the daily default, a post scheduled for 2pm won't publish until
+the next 06:00 UTC run. Options:
+
+- **Near-real-time (Pro plan):** edit `vercel.json` to
+  `"schedule": "*/5 * * * *"` (every 5 min) and redeploy. Pro allows
+  minute-level crons; scheduled posts then go live within ~5 minutes.
+- **Manual trigger (any plan):** an authenticated Admin can run the queue on
+  demand — `GET /api/payload-jobs/run` (Admin session), or `payload.jobs.run()`
+  in code — to publish due posts immediately without waiting for the cron.
+
+## Media storage
+
+`@payloadcms/storage-vercel-blob`, gated on `BLOB_READ_WRITE_TOKEN`:
+
+- **Token present** (staging/prod) → uploads go to Vercel Blob.
+- **Token absent** (local dev) → filesystem (`/media`, gitignored).
+
+`alwaysInsertFields: true` keeps the media DB schema identical in both modes, so a
+single committed migration is valid everywhere.
+
+## CSV export (lead inboxes)
+
+`@payloadcms/plugin-import-export`, scoped to **demo requests** and **newsletter
+subscribers**, export-only (`import: false`), synchronous and download-only
+(`disableJobsQueue` + `disableSave`) — nothing depends on the cron and no lead
+PII is written to disk. Admins export from the collection's list view; the CSV
+downloads directly.
+
+**Admins only**, enforced in depth: the inboxes are Admin-only read (export reads
+run with the user's own access), the plugin's `exports`/`imports` collections are
+locked to Admins (`imports` fully hidden — inert here), and the plugin's custom
+`/download` + `/export-preview` endpoints are wrapped with an admin guard (they
+are otherwise open and would hang for a non-admin — see `adminOnlyEndpoints` in
+`payload.config.ts`).
+
+> The plugin always registers an `exports` and an `imports` upload collection
+> plus two jobs tasks, even though we only use export. Both collections are
+> Admin-locked; `imports` is hidden. Their tables live in the
+> `add_import_export_collections` migration.
+
+## Environment variables
+
+App boots without any of these. Staging/prod (and to use draft preview locally):
+
+| Var                     | Needed for                  | Notes                                                                                                                                                                                                                                |
+| ----------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob media storage   | Set by Vercel Blob. Absent → local filesystem.                                                                                                                                                                                       |
+| `CRON_SECRET`           | Scheduled publishing (cron) | Secures `/api/payload-jobs/run`. Absent → cron denied.                                                                                                                                                                               |
+| `PREVIEW_SECRET`        | Draft preview               | **Required** for preview — **no fallback**. Unset ⇒ every preview request is denied and no preview link is minted. (Never falls back to `PAYLOAD_SECRET`: that would leak the master JWT secret into the preview URL / access logs.) |
+
+These keys are documented in `.env.example` under the "CMS (issue #4)" section.
+
+## Migrations
+
+Schema changes require a committed migration (CI/prod apply committed migrations,
+not dev push):
+
+```bash
+pnpm migrate:create <name>   # generate from config diff (run with push off)
+pnpm migrate                 # apply — what CI/prod run
+```
