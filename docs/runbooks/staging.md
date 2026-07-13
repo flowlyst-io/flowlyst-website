@@ -136,13 +136,14 @@ PAYLOAD_SECRET='<PAYLOAD_SECRET>' \
 pnpm migrate
 ```
 
-Expected output: Payload applies **both** committed migrations in order —
-`20260713_123011_initial` then `20260713_151923_cms_content_model` — creating the
-`users`/auth tables, the full CMS content model (blog posts, case studies,
-testimonials, training programs, authors, media, the lead collections, and site
-settings), Payload's internal tables, and the `payload_migrations` ledger.
-`payload migrate` is idempotent — it records applied migrations in
-`payload_migrations` and skips ones already run, so re-running is safe.
+Expected output: Payload applies **all** committed migrations in `src/migrations/`
+in order (three at the time of writing — `initial`, `cms_content_model`, and
+`add_import_export_collections`), creating the `users`/auth tables, the full CMS
+content model (blog posts, case studies, testimonials, training programs, authors,
+media, the lead collections, and site settings), Payload's internal tables, and the
+`payload_migrations` ledger. `payload migrate` is idempotent — it records applied
+migrations in `payload_migrations` and skips ones already run, so re-running is
+safe.
 
 ### After any future schema change
 
