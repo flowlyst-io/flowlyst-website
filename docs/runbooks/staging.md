@@ -178,17 +178,26 @@ column, deployed before you migrate, will error until you run the migration.
    | **Framework Preset** | **Next.js** (auto-detected) |
    | **Root Directory** | `./` (repo root — the app is not in a subfolder) |
    | **Build Command** | leave **default** (`next build` via the preset) |
-   | **Install Command** | leave **default** — Vercel detects pnpm from the `packageManager` field (`pnpm@10.4.1`) and uses Corepack automatically |
+   | **Install Command** | leave **default** — Vercel auto-detects **pnpm** from `pnpm-lock.yaml`. See step 4 for pinning the exact version |
    | **Output Directory** | leave **default** |
 
-4. **Node.js version:** after (or during) creation, Settings → **Build and
-   Deployment** → **Node.js Version** → set **22.x** (matches CI's Node 22). Do not
-   leave it on an older default.
-5. **Production Branch:** confirm Settings → **Git** → Production Branch = **`main`**.
+4. **Pin pnpm to `10.4.1` via Corepack.** Vercel detects pnpm from the lockfile
+   but, by default, uses **its own** pnpm version (chosen from the lockfile format)
+   — **not** the `packageManager: pnpm@10.4.1` pin in `package.json`. A version
+   mismatch is a classic, confusing first-deploy failure. To make Vercel use the
+   exact pinned pnpm (matching local dev and CI, which both run `pnpm@10.4.1`),
+   enable Corepack: add the project environment variable
+   **`ENABLE_EXPERIMENTAL_COREPACK` = `1`** (Production + Preview). This is included
+   in the env-var table in Part 6 — set it there. (Confirmed from Vercel's build
+   docs: enabling Corepack is how a project pins a specific package-manager
+   version.)
+5. **Node.js version:** Settings → **Build and Deployment** → **Node.js Version** →
+   set **22.x** (matches CI's Node 22). Do not leave it on an older default.
+6. **Production Branch:** confirm Settings → **Git** → Production Branch = **`main`**.
    In this project, the "Production" environment **is** staging (a separate
    production project/domain comes at cutover). This is what makes "every merge to
    `main` auto-deploys" true.
-6. **Do not deploy yet** if Vercel offers to — or let the first import build fail;
+7. **Do not deploy yet** if Vercel offers to — or let the first import build fail;
    it will succeed once env vars are set in Part 6. (Cancel/ignore the initial
    auto-build; you'll trigger a clean deploy in Part 7.)
 
@@ -227,6 +236,7 @@ Postgres, per `docs/development.md`.
 
 | Variable | Value (placeholder) | Environments | How to obtain | Status in code |
 | -------- | ------------------- | ------------ | ------------- | -------------- |
+| `ENABLE_EXPERIMENTAL_COREPACK` | `1` | Production, Preview | Fixed value — pins pnpm to `10.4.1` (Part 4, step 4) | Build-time — makes Vercel use the pinned pnpm |
 | `DATABASE_URL` | `<neon-POOLED-connection-string>` | Production, Preview | Part 1 — the **pooled** (`-pooler`) string | **Required** — read by `payload.config.ts` at runtime |
 | `PAYLOAD_SECRET` | `<PAYLOAD_SECRET>` | Production, Preview | Part 2 — the **same** value you migrated with | **Required** — read by `payload.config.ts` |
 | `BLOB_READ_WRITE_TOKEN` | _(auto-injected — do not paste)_ | _(auto)_ | Part 5 — created when you attach the Blob store | Provisioned now; consumed once the Media/storage adapter lands |
@@ -235,10 +245,11 @@ Postgres, per `docs/development.md`.
 | `RECAPTCHA_SECRET_KEY` | `<recaptcha-secret-key>` | Production, Preview | Google reCAPTCHA admin console (v3) | Not yet consumed — set when forms land |
 
 Notes:
-- **Minimum to boot staging today:** `DATABASE_URL` + `PAYLOAD_SECRET`
-  (+ the auto-injected `BLOB_READ_WRITE_TOKEN`). The `RESEND_*` / `RECAPTCHA_*`
-  rows can be added now as placeholders you fill later, or deferred entirely until
-  their feature ships — staging deploys and runs without them.
+- **Minimum to stand up staging today:** `ENABLE_EXPERIMENTAL_COREPACK` (build
+  time, so pnpm matches), plus `DATABASE_URL` + `PAYLOAD_SECRET` (runtime), plus the
+  auto-injected `BLOB_READ_WRITE_TOKEN`. The `RESEND_*` / `RECAPTCHA_*` rows can be
+  added now as placeholders you fill later, or deferred entirely until their
+  feature ships — staging deploys and runs without them.
 - **`DATABASE_URL` uses the POOLED string here** (runtime), which is the opposite
   of Part 3's migration command (direct string). That split is intentional.
 - **Shared staging DB caveat:** Preview deploys point at the same Neon staging
@@ -257,7 +268,7 @@ Notes:
 
 ---
 
-## Scheduled publishing trigger
+## Part 8 — Scheduled publishing trigger
 
 <!-- PENDING #4 -->
 <!--
