@@ -179,7 +179,13 @@ export default async function BlogIndexPage({
                   }}
                 >
                   <div style={{ aspectRatio: '16/10', overflow: 'hidden', borderRadius: 4 }}>
-                    <PostThumb image={asMedia(featured.featuredImage)} index={0} fill priority />
+                    <PostThumb
+                      image={asMedia(featured.featuredImage)}
+                      index={0}
+                      fill
+                      priority
+                      sizes="(max-width: 680px) 100vw, 700px"
+                    />
                   </div>
                   <div>
                     <span className="chip chip--green" style={{ marginBottom: 24 }}>

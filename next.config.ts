@@ -14,9 +14,10 @@ const nextConfig: NextConfig = {
       },
     ],
     // Vercel Blob is the production media store (see the vercelBlobStorage plugin in
-    // src/payload.config.ts). Allow next/image to optimize Blob-hosted media so uploads
-    // can move from <img> to next/image later; this pass is config-only and converts no
-    // usages. Blob public URLs are https://<store-id>.public.blob.vercel-storage.com/…
+    // src/payload.config.ts), where uploaded media resolves to a public Blob URL. The
+    // blog/case-study featured + hero images render through next/image (#69), so the
+    // optimizer must be allowed to fetch those Blob-hosted originals. Blob public URLs
+    // are https://<store-id>.public.blob.vercel-storage.com/…
     remotePatterns: [
       {
         protocol: 'https',

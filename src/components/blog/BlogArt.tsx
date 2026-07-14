@@ -1,6 +1,8 @@
 import React from 'react'
+import Image from 'next/image'
 
 import type { Media } from '@/payload-types'
+import { mediaSrc } from '@/utilities/mediaSrc'
 
 /**
  * Blog presentational atoms, ported from the design (`design/site/home.jsx`
@@ -93,27 +95,37 @@ export function PostThumb({
   index,
   fill = false,
   priority = false,
+  sizes,
 }: {
   image?: Media | null
   index: number
   fill?: boolean
   priority?: boolean
+  sizes?: string
 }) {
   if (image?.url) {
-    // Payload media is served from a runtime-variable origin (Vercel Blob / local); a
-    // plain <img> with explicit dimensions avoids next/image remotePatterns config for
-    // this marketing surface while still reserving space (no CLS).
+    // next/image optimizes the uploaded featured image (WebP + a right-sized srcset)
+    // and, with `priority`, preloads it — so the article hero paints as a lightweight
+    // LCP element (#69). `mediaSrc` normalizes the URL for the optimizer: filesystem
+    // media resolves to an absolute same-origin URL that next/image would reject, so
+    // mediaSrc strips it to a relative `/api/media/file/…` path matched by
+    // localPatterns; production Vercel Blob URLs (foreign host) pass through to
+    // remotePatterns. `fill` makes the image absolutely fill this relative box, so it
+    // occupies the wrapper's reserved aspect-ratio (or fixed-160) space exactly — no
+    // CLS. `sizes` defaults to the grid-card responsive steps (1 col ≤680, 2 col
+    // ≤960, else ~360px); the hero call sites pass their own to match the reading
+    // column.
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={image.url}
-        alt={image.alt ?? ''}
-        width={image.width ?? undefined}
-        height={image.height ?? undefined}
-        loading={priority ? 'eager' : 'lazy'}
-        fetchPriority={priority ? 'high' : undefined}
-        style={{ width: '100%', height: fill ? '100%' : 160, objectFit: 'cover', display: 'block' }}
-      />
+      <div style={{ position: 'relative', width: '100%', height: fill ? '100%' : 160 }}>
+        <Image
+          src={mediaSrc(image.url)}
+          alt={image.alt ?? ''}
+          fill
+          sizes={sizes ?? '(max-width: 680px) 100vw, (max-width: 960px) 50vw, 360px'}
+          priority={priority}
+          style={{ objectFit: 'cover' }}
+        />
+      </div>
     )
   }
   return <BlogTileArt index={index} fill={fill} />

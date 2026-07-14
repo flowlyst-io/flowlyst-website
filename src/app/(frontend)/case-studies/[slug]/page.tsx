@@ -1,5 +1,6 @@
 import React from 'react'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
@@ -9,6 +10,7 @@ import type { CaseStudy, Media } from '@/payload-types'
 import { FinalCTA } from '@/components/FinalCTA'
 import { getServerURL } from '@/utilities/serverURL'
 import { serializeJsonLd } from '@/utilities/jsonLd'
+import { mediaSrc } from '@/utilities/mediaSrc'
 import { RichTextBody } from './RichTextBody'
 
 /**
@@ -228,25 +230,33 @@ export default async function CaseStudyDetailPage({
             </div>
           )}
           {hero?.url && (
-            // Plain <img> (not next/image): works for local `/api/media/file/…` and
-            // absolute blob URLs alike without a next.config remotePatterns entry.
-            // Explicit width/height reserve space (no CLS). No image ships until #20.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={hero.url}
-              alt={hero.alt}
-              width={hero.width ?? undefined}
-              height={hero.height ?? undefined}
+            // next/image optimizes the hero and preloads it (priority) so it paints as
+            // a light LCP element (#69, same pattern as the blog reader). `mediaSrc`
+            // normalizes the URL: filesystem media resolves to an absolute same-origin
+            // URL next/image would reject, so it is stripped to a relative
+            // `/api/media/file/…` path matched by localPatterns; Vercel Blob URLs pass
+            // through to remotePatterns. The relative 16/9 box reserves the exact space
+            // the plain <img> did (no CLS); `fill` makes the image cover it. `sizes`
+            // matches the 760px reading column (full width below ~872px).
+            <div
               style={{
+                position: 'relative',
                 width: '100%',
-                height: 'auto',
                 aspectRatio: '16 / 9',
-                objectFit: 'cover',
                 borderRadius: 4,
+                overflow: 'hidden',
                 marginBottom: 8,
-                display: 'block',
               }}
-            />
+            >
+              <Image
+                src={mediaSrc(hero.url)}
+                alt={hero.alt ?? ''}
+                fill
+                priority
+                sizes="(max-width: 872px) 100vw, 760px"
+                style={{ objectFit: 'cover' }}
+              />
+            </div>
           )}
         </div>
       </article>
