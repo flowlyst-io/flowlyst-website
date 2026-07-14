@@ -23,6 +23,7 @@ import CaseStudiesIndexPage from '@/app/(frontend)/case-studies/page'
 import CaseStudyDetailPage, {
   generateMetadata as caseDetailMetadata,
 } from '@/app/(frontend)/case-studies/[slug]/page'
+import { RichTextBody } from '@/app/(frontend)/case-studies/[slug]/RichTextBody'
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 
@@ -48,6 +49,59 @@ function lexical(text: string) {
           direction: 'ltr' as const,
           children: [
             { type: 'text', format: 0, style: '', mode: 'normal', detail: 0, text, version: 1 },
+          ],
+        },
+      ],
+    },
+  }
+}
+
+// Lexical state whose paragraph ends with a link node carrying the given href — used
+// to prove the RichTextBody link converter sanitizes `href` schemes.
+function lexicalWithLink(prefix: string, linkText: string, url: string) {
+  return {
+    root: {
+      type: 'root',
+      format: '' as const,
+      indent: 0,
+      version: 1,
+      direction: 'ltr' as const,
+      children: [
+        {
+          type: 'paragraph',
+          format: '' as const,
+          indent: 0,
+          version: 1,
+          direction: 'ltr' as const,
+          children: [
+            {
+              type: 'text',
+              format: 0,
+              style: '',
+              mode: 'normal',
+              detail: 0,
+              text: prefix,
+              version: 1,
+            },
+            {
+              type: 'link',
+              format: '' as const,
+              indent: 0,
+              version: 3,
+              direction: 'ltr' as const,
+              fields: { linkType: 'custom', url, newTab: false },
+              children: [
+                {
+                  type: 'text',
+                  format: 0,
+                  style: '',
+                  mode: 'normal',
+                  detail: 0,
+                  text: linkText,
+                  version: 1,
+                },
+              ],
+            },
           ],
         },
       ],
@@ -336,5 +390,88 @@ describe('Case study detail — per-case SEO metadata', () => {
     })
     const robots = meta.robots as { index?: boolean } | undefined
     expect(robots?.index, 'a missing case must be noindex').toBe(false)
+  })
+})
+
+describe('Case study detail — JSON-LD injection safety (review finding 1)', () => {
+  it('escapes a hostile </script> title so it cannot break out of the ld+json block', async () => {
+    const evil = `Pwned </script><script>alert(1)</script> ${stamp}`
+    const slug = `evil-title-${stamp}`
+    await payload.create({
+      collection: 'case-studies',
+      data: { title: evil, slug, serviceCategory: 'general', _status: 'published' },
+      context: { disableRevalidate: true },
+    })
+
+    const html = await renderDetail(slug)
+
+    // The raw hostile markup must never appear verbatim — if it did it would execute.
+    expect(html, 'the raw </script><script> payload must not appear').not.toContain(
+      '</script><script>alert(1)</script>',
+    )
+
+    // Non-greedy capture stops at the FIRST </script>. With escaping, the title's
+    // `<` are `<`, so the first literal </script> is the block's own closing tag
+    // → the JSON is complete and parses; without escaping it would truncate and throw.
+    const block = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i)
+    expect(block, 'an ld+json block is present').toBeTruthy()
+    expect(block![1], 'the block escapes `<` to its unicode form').toContain('\\u003c')
+    const parsed = JSON.parse(block![1])
+    expect(parsed.headline, 'headline decodes back to the intact title').toBe(evil)
+  })
+})
+
+describe('Case study rich text — link scheme sanitization (review finding 3)', () => {
+  // Renders RichTextBody directly (no DB round-trip) — the render is the defense, and
+  // this isolates it. renderToStaticMarkup accepts the element the component returns.
+  const renderBody = (data: ReturnType<typeof lexicalWithLink>): string =>
+    renderToStaticMarkup(RichTextBody({ data }))
+
+  it('neutralizes a javascript: link — keeps the text, drops the anchor', () => {
+    const html = renderBody(
+      lexicalWithLink('See ', 'this link', 'javascript:alert(document.cookie)'),
+    )
+    expect(html, 'anchor text is preserved').toContain('this link')
+    expect(html, 'no javascript: href is emitted').not.toContain('javascript:')
+    expect(html, 'no anchor element at all for an unsafe scheme').not.toMatch(/<a\b/)
+  })
+
+  it('neutralizes a data: link too', () => {
+    const html = renderBody(lexicalWithLink('x ', 'y', 'data:text/html,<script>alert(1)</script>'))
+    expect(html, 'no anchor for a data: URL').not.toMatch(/<a\b/)
+    expect(html).toContain('y')
+  })
+
+  it('renders an https link as a normal anchor', () => {
+    const html = renderBody(lexicalWithLink('See ', 'the report', 'https://example.com/report'))
+    expect(html, 'a safe scheme is anchored').toContain('href="https://example.com/report"')
+    expect(html).toContain('the report')
+  })
+
+  it('renders a relative link as an anchor (no scheme is safe)', () => {
+    const html = renderBody(lexicalWithLink('See ', 'about', '/about'))
+    expect(html).toContain('href="/about"')
+  })
+})
+
+describe('Case study revalidation hooks — never-throw (review finding 2)', () => {
+  it('a publish with hooks enabled (no disableRevalidate) commits without throwing', async () => {
+    const slug = `hooked-publish-${stamp}`
+    // No `context.disableRevalidate`: the afterChange hook runs its revalidatePath
+    // path outside a Next request scope (this node env), where revalidatePath throws.
+    // The hook's try/catch must swallow it so the already-committed write still
+    // resolves — a throw here would 500 an otherwise-successful mutation.
+    const created = await payload.create({
+      collection: 'case-studies',
+      data: { title: `Hooked ${stamp}`, slug, serviceCategory: 'general', _status: 'published' },
+    })
+    expect(created?.slug, 'the mutation resolved despite the hook running').toBe(slug)
+
+    const found = await payload.find({
+      collection: 'case-studies',
+      where: { slug: { equals: slug } },
+      overrideAccess: true,
+    })
+    expect(found.totalDocs, 'the row actually committed').toBe(1)
   })
 })

@@ -22,6 +22,58 @@ import type { CaseStudy } from '@/payload-types'
 // children, an index signature), so one documented cast at the boundary is honest.
 type CaseStudyRichText = NonNullable<CaseStudy['intro']>
 
+const SAFE_SCHEMES = new Set(['http', 'https', 'mailto', 'tel'])
+
+// Only these schemes may become a live `href`. Editor rich text is API-postable, so
+// the default Lexical link converter — which renders `node.fields.url` verbatim —
+// would turn a `javascript:` (or `data:`, `vbscript:`) URL into a live XSS anchor.
+// A URL with no scheme (relative path, `#fragment`, `?query`) is safe. Schemes are
+// matched by exact allowlist, so anything obfuscated (`JavaScript:`, `java\tscript:`)
+// is rejected by default.
+function isSafeHref(href: unknown): href is string {
+  if (typeof href !== 'string') return false
+  const value = href.trim()
+  if (!value) return false
+  const colon = value.indexOf(':')
+  const pathStart = value.search(/[/?#]/)
+  // No scheme before the first path/query/fragment delimiter → relative → safe.
+  if (colon === -1 || (pathStart !== -1 && pathStart < colon)) return true
+  return SAFE_SCHEMES.has(value.slice(0, colon).toLowerCase())
+}
+
+// A link/autolink node's resolvable, scheme-safe href, or null to neutralize it
+// (keep the anchor text, drop the anchor). Internal links have no resolver configured
+// here, so they are treated as plain text rather than dead `#` anchors.
+function safeLinkHref(node: {
+  fields?: { url?: string | null; linkType?: string | null } | null
+}): string | null {
+  if (node.fields?.linkType === 'internal') return null
+  return isSafeHref(node.fields?.url) ? node.fields.url : null
+}
+
+function SanitizedLink({
+  node,
+  children,
+}: {
+  node: {
+    fields?: { url?: string | null; linkType?: string | null; newTab?: boolean | null } | null
+  }
+  children: React.ReactNode
+}) {
+  const href = safeLinkHref(node)
+  if (!href) return <>{children}</>
+  const newTab = node.fields?.newTab
+  return (
+    <a
+      href={href}
+      target={newTab ? '_blank' : undefined}
+      rel={newTab ? 'noopener noreferrer' : undefined}
+    >
+      {children}
+    </a>
+  )
+}
+
 export function RichTextBody({ data }: { data: CaseStudyRichText }) {
   return (
     <RichText
@@ -69,6 +121,14 @@ export function RichTextBody({ data }: { data: CaseStudyRichText }) {
             </Tag>
           )
         },
+        // Sanitize link schemes: an unsafe href (e.g. `javascript:`) renders as plain
+        // text (anchor dropped), a safe one as a normal anchor. Covers both node types.
+        link: ({ node, nodesToJSX }) => (
+          <SanitizedLink node={node}>{nodesToJSX({ nodes: node.children })}</SanitizedLink>
+        ),
+        autolink: ({ node, nodesToJSX }) => (
+          <SanitizedLink node={node}>{nodesToJSX({ nodes: node.children })}</SanitizedLink>
+        ),
       })}
     />
   )

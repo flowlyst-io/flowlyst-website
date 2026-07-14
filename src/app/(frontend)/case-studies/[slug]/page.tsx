@@ -8,6 +8,7 @@ import config from '@payload-config'
 import type { CaseStudy, Media } from '@/payload-types'
 import { FinalCTA } from '@/components/FinalCTA'
 import { getServerURL } from '@/utilities/serverURL'
+import { serializeJsonLd } from '@/utilities/jsonLd'
 import { RichTextBody } from './RichTextBody'
 
 /**
@@ -179,9 +180,11 @@ export default async function CaseStudyDetailPage({
 
   return (
     <>
+      {/* serializeJsonLd escapes `<` so an editor-authored title containing
+          `</script>` can't break out of this block (stored XSS). */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(articleSchema) }}
       />
 
       {/* HEADER — BlogPostPage reader shell: back link, service eyebrow, H1, meta. */}
