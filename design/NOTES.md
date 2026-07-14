@@ -12,6 +12,8 @@ Pulled via DesignSync by the lead session on 2026-07-13, for issues #3 (design f
 | assets/flowlyst-logo.svg | Flowlyst Design System | assets/flowlyst-logo.svg — the brand mark as vector; white variant = same path, white fill (design uses a CSS invert filter on the PNG mark for dark surfaces) |
 | site/home.jsx | flowlyst Website | home.jsx — the settled homepage composition (Direction C productionized); `flowlyst-homepage-hifi.html` upstream is only the A/B/C exploration canvas, NOT the settled page — `index.html` + `home.jsx` + `site.jsx` + `site.css` is the real reference (pulled 2026-07-13 for #6) |
 | site/index.html | flowlyst Website | index.html — thin render harness for home.jsx (CDN React + Babel); open locally to render the reference for pixel comparison |
+| site/pages.jsx | flowlyst Website | pages.jsx — settled Direction C compositions for About, Blog index/post, Testimonials, Case studies, Request demo, Contact, Legal; the standalone `about.html` etc. upstream are earlier exploration, this is the reference (pulled 2026-07-13 for #7) |
+| site/about-preview.html | — (local glue, not an upstream snapshot) | thin render harness for AboutPage, modeled on index.html; loads site.jsx + home.jsx + pages.jsx |
 | site/solutions.jsx | flowlyst Website | solutions.jsx — settled Direction C compositions for the 4 solution pages (BudgetPage, TrainingPage, ConsultingPage, KeynotesPage); the standalone `budget-software.html` etc. upstream are earlier exploration, this is the reference (pulled 2026-07-13 for #8) |
 | site/budget-preview.html | — (local glue, not an upstream snapshot) | thin render harness for BudgetPage, modeled on index.html; loads site.jsx + home.jsx (ProductMock) + solutions.jsx |
 

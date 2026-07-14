@@ -229,6 +229,33 @@ test.describe('Homepage — accessibility smoke', () => {
   })
 })
 
+// ------------- Responsive nav — WCAG 1.4.10 reflow (issue #45) ---------------
+
+test.describe('Homepage — nav folds to the hamburger before it overflows', () => {
+  // The full horizontal nav (brand + 6 links + Contact + Request-a-demo CTA)
+  // needs ~809px; site.css engaged the burger only at <=680px, so at iPad-portrait
+  // 768 the nav forced documentElement.scrollWidth to 809 — a page-level horizontal
+  // scrollbar (WCAG 1.4.10 reflow fail) on every page. styles.css raises the nav's
+  // fold breakpoint to <=820px. This guard pins that: at 768 the page must not
+  // scroll horizontally and the burger — not the desktop link row — is the nav
+  // control. Anchored to the 809px overflow condition, not the current link count.
+  test('at 768px width there is no horizontal overflow and the burger is the nav control', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 768, height: 1024 })
+    await page.goto('/')
+
+    // No page-level horizontal scrollbar: scrollable width equals the viewport.
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    expect(scrollWidth, 'documentElement.scrollWidth must equal the 768px viewport').toBe(768)
+
+    // The hamburger is shown and the desktop link row is folded into the closed
+    // drawer (display:none until opened), so the burger is THE nav control here.
+    await expect(page.locator('.nav__burger')).toBeVisible()
+    await expect(page.locator('.nav__links a').first()).toBeHidden()
+  })
+})
+
 // ----------------- WCAG 1.4.3 contrast (brand-green bands) ------------------
 
 test.describe('Homepage — WCAG 1.4.3 contrast on the brand-green bands', () => {
