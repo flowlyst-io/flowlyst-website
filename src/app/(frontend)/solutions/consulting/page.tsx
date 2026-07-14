@@ -361,6 +361,16 @@ export default function ConsultingPage() {
               </div>
             ))}
           </div>
+          {/* One-time / by-exception framing for the free assessment (PRD §4.3:
+              flowlyst doesn't routinely give free assessments — it's an
+              introductory engagement to consulting, not a recurring service).
+              The assessment CTA itself lives in the shared SolutionHero, so this
+              clarifier sits at the page's assessment touchpoint — the "Assess"
+              step above. Uses the existing `.small` support class; no new styles. */}
+          <p className="small" style={{ marginTop: 32, maxWidth: '64ch' }}>
+            The free 30-minute assessment is a one-time, by-exception introduction to the consulting
+            offering — not a recurring service.
+          </p>
         </div>
       </section>
 
