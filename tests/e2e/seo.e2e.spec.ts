@@ -96,8 +96,13 @@ test.describe('SEO surface — /robots.txt', () => {
     }
     expect(aiBlock, 'AI crawlers are allowed at root').toMatch(/Allow:\s*\//i)
     expect(aiBlock, 'AI crawlers are NOT root-disallowed').not.toMatch(/Disallow:\s*\/\s*$/im)
-    // …but the admin is still off-limits to them (disallows repeated in their group).
-    expect(aiBlock, 'AI crawlers still blocked from /admin').toMatch(/Disallow:\s*\/admin/i)
+    // …but every non-content surface is still off-limits to them (the disallows are
+    // repeated in the AI group, since a crawler ignores the `*` group's rules).
+    for (const path of ['/admin', '/api', '/preview']) {
+      expect(aiBlock, `AI crawlers still blocked from ${path}`).toMatch(
+        new RegExp(`Disallow:\\s*${path}`, 'i'),
+      )
+    }
   })
 })
 

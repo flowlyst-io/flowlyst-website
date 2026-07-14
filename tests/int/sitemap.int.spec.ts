@@ -147,13 +147,20 @@ describe('sitemap() — static routes', () => {
     }
   })
 
-  it('every entry is an absolute URL and carries a lastModified date', async () => {
+  it('every entry is an absolute URL', async () => {
     const entries = await sitemap()
     expect(entries.length, 'sitemap is non-empty').toBeGreaterThan(0)
     for (const entry of entries) {
       expect(entry.url, `${entry.url} is absolute`).toMatch(/^https?:\/\//)
-      expect(entry.lastModified, `${entry.url} has lastModified`).toBeTruthy()
     }
+  })
+
+  it('static entries omit lastModified (no misleading per-request timestamp)', async () => {
+    const entries = await sitemap()
+    const home = entries.find((e) => e.url === `${base}/`)
+    const about = entries.find((e) => e.url === `${base}/about`)
+    expect(home?.lastModified, 'homepage carries no lastModified').toBeUndefined()
+    expect(about?.lastModified, '/about carries no lastModified').toBeUndefined()
   })
 })
 

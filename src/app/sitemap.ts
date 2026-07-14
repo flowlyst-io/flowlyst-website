@@ -44,55 +44,69 @@ const STATIC_PATHS = [
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getServerURL()
-  const payload = await getPayload({ config })
 
-  // Published-only: `overrideAccess: false` runs each collection's `publishedOrStaff`
-  // read access with no user, so drafts never enter the sitemap. `select` keeps the
-  // query to the two fields we emit; `pagination: false` returns the full set.
-  const [posts, cases] = await Promise.all([
-    payload.find({
-      collection: 'blog-posts',
-      where: { _status: { equals: 'published' } },
-      overrideAccess: false,
-      depth: 0,
-      limit: 1000,
-      pagination: false,
-      select: { slug: true, updatedAt: true },
-    }),
-    payload.find({
-      collection: 'case-studies',
-      where: { _status: { equals: 'published' } },
-      overrideAccess: false,
-      depth: 0,
-      limit: 1000,
-      pagination: false,
-      select: { slug: true, updatedAt: true },
-    }),
-  ])
-
-  const now = new Date()
-
-  // `${base}${path}` yields an absolute URL for every path, including '/' → `${base}/`
-  // (base carries no trailing slash). lastModified on the static pages tracks the
-  // deploy; the dynamic entries carry the doc's own `updatedAt`.
+  // The static routes are emitted UNCONDITIONALLY — they carry no DB dependency, so the
+  // sitemap always lists them even if the content queries below fail. No `lastModified`:
+  // these pages have no single meaningful change timestamp, and stamping a per-request
+  // "now" would falsely signal to crawlers that they change on every crawl.
+  // `${base}${path}` is absolute for every path, including '/' → `${base}/` (base carries
+  // no trailing slash).
   const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
     url: `${base}${path}`,
-    lastModified: now,
   }))
 
-  const postEntries: MetadataRoute.Sitemap = posts.docs
-    .filter((doc) => Boolean(doc.slug))
-    .map((doc) => ({
-      url: `${base}/blog/${doc.slug}`,
-      lastModified: doc.updatedAt ? new Date(doc.updatedAt) : now,
-    }))
+  // Published blog posts + case studies. Guarded: a request-time DB error degrades to a
+  // static-only sitemap (log and continue) rather than a 500 — the same never-throw
+  // posture the content collections' revalidation hooks take. `overrideAccess: false`
+  // runs each collection's `publishedOrStaff` read access, so drafts never appear;
+  // `select` keeps the query to the two fields we emit. Each dynamic entry carries the
+  // doc's own `updatedAt` as `lastModified` — a real change signal, unlike the static
+  // pages.
+  let dynamicEntries: MetadataRoute.Sitemap = []
+  try {
+    const payload = await getPayload({ config })
+    const [posts, cases] = await Promise.all([
+      payload.find({
+        collection: 'blog-posts',
+        where: { _status: { equals: 'published' } },
+        overrideAccess: false,
+        depth: 0,
+        limit: 1000,
+        pagination: false,
+        select: { slug: true, updatedAt: true },
+      }),
+      payload.find({
+        collection: 'case-studies',
+        where: { _status: { equals: 'published' } },
+        overrideAccess: false,
+        depth: 0,
+        limit: 1000,
+        pagination: false,
+        select: { slug: true, updatedAt: true },
+      }),
+    ])
 
-  const caseEntries: MetadataRoute.Sitemap = cases.docs
-    .filter((doc) => Boolean(doc.slug))
-    .map((doc) => ({
-      url: `${base}/case-studies/${doc.slug}`,
-      lastModified: doc.updatedAt ? new Date(doc.updatedAt) : now,
-    }))
+    const postEntries: MetadataRoute.Sitemap = posts.docs
+      .filter((doc) => Boolean(doc.slug))
+      .map((doc) => ({
+        url: `${base}/blog/${doc.slug}`,
+        ...(doc.updatedAt ? { lastModified: new Date(doc.updatedAt) } : {}),
+      }))
 
-  return [...staticEntries, ...postEntries, ...caseEntries]
+    const caseEntries: MetadataRoute.Sitemap = cases.docs
+      .filter((doc) => Boolean(doc.slug))
+      .map((doc) => ({
+        url: `${base}/case-studies/${doc.slug}`,
+        ...(doc.updatedAt ? { lastModified: new Date(doc.updatedAt) } : {}),
+      }))
+
+    dynamicEntries = [...postEntries, ...caseEntries]
+  } catch (err) {
+    // console (not payload.logger): `getPayload` itself may be what failed, leaving no
+    // logger instance. There is no eslint no-console rule; Next surfaces this server-side.
+    // The static routes are already built, so the response is still a valid sitemap.
+    console.error('[sitemap] content query failed; serving static routes only:', err)
+  }
+
+  return [...staticEntries, ...dynamicEntries]
 }
