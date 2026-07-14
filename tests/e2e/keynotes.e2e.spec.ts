@@ -235,17 +235,34 @@ test.describe('Keynotes page — server-rendered content (raw HTML, no JS)', () 
     const html = await fetchHtml(request, PATH)
     expect(html, 'hero eyebrow').toContain('conference sessions')
     expect(html, 'hero headline').toContain('A keynote on AI in')
-    expect(html, 'hero lead').toContain(
-      'Aziz Aghayev speaks at state and national association events',
-    )
+    expect(html, 'hero lead').toContain('speaks at state and national association events')
+    // PRD-backed speaker credentials are server-rendered (invariant a). Clean-ASCII
+    // fragments — the lead wraps them in em-dashes and a curly apostrophe.
+    expect(html, 'hero credential — former school CFO').toContain('former school CFO')
+    expect(html, 'hero credential — years in K-12 finance').toContain('15+ years in K-12 finance')
     expect(html, 'hero primary CTA label').toContain('Submit a speaking request')
+    // Secondary CTA is a server-rendered anchor to the About page.
+    expect(html, 'Meet Aziz -> /about anchor in server HTML').toMatch(
+      /<a\b[^>]*href="\/about"[^>]*>\s*Meet Aziz/i,
+    )
   })
 
-  test('past venues are server-rendered', async ({ request }) => {
+  test('the venues strip is exactly the three real venues (no AASA / Regional PD overclaim)', async ({
+    request,
+  }) => {
     const html = await fetchHtml(request, PATH)
-    for (const venue of ['ASBO International', 'NJASBO', 'CPS', 'AASA', 'Regional PD']) {
+    // The three venues attributable to Aziz are server-rendered.
+    for (const venue of ['ASBO International', 'NJASBO', 'CPS']) {
       expect(html, `venue "${venue}" must be in the server HTML`).toContain(venue)
     }
+    // "Regional PD" was dropped as a venue claim and must not reappear anywhere on the
+    // page. (Audiences' "Regional service-agency PD" is a different, non-matching string.)
+    expect(html, '"Regional PD" venue claim removed page-wide').not.toContain('Regional PD')
+    // AASA is a PRD audience example, NOT a venue — scope the negative to the venue
+    // strip, since AASA legitimately remains in the audiences copy elsewhere.
+    const strip = html.match(/data-testid="keynotes-venues"[\s\S]*?<\/section>/i)
+    expect(strip, 'venues section present in the server HTML').toBeTruthy()
+    expect(strip![0], 'AASA is not presented as a venue tile').not.toContain('AASA')
   })
 
   test('the speaking topics are server-rendered', async ({ request }) => {
@@ -613,5 +630,24 @@ test.describe('Keynotes page — responsive & accessibility smoke', () => {
     const submit = page.getByRole('button', { name: /submit speaking request/i })
     await submit.focus()
     await expect(submit).toBeFocused()
+  })
+
+  test('the venues strip renders exactly three tiles in order', async ({ page }) => {
+    await page.goto(PATH)
+    // toHaveText(array) asserts both the count (exactly 3) and each tile's text/order.
+    const tiles = page.locator('[data-testid="keynotes-venues"] .stat-band__grid > div')
+    await expect(tiles).toHaveText(['ASBO International', 'NJASBO', 'CPS'])
+  })
+
+  test('the "Meet Aziz" secondary CTA links to /about and is keyboard-reachable', async ({
+    page,
+  }) => {
+    await page.goto(PATH)
+    const link = page
+      .locator('[data-testid="solution-hero"]')
+      .getByRole('link', { name: /meet aziz/i })
+    await expect(link, 'Meet Aziz CTA points at the About page').toHaveAttribute('href', '/about')
+    await link.focus()
+    await expect(link).toBeFocused()
   })
 })
