@@ -296,7 +296,7 @@ describe('Lead capture (demo requests inbox)', () => {
   it('accepts a public submission defaulting to status "pending"', async () => {
     const created = await payload.create({
       collection: 'demo-requests',
-      data: { fullName: 'Sam Lead', workEmail: `sam-${stamp}@district.k12.us` },
+      data: { fullName: 'Sam Lead', workEmail: `sam-${stamp}@district.k12.us`, consent: true },
       overrideAccess: false, // anonymous
     })
     expect(created.status).toBe('pending')
@@ -308,6 +308,7 @@ describe('Lead capture (demo requests inbox)', () => {
       data: {
         fullName: 'Injector',
         workEmail: `inject-${stamp}@district.k12.us`,
+        consent: true,
         status: 'completed', // attacker-supplied triage status …
         internalNotes: 'i set this myself', // … and internal notes
       },
