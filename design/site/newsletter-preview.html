@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>flowlyst — Newsletter signup (design reference)</title>
+<link rel="stylesheet" href="site.css"/>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- Focused design reference for the `/blog` NEWSLETTER section
+     (design/site/pages.jsx `BlogIndexPage`). The production component
+     src/components/NewsletterSignup.tsx renders the input + Subscribe row; the
+     mount (issue #17 / the blog page) provides this sage band, eyebrow, heading
+     and lead. Rendered standalone here to avoid dragging in the Phase-4 blog
+     page this branch does not build. -->
+<script type="text/babel">
+function NewsletterSection() {
+  return (
+    <section className="section section--sage" style={{ padding: '120px 56px' }}>
+      <div className="container" style={{ maxWidth: 720, textAlign: 'center' }}>
+        <div className="eyebrow mb-32" style={{ justifyContent: 'center' }}>Newsletter</div>
+        <h2 className="h2" style={{ marginBottom: 20 }}>Get our writing <em>in your inbox.</em></h2>
+        <p className="lead" style={{ marginBottom: 32 }}>One email a month. AI in K-12, no fluff.</p>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', maxWidth: 480, margin: '0 auto' }}>
+          <input className="input" placeholder="you@district.k12.us" style={{ flex: 1 }}/>
+          <button className="btn btn--primary">Subscribe</button>
+        </div>
+      </div>
+    </section>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<NewsletterSection/>);
+</script>
+</body>
+</html>
