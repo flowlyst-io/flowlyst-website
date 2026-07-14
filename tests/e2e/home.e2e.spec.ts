@@ -1,4 +1,4 @@
-import { test, expect, type APIRequestContext } from '@playwright/test'
+import { test, expect, type APIRequestContext, type Locator } from '@playwright/test'
 
 /**
  * Homepage — server-rendering, SEO surface, and accessibility smoke (issue #6).
@@ -226,5 +226,83 @@ test.describe('Homepage — accessibility smoke', () => {
     ).toBe(true)
     await cta.focus()
     await expect(cta).toBeFocused()
+  })
+})
+
+// ----------------- WCAG 1.4.3 contrast (brand-green bands) ------------------
+
+test.describe('Homepage — WCAG 1.4.3 contrast on the brand-green bands', () => {
+  // White on brand-green (#00A568) is 3.19:1 — it clears the 3:1 bar for WCAG
+  // "large text" but NOT the 4.5:1 normal-text bar. So the `.section--green`
+  // amendment in src/app/(frontend)/styles.css (~line 651) is load-bearing: body
+  // runs must render at large-text size, the ghost-light button label at large-text
+  // bold, and the yellow accents recolored to full white (yellow can't reach 3:1 at
+  // any size). If any run later shrinks below the large-text floor or drops opacity,
+  // it silently regresses to an AA fail with nothing else to catch it — this guard
+  // does. Anchored to the amendment + reviewer checklist, not the current markup.
+  const GREEN_BANDS = ['home-stats', 'home-final-cta']
+  const WHITE = 'rgb(255, 255, 255)'
+
+  // WCAG "large text": >=18pt (24px) regular, or >=14pt (18.66px) bold (weight >=700).
+  const isLargeText = (fontSizePx: number, fontWeight: number) =>
+    fontSizePx >= 24 || (fontSizePx >= 18.66 && fontWeight >= 700)
+
+  const computed = (
+    locator: Locator,
+  ): Promise<{ fontSize: number; fontWeight: number; color: string }> =>
+    locator.evaluate((el) => {
+      const s = getComputedStyle(el)
+      return {
+        fontSize: parseFloat(s.fontSize),
+        fontWeight: Number(s.fontWeight),
+        color: s.color,
+      }
+    })
+
+  for (const band of GREEN_BANDS) {
+    test(`${band}: body copy renders as WCAG large text at full-opacity white`, async ({
+      page,
+    }) => {
+      await page.goto('/')
+      const paras = page.locator(`[data-testid="${band}"] p`)
+      const n = await paras.count()
+      expect(n, `${band} must have at least one body <p>`).toBeGreaterThan(0)
+      for (let i = 0; i < n; i++) {
+        const c = await computed(paras.nth(i))
+        expect(
+          isLargeText(c.fontSize, c.fontWeight),
+          `${band} <p>[${i}] must be WCAG large text (>=24px, or >=18.66px bold) — got ${c.fontSize}px/${c.fontWeight}`,
+        ).toBe(true)
+        expect(c.color, `${band} <p>[${i}] must be full-opacity white (no alpha)`).toBe(WHITE)
+      }
+    })
+
+    test(`${band}: .accent--yellow runs are recolored to full white on green`, async ({ page }) => {
+      await page.goto('/')
+      const accents = page.locator(`[data-testid="${band}"] .accent--yellow`)
+      const n = await accents.count()
+      expect(n, `${band} must have at least one .accent--yellow run`).toBeGreaterThan(0)
+      for (let i = 0; i < n; i++) {
+        const c = await computed(accents.nth(i))
+        expect(c.color, `${band} .accent--yellow[${i}] must be full white (yellow fails 3:1)`).toBe(
+          WHITE,
+        )
+      }
+    })
+  }
+
+  test('the green-band ghost-light button label is large-text bold at full white', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    // The ghost-light button lives in the final-CTA band (the stat band has none).
+    const btn = page.locator('[data-testid="home-final-cta"] .btn--ghost-light')
+    await expect(btn).toHaveCount(1)
+    const c = await computed(btn)
+    expect(
+      c.fontSize >= 18.66 && c.fontWeight >= 700,
+      `ghost-light label must be >=18.66px at weight >=700 — got ${c.fontSize}px/${c.fontWeight}`,
+    ).toBe(true)
+    expect(c.color, 'ghost-light label must be full-opacity white').toBe(WHITE)
   })
 })
