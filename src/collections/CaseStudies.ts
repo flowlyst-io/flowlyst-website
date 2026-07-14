@@ -109,5 +109,65 @@ export const CaseStudies: CollectionConfig = {
         return data
       },
     ],
+    // On-demand revalidation (issue #1 decision). Payload 3 runs in-process with
+    // Next, so this is a direct `revalidatePath` call — no webhook, no HTTP
+    // round-trip, no cron. A publish/edit/unpublish/delete refreshes the index and
+    // the affected story path without a redeploy.
+    //
+    // `next/cache` is imported *lazily inside the guard*, not at module top level, on
+    // purpose: this collection is loaded eagerly when the Payload config initializes,
+    // including under the E2E dev server, which Playwright spawns with a `tsx/esm`
+    // loader that can't resolve the `next/cache` subpath at load time. Deferring the
+    // import means it only resolves when a publish/delete actually revalidates — in
+    // the real Next runtime (Turbopack/prod), where it resolves fine.
+    //
+    // Two layers keep the mutation from ever failing on revalidation:
+    //  - `context.disableRevalidate` lets Local-API callers (test seeding/teardown,
+    //    scripted seeds) skip it entirely.
+    //  - the try/catch makes it never-throw for callers that *can't* set that flag —
+    //    notably scheduled publish (`schedulePublish: true`), which runs the hook
+    //    outside a request scope where `revalidatePath` throws. The DB write has
+    //    already committed by afterChange/afterDelete, so a throw here would 500 an
+    //    otherwise-successful mutation; we log and continue instead. This is the
+    //    official Payload website-template pattern; seeds pass
+    //    `context: { disableRevalidate: true }`.
+    afterChange: [
+      async ({ doc, previousDoc, req: { context, payload } }) => {
+        if (!context.disableRevalidate) {
+          try {
+            const { revalidatePath } = await import('next/cache')
+            revalidatePath('/case-studies')
+            if (doc?.slug) revalidatePath(`/case-studies/${doc.slug}`)
+            // A slug rename leaves the old path stale — refresh it too so it 404s.
+            if (previousDoc?.slug && previousDoc.slug !== doc?.slug) {
+              revalidatePath(`/case-studies/${previousDoc.slug}`)
+            }
+          } catch (err) {
+            payload.logger.warn(
+              { err },
+              'Case study revalidation skipped (called outside a Next request scope).',
+            )
+          }
+        }
+        return doc
+      },
+    ],
+    afterDelete: [
+      async ({ doc, req: { context, payload } }) => {
+        if (!context.disableRevalidate) {
+          try {
+            const { revalidatePath } = await import('next/cache')
+            revalidatePath('/case-studies')
+            if (doc?.slug) revalidatePath(`/case-studies/${doc.slug}`)
+          } catch (err) {
+            payload.logger.warn(
+              { err },
+              'Case study revalidation skipped (called outside a Next request scope).',
+            )
+          }
+        }
+        return doc
+      },
+    ],
   },
 }
