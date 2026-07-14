@@ -294,6 +294,20 @@ test.describe('Homepage — nav folds to the hamburger before it wraps', () => {
       rowHeight,
       'nav links row must be a single line (<=35px), not wrapped',
     ).toBeLessThanOrEqual(35)
+
+    // 961px specifically guards the min-width:960/max-width:963 gutter rule: at 961
+    // the comp's 56px gutter would leave the row 1px short and wrap it (960 is saved
+    // by the tablet block's 28px gutter, so the assertion above would still pass if
+    // that rule were deleted). This is the pixel that actually breaks without it.
+    await page.setViewportSize({ width: 961, height: 900 })
+    await page.evaluate(() => document.fonts.ready)
+    const rowHeight961 = await page
+      .locator('.nav__links')
+      .evaluate((el) => el.getBoundingClientRect().height)
+    expect(
+      rowHeight961,
+      'full nav must stay single-line at 961px (the gutter-step edge)',
+    ).toBeLessThanOrEqual(35)
   })
 })
 
