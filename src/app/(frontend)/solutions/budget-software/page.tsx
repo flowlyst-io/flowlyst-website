@@ -88,8 +88,8 @@ const MODULES: Module[] = [
   },
   {
     num: '07',
-    title: 'Salary projections',
-    copy: 'Multi-input scenarios for the question that always lands in your lap.',
+    title: 'Custom dashboards',
+    copy: 'Tailored dashboards built on request — like multi-input salary projections. Available as a paid add-on.',
   },
   {
     num: '08',

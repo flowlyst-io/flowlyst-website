@@ -179,7 +179,7 @@ test.describe('Budget page — server-rendered content (raw HTML, no JS)', () =>
       'Supervisor rollup',
       'Pre-built dashboards',
       'Fast table export',
-      'Salary projections',
+      'Custom dashboards',
       'AI budget analysis',
     ]
     for (const title of modules) {
