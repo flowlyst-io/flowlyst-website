@@ -12,6 +12,7 @@ import { AuthorAvatar, PostThumb } from '@/components/blog/BlogArt'
 import { ArticleBody } from '@/components/blog/ArticleBody'
 import { categoryLabel, formatPostDate } from '@/components/blog/format'
 import { getServerURL } from '@/utilities/serverURL'
+import { serializeJsonLd } from '@/utilities/jsonLd'
 
 /**
  * Blog article reader (`/blog/[slug]`, PRD §7 / §9 / §11), built against the settled
@@ -169,7 +170,7 @@ export default async function BlogPostReaderPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(articleSchema) }}
       />
 
       {/* HEADER */}
