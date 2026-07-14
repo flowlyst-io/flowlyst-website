@@ -7,8 +7,14 @@ post body to Lexical rich text, and upserts the posts, their author, and their
 featured images into whatever database `DATABASE_URL` points at.
 
 The script is **idempotent** — re-running it updates the same 7 posts in place and
-creates zero duplicates (posts + author upsert by `slug`, media by `filename`). It is
-safe to run more than once.
+creates zero duplicates (posts + author upsert by `slug`; each post's featured image
+is reused via the post relationship on re-run). It is safe to run more than once.
+
+> **Precondition — run before production cutover.** The script fetches the posts from
+> the **live legacy `flowlyst.io`**, which only serves the legacy content **until the
+> new site cuts over**. Run this while the legacy site is still live. (After cutover it
+> fails safe — it would error on a missing field rather than import wrong content — but
+> there is nothing to re-fetch, so do the port first.)
 
 > **Operating model (why this is a runbook, not an automated step).** Staging and
 > production live on **Vercel + Neon**, which are **Tural-operated** — no agent has
