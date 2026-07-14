@@ -100,6 +100,7 @@ const OFFERINGS: Offering[] = [
 const CATEGORY_LABEL: Record<BlogPost['serviceCategory'], string> = {
   'ai-training': 'AI Training',
   'budget-software': 'Budget Software',
+  consulting: 'Consulting',
   general: 'General',
 }
 

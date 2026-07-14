@@ -100,6 +100,7 @@ export const BlogPosts: CollectionConfig = {
       options: [
         { label: 'AI Training', value: 'ai-training' },
         { label: 'Budget Software', value: 'budget-software' },
+        { label: 'Consulting', value: 'consulting' },
         { label: 'General', value: 'general' },
       ],
     },

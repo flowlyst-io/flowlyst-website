@@ -11,14 +11,15 @@ export type BlogCategory = BlogPost['serviceCategory']
 
 /**
  * Human label for a serviceCategory. The enum is the authoritative data model
- * (`src/collections/BlogPosts.ts`): only these three values exist. The design's
- * chip row also lists "Consulting", but no blog post can carry that category, so a
- * Consulting chip would be a dead filter — it is intentionally omitted (adjudicated
- * deviation, flagged for the design fold-in list).
+ * (`src/collections/BlogPosts.ts`) — these four values, matching the design's chip
+ * row (All + AI Training, Budget Software, Consulting, General). "Consulting" was
+ * added in #20 so legacy consulting posts can be tagged; the chip is now a live
+ * filter, not a dead one.
  */
 const CATEGORY_LABELS: Record<BlogCategory, string> = {
   'ai-training': 'AI Training',
   'budget-software': 'Budget Software',
+  consulting: 'Consulting',
   general: 'General',
 }
 

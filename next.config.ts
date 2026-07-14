@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
         pathname: '/api/media/file/**',
       },
     ],
+    // Vercel Blob is the production media store (see the vercelBlobStorage plugin in
+    // src/payload.config.ts). Allow next/image to optimize Blob-hosted media so uploads
+    // can move from <img> to next/image later; this pass is config-only and converts no
+    // usages. Blob public URLs are https://<store-id>.public.blob.vercel-storage.com/…
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+      },
+    ],
   },
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {

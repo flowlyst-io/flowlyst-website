@@ -40,14 +40,15 @@ const AUTHOR_TITLE = 'Founder & Test Byline'
 const AUTHOR_BIO = `Bio line for the E2E author ${stamp} — former school CFO, writes about AI in K-12.`
 
 // Two AI-Training posts (A newest → featured within that category, B older → grid /
-// related) and one General post (C). D is a DRAFT and must stay invisible. No
-// Budget-Software post is seeded, so `?category=budget-software` exercises the empty
-// state deterministically (no cross-file spec seeds budget-software blog posts; the
-// QE fresh-clone gate makes this exact).
+// related), one General post (C), and one Consulting post (E, the category added in
+// #20). D is a DRAFT and must stay invisible. No Budget-Software post is seeded, so
+// `?category=budget-software` exercises the empty state deterministically (no cross-file
+// spec seeds budget-software blog posts; the QE fresh-clone gate makes this exact).
 const POST_A_TITLE = `E2E AI Featured Post A ${stamp}`
 const POST_B_TITLE = `E2E AI Archive Post B ${stamp}`
 const POST_C_TITLE = `E2E General Post C ${stamp}`
 const POST_D_TITLE = `E2E Draft Post D ${stamp}`
+const POST_E_TITLE = `E2E Consulting Post E ${stamp}`
 
 const A_INTRO = `Intro body paragraph for post A ${stamp}.`
 const A_H2 = `Primary section heading ${stamp}`
@@ -185,10 +186,23 @@ async function seed(): Promise<void> {
       _status: 'draft',
     },
   })
+  const e = await payload.create({
+    collection: 'blog-posts',
+    data: {
+      title: POST_E_TITLE,
+      slug: `e2e-consulting-e-${stamp}`,
+      excerpt: `Excerpt for post E ${stamp}.`,
+      body: buildBody(`Intro E ${stamp}.`, `Heading E ${stamp}`, `Sub E ${stamp}`),
+      serviceCategory: 'consulting',
+      _status: 'published',
+      // Older than A so A stays the newest post (the site-wide featured post).
+      publishedAt: iso(3 * 24 * 60 * 60 * 1000),
+    },
+  })
 
   slugA = a.slug
   slugD = d.slug
-  createdPostIds.push(a.id, b.id, c.id, d.id)
+  createdPostIds.push(a.id, b.id, c.id, d.id, e.id)
 }
 
 async function cleanup(): Promise<void> {
@@ -287,20 +301,20 @@ test.describe('Blog index — server-rendered content (raw HTML, no JS)', () => 
     expect(html).toMatch(/Practical posts on AI/i)
   })
 
-  test('the category chips are rendered as links with the right hrefs (no Consulting)', async ({
+  test('the category chips are rendered as links with the right hrefs (incl. Consulting)', async ({
     request,
   }) => {
     const html = await fetchHtml(request, '/blog')
     // Chips are server-rendered <a> links (invariant a), one per real category + All.
     expect(html).toContain('href="/blog?category=ai-training"')
     expect(html).toContain('href="/blog?category=budget-software"')
+    // Consulting was added to the BlogPosts enum in #20, so its chip is a live filter.
+    expect(html).toContain('href="/blog?category=consulting"')
     expect(html).toContain('href="/blog?category=general"')
     // They carry the chip class, and the active chip (All, on the unfiltered view) is
     // the green variant marked aria-current. (Attribute order is React's, not ours.)
     expect(html).toMatch(/class="chip( chip--green)?"/i)
     expect(html).toContain('aria-current="page"')
-    // The BlogPosts enum has no "consulting" value, so no such filter link exists.
-    expect(html).not.toContain('href="/blog?category=consulting"')
   })
 
   test('published posts render and the DRAFT never appears', async ({ request }) => {
@@ -344,6 +358,17 @@ test.describe('Blog index — category filter (server-side via searchParams)', (
     expect(html, 'C (general) present').toContain(POST_C_TITLE)
     expect(html, 'A (ai-training) filtered out').not.toContain(POST_A_TITLE)
     expect(html, 'B (ai-training) filtered out').not.toContain(POST_B_TITLE)
+    expect(html, 'E (consulting) filtered out').not.toContain(POST_E_TITLE)
+  })
+
+  test('?category=consulting shows the Consulting post and excludes the others', async ({
+    request,
+  }) => {
+    const html = await fetchHtml(request, '/blog?category=consulting')
+    expect(html, 'E (consulting) present').toContain(POST_E_TITLE)
+    expect(html, 'A (ai-training) filtered out').not.toContain(POST_A_TITLE)
+    expect(html, 'B (ai-training) filtered out').not.toContain(POST_B_TITLE)
+    expect(html, 'C (general) filtered out').not.toContain(POST_C_TITLE)
   })
 
   test('?category=budget-software renders the empty state (no such posts seeded)', async ({
@@ -353,7 +378,7 @@ test.describe('Blog index — category filter (server-side via searchParams)', (
     expect(html, 'empty-state block present').toContain('data-testid="blog-empty"')
     expect(html).toMatch(/No posts in this category yet/i)
     // Cross-check: none of the seeded titles appear under this filter.
-    for (const t of [POST_A_TITLE, POST_B_TITLE, POST_C_TITLE]) {
+    for (const t of [POST_A_TITLE, POST_B_TITLE, POST_C_TITLE, POST_E_TITLE]) {
       expect(html).not.toContain(t)
     }
   })
