@@ -22,7 +22,7 @@ The **old site** — `naysaziz/flowlyst-landing`, a Next.js + React-Admin monore
 
 ## Operating model
 
-The **main session runs on Fable 5** as orchestrator/architect: it plans, briefs, adjudicates review findings, and owns quality. It never bulk-produces artifacts. **All production work runs through Opus 4.8 subagents** defined in [`.claude/agents/`](../.claude/agents/): `coder`, `tester`, `code-reviewer`, `quality-engineer`, `env-ops`, `ui-verifier`. The full contract is in [`CLAUDE.md`](../CLAUDE.md).
+The **main session runs on Fable 5** as orchestrator/architect: it plans, briefs, adjudicates review findings, and owns quality. It never bulk-produces artifacts. **All production work runs through Opus 4.8 agents** defined in [`.claude/agents/`](../.claude/agents/) — `coder`, `tester`, `code-reviewer`, `quality-engineer`, `env-ops`, `ui-verifier` — spawned as named teammates in the session's implicit team; five of the six carry `SendMessage` for peer messaging and direct reports to the orchestrator, with `env-ops` reporting one-way (amended 2026-07-14 — closes #44's spec lag; the SendMessage tool grants landed in 739c1b7). The full contract is in [`CLAUDE.md`](../CLAUDE.md).
 
 ## Stages (per work item)
 
@@ -33,9 +33,24 @@ pick issue → brief → build → test → independent review → quality gate 
 ## Gates
 
 1. **Code review.** An independent, fresh-context `code-reviewer` agent reviews every change. Blocking — findings are fixed before merge. The reviewer judges; it never writes.
-2. **Quality.** The `quality-engineer` builds, runs the full suite, and **exercises each acceptance criterion for real** (runs the dev server, hits routes, submits forms). No pass is ever reported that wasn't actually observed; unverifiable items are marked explicitly.
-3. **UI evidence.** Any user-visible change requires `ui-verifier` screenshot verdicts — **light + dark, mobile (390px) + desktop (1440px), and empty/loading/error states.** UI is never called "done" from code inspection, and Tural is never asked to confirm what a screenshot can prove.
+2. **Quality.** The `quality-engineer` builds, runs the full suite, and **exercises each acceptance criterion for real** (runs the dev server, hits routes, submits forms). No pass is ever reported that wasn't actually observed; unverifiable items are marked explicitly. The QE gate runs once, at the final pre-merge SHA (plus a merged-main sweep when phase-relevant) — never per intermediate SHA.
+3. **UI evidence.** Any user-visible change requires `ui-verifier` screenshot verdicts — **light + dark, mobile (390px) + desktop (1440px), and empty/loading/error states.** UI is never called "done" from code inspection, and Tural is never asked to confirm what a screenshot can prove. Delta rule: re-verification is required only when structure or layout changed; copy-only diffs need no new screenshot pass.
 4. **Human gate — decisions and experience, not merge.** PRs **self-merge** once gates 1–3 pass. Every user-visible change lands on the **staging deployment** with a **walkthrough note** (what changed, the staging URL, what to try); Tural reviews by using it and his feedback becomes issues. His explicit word is required **before**: production/domain cutover, spending money, deleting anything outside this repo, any outward-facing act (sending emails, publishing), and any brand/positioning call not already settled in the PRD. **Vercel and Neon are his to operate** — agents never run those commands or touch those accounts; they prepare the config and a runbook, and Tural executes it. *(Clarified 2026-07-13: the rule stands; only its permission machinery — the `ask` rules and the `infra-guard.sh` hook — is removed, on Tural's steer that sessions run in full auto mode with no prompts. His verbatim: "they're still not gonna use Vercel and Neon. Just, we don't need specific permissions in the settings file." The practical backstop is that no Vercel/Neon MCPs or credentials are configured for agents.)*
+
+## Cost discipline
+
+The 2026-07-14 session shipped good work but burned most of its coordination budget on overhead — a fleet of ~14 concurrent agents, orchestrator turns spent on bare idle pings, message-crossings that re-triggered finished work, and full re-verification cascades firing on copy-only diffs of a few lines. Six rules bind the orchestrator:
+
+1. **Max five concurrent agents.** More requires Tural's explicit go-ahead.
+2. **Agents report on completion or a blocker only** — no courtesy acks, no "standing by" notes. The orchestrator never acts on, or replies to, a bare idle notification.
+3. **Brief completely, then wait.** The orchestrator never messages an in-flight agent with nudges or new intel; follow-ups batch into the next assignment. If a message crosses completed work, the agent replies once with ground truth (current SHA + a pointer to existing evidence) and does not re-run builds or tests to re-prove it.
+4. **Delta-scoped verification.** Copy/docs-only diffs get a `code-reviewer` delta-confirm only; structural or layout changes add `ui-verifier` re-verification; the `quality-engineer` fresh-clone gate runs once at the final pre-merge SHA (plus a merged-main sweep when phase-relevant), never per intermediate SHA.
+5. **Retire agents when their lane completes.** A later fix pass gets a fresh spawn with a tight brief.
+6. **One lane, one agent — context is a liability.** Never assign a new work item to a warm agent to "reuse its context": the accumulated transcript is re-paid on every subsequent call and is dead weight for the new item. A new item gets a fresh spawn briefed against durable artifacts (the issue, docs, retrospectives, file paths). Reuse an active agent only for the immediate continuation of its current lane — e.g., its own fix pass. Before retiring an agent whose learnings the next item needs, have it write them into the durable home (retrospective, docs, or an issue comment) — knowledge lives in files, not transcripts.
+
+The orchestrator obeys the same economics: consume summaries, never transcripts, and at a phase boundary prefer handing off to a fresh session over marathoning with a large accumulated context.
+
+The same session's control is the proof this is affordable: a segment run with ~4–5 agents went brief → review → tests → quality gate → merge with equal quality, faster. Amended 2026-07-14 per #57 (Tural's steer).
 
 ## Autonomy
 

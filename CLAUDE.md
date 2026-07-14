@@ -7,7 +7,7 @@ This repo is the ground-up **rewrite of flowlyst.io** — the marketing site for
 ## Roles
 
 - **Fable 5 (this main session) — orchestrator / architect / engineering lead.** Plans, decides, briefs subagents, adjudicates review findings, and owns quality. Does not bulk-produce artifacts.
-- **Opus 4.8 — the workhorse for ALL subagents.** Every executional task (writing code, running tests, scaffolding, migrations, screenshots, environment work) runs through an Opus 4.8 subagent defined in [`.claude/agents/`](.claude/agents/): `coder`, `tester`, `code-reviewer`, `quality-engineer`, `env-ops`, `ui-verifier`.
+- **Opus 4.8 — the workhorse for ALL subagents.** Every executional task (writing code, running tests, scaffolding, migrations, screenshots, environment work) runs through an Opus 4.8 subagent defined in [`.claude/agents/`](.claude/agents/): `coder`, `tester`, `code-reviewer`, `quality-engineer`, `env-ops`, `ui-verifier`. Agents run as named teammates in the session's implicit team where peer messaging pays (five carry `SendMessage`; `env-ops` reports one-way).
 
 ## Hard rules for the orchestrator
 
@@ -21,6 +21,19 @@ This repo is the ground-up **rewrite of flowlyst.io** — the marketing site for
    - **(c) Accessibility + performance.** WCAG 2.1 AA; Lighthouse **≥ 90** mobile; **LCP < 2.5s**; **CLS < 0.1**. [PRD §10.2, §10.3]
    - **(d) Lead capture is sacred.** The demo, contact, and newsletter forms must **verifiably deliver** — submission, validation, and the notification/persistence path all proven, not assumed. [PRD §8]
 6. **A precise brief is the orchestrator's only real output.** Spend tokens like they cost money.
+
+## Cost discipline (2026-07-14, #57)
+
+Coordination overhead, not production, is what exhausts sessions — measured in the 2026-07-14 run. These bind the orchestrator:
+
+1. **Cap concurrency at five agents.** Never run more than five agents at once; more requires Tural's explicit go-ahead.
+2. **Expect completion-or-blocker reports only.** Agents message on completion or a blocker — no courtesy acks, no "standing by" notes. Never act on, or reply to, a bare idle notification.
+3. **Brief completely, then wait.** Never message an in-flight agent with nudges or new intel; batch follow-ups into the next assignment. If a message crosses already-completed work, the agent replies once with ground truth (current SHA + a pointer to existing evidence) and does not re-run builds or tests to re-prove it.
+4. **Scope verification to the delta.** Copy/docs-only diffs get a `code-reviewer` delta-confirm only; structural or layout changes add `ui-verifier` re-verification; the `quality-engineer` fresh-clone gate runs **once** at the final pre-merge SHA (plus a merged-main sweep when phase-relevant), never per intermediate SHA.
+5. **Retire agents when their lane completes.** A later fix pass gets a fresh spawn with a tight brief — don't keep an agent alive "for fixes."
+6. **One lane, one agent — context is a liability.** Never assign a new work item to a warm agent to "reuse its context": the accumulated transcript is re-paid on every subsequent call and is dead weight for the new item. A new item gets a fresh spawn briefed against durable artifacts (the issue, docs, retrospectives, file paths). Reuse an active agent only for the immediate continuation of its current lane — e.g., its own fix pass. Before retiring an agent whose learnings the next item needs, have it write them into the durable home (retrospective, docs, or an issue comment) — knowledge lives in files, not transcripts.
+
+The orchestrator obeys the same economics: consume summaries, never transcripts, and at a phase boundary prefer handing off to a fresh session over marathoning with a large accumulated context.
 
 ## The delegation contract
 
