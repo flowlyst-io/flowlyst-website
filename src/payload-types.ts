@@ -443,7 +443,7 @@ export interface Testimonial {
    */
   organization?: string | null;
   industry?: string | null;
-  serviceCategory?: ('ai-training' | 'budget-software' | 'consulting' | 'general') | null;
+  serviceCategory?: ('ai-training' | 'budget-software' | 'consulting' | 'keynotes' | 'general') | null;
   /**
    * Optional link to a video testimonial.
    */

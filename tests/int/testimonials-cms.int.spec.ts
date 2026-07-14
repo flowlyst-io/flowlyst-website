@@ -44,7 +44,7 @@ async function seed(data: {
   quote: string
   roleTitle?: string
   organization?: string
-  serviceCategory?: 'ai-training' | 'budget-software' | 'consulting' | 'general'
+  serviceCategory?: 'ai-training' | 'budget-software' | 'consulting' | 'keynotes' | 'general'
   status?: 'draft' | 'published'
   videoUrl?: string
 }): Promise<void> {
@@ -133,6 +133,18 @@ describe('Testimonials index — CMS rendering', () => {
     const html = await render({ service: 'budget-software' })
     expect(html, 'the budget-software quote renders under its filter').toContain(budget)
     expect(html, 'the consulting quote is filtered out').not.toContain(consulting)
+  })
+
+  it('filters by the keynotes category (added as a first-class service)', async () => {
+    const keynote = `KEYNOTE-${stamp}`
+    const consulting = `CONSULTING2-${stamp}`
+    await seed({ quote: keynote, roleTitle: 'Board Chair', serviceCategory: 'keynotes' })
+    await seed({ quote: consulting, roleTitle: 'HR Director', serviceCategory: 'consulting' })
+
+    const html = await render({ service: 'keynotes' })
+    expect(html, 'the keynotes quote renders under its filter').toContain(keynote)
+    expect(html, 'its tag uses the Keynotes label').toContain('Keynotes')
+    expect(html, 'a non-keynotes quote is filtered out').not.toContain(consulting)
   })
 
   it('filters by role — only the matching role renders', async () => {

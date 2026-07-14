@@ -130,7 +130,14 @@ test.describe('Testimonials — server-rendered content (raw HTML, no JS)', () =
   test('all service filter chips render as links in the server HTML', async ({ request }) => {
     const html = await fetchHtml(request, PATH)
     // The service chips are always present (schema-driven, not content-driven).
-    for (const label of ['All', 'AI Training', 'Budget Software', 'Consulting', 'General']) {
+    for (const label of [
+      'All',
+      'AI Training',
+      'Budget Software',
+      'Consulting',
+      'Keynotes',
+      'General',
+    ]) {
       expect(html, `service chip "${label}"`).toContain(label)
     }
     // Chips are real links (anchors carrying the filter query), server-rendered.

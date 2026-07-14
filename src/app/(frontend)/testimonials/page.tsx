@@ -22,15 +22,16 @@ import { FinalCTA } from '@/components/FinalCTA'
  * `src/collections/Testimonials.ts` keeps this and the other testimonial consumers
  * fresh (issue #1 "content revalidation mechanism" decision).
  *
- * Two design-vs-schema mismatches are shipped as-is and flagged for the orchestrator
- * (see the PR body), neither of which needs a migration:
- *  - the design's fourth service chip is "Keynotes", but the `serviceCategory` enum has
- *    no `keynotes` value (it has `general`); the service chips are rendered from the
- *    actual enum so every category is filter-reachable.
- *  - the design's "By role" chips ("CFO / Business Manager", …) are curated buckets over
- *    free-text roles that the comp never wires to data; reproducing them literally would
- *    require an invented mapping, so the role chips are derived from the distinct
- *    `roleTitle` values actually present in the published set and filtered by exact match.
+ * Two design-vs-schema calls, both adjudicated on issue #18:
+ *  - Keynotes is a first-class service category: `keynotes` was added to the
+ *    `serviceCategory` enum (additive `ADD VALUE` migration) and its chip renders per the
+ *    design. Service chips are rendered from the enum's own labels, so every category —
+ *    including the catch-all General — is filter-reachable.
+ *  - The second axis is role-only ("By role" in the Direction C design). The design's
+ *    role chips ("CFO / Business Manager", …) are curated buckets over free-text roles
+ *    that the comp never wires to data, so the chips are derived from the distinct
+ *    `roleTitle` values actually present in the published set and filtered by exact
+ *    match; `industry` stays admin metadata with no page-facing filter.
  */
 
 const CANONICAL_PATH = '/testimonials'
@@ -69,6 +70,7 @@ const SERVICE_OPTIONS: ReadonlyArray<{ value: ServiceValue; label: string }> = [
   { value: 'ai-training', label: 'AI Training' },
   { value: 'budget-software', label: 'Budget Software' },
   { value: 'consulting', label: 'Consulting' },
+  { value: 'keynotes', label: 'Keynotes' },
   { value: 'general', label: 'General' },
 ]
 
