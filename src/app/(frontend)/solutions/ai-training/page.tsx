@@ -386,9 +386,13 @@ export default function AiTrainingPage() {
                   {row.time}
                 </div>
                 <div>
-                  <h4 className="h4" style={{ marginBottom: 6 }}>
+                  {/* h3 (not h4) so the agenda titles nest under the section h2
+                      without a heading-level skip (WCAG 2.1 AA / axe
+                      heading-order); the `.h4` class keeps the design's visual
+                      size — heading level is semantics, not style. */}
+                  <h3 className="h4" style={{ marginBottom: 6 }}>
                     {row.title}
-                  </h4>
+                  </h3>
                   <p className="p" style={{ fontSize: 15 }}>
                     {row.desc}
                   </p>
