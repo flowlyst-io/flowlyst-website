@@ -74,6 +74,7 @@ export interface Config {
     authors: Author;
     media: Media;
     'demo-requests': DemoRequest;
+    'speaking-requests': SpeakingRequest;
     'contact-messages': ContactMessage;
     'newsletter-subscribers': NewsletterSubscriber;
     users: User;
@@ -94,6 +95,7 @@ export interface Config {
     authors: AuthorsSelect<false> | AuthorsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'demo-requests': DemoRequestsSelect<false> | DemoRequestsSelect<true>;
+    'speaking-requests': SpeakingRequestsSelect<false> | SpeakingRequestsSelect<true>;
     'contact-messages': ContactMessagesSelect<false> | ContactMessagesSelect<true>;
     'newsletter-subscribers': NewsletterSubscribersSelect<false> | NewsletterSubscribersSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -534,6 +536,36 @@ export interface DemoRequest {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "speaking-requests".
+ */
+export interface SpeakingRequest {
+  id: number;
+  status?: ('pending' | 'scheduled' | 'completed' | 'canceled') | null;
+  /**
+   * Internal only — never shown to the requester.
+   */
+  internalNotes?: string | null;
+  contactName: string;
+  email: string;
+  /**
+   * Association, district, or event host.
+   */
+  organization?: string | null;
+  eventName: string;
+  /**
+   * Date or timeframe (free text, e.g. “Fall 2026”).
+   */
+  eventDate: string;
+  audienceSize?: string | null;
+  budgetRange?: string | null;
+  topicInterest?: ('ai-sbo' | 'automation' | 'ai-adoption' | 'custom') | null;
+  message?: string | null;
+  botField?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contact-messages".
  */
 export interface ContactMessage {
@@ -814,6 +846,10 @@ export interface PayloadLockedDocument {
         value: number | DemoRequest;
       } | null)
     | ({
+        relationTo: 'speaking-requests';
+        value: number | SpeakingRequest;
+      } | null)
+    | ({
         relationTo: 'contact-messages';
         value: number | ContactMessage;
       } | null)
@@ -1081,6 +1117,26 @@ export interface DemoRequestsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "speaking-requests_select".
+ */
+export interface SpeakingRequestsSelect<T extends boolean = true> {
+  status?: T;
+  internalNotes?: T;
+  contactName?: T;
+  email?: T;
+  organization?: T;
+  eventName?: T;
+  eventDate?: T;
+  audienceSize?: T;
+  budgetRange?: T;
+  topicInterest?: T;
+  message?: T;
+  botField?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contact-messages_select".
  */
 export interface ContactMessagesSelect<T extends boolean = true> {
@@ -1336,6 +1392,7 @@ export interface TaskCreateCollectionExport {
       | 'authors'
       | 'media'
       | 'demo-requests'
+      | 'speaking-requests'
       | 'contact-messages'
       | 'newsletter-subscribers'
       | 'users'

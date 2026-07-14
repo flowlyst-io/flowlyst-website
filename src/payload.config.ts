@@ -39,6 +39,7 @@ import { CaseStudies } from './collections/CaseStudies'
 import { Testimonials } from './collections/Testimonials'
 import { TrainingPrograms } from './collections/TrainingPrograms'
 import { DemoRequests } from './collections/DemoRequests'
+import { SpeakingRequests } from './collections/SpeakingRequests'
 import { NewsletterSubscribers } from './collections/NewsletterSubscribers'
 import { ContactMessages } from './collections/ContactMessages'
 import { SiteSettings } from './globals/SiteSettings'
@@ -73,6 +74,7 @@ export default buildConfig({
     Media,
     // Leads
     DemoRequests,
+    SpeakingRequests,
     ContactMessages,
     NewsletterSubscribers,
     // Admin
