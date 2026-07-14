@@ -35,9 +35,9 @@ against its settled Direction-C composition in `design/site/solutions.jsx`, each
 with its own `Service` JSON-LD alongside the site-wide Organization. The static
 -vs-ISR call was made per page against the design: a section that maps to a CMS
 collection (e.g. Budget's featured testimonial) uses ISR (`revalidate`); pages
-with no CMS-mapped section (e.g. Consulting) ship fully static. Three shared,
-props-driven blocks — `SolutionHero`, `SectionHead`, `ProductMock` — were
-settled on the first page (#8) and reused across the other three.
+with no CMS-mapped section (e.g. Consulting) ship fully static. Two new shared,
+props-driven blocks — `SolutionHero`, `SectionHead` — were settled on the first
+page (#8) and, with the pre-existing `FinalCTA`, reused across the other three.
 
 **#13 — first working lead-capture form (part of PR #53).** `SpeakingRequestForm`
 (the keynotes page's only client island) → Payload REST → a new
@@ -55,7 +55,7 @@ land in the admin inbox.)
 ## What worked
 
 - **Parallel 3-branch fan-out, but only after the shared blocks settled.** The
-  first solution page (#8) settled `SolutionHero` / `SectionHead` / `ProductMock`;
+  first solution page (#8) settled `SolutionHero` / `SectionHead`;
   the remaining three (#9/#12/#13) then ran as parallel branches that reused them.
   Each page kept its own presentational art local, and none touched the shared
   components or `styles.css` unless it genuinely needed a new reusable class
