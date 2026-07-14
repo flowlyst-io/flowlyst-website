@@ -634,6 +634,32 @@ code,
   color: #fff;
 }
 
+/* WCAG 1.4.3 amendment — text runs on the brand-green (#00A568) bands.
+   Not in the source comp: the design places white-at-90%-alpha body copy, a
+   cream (--c-cream) ghost-button label, and yellow (--c-yellow, #ffe9a0) accent
+   words on the green band — all under their AA contrast thresholds (~2.65–3.1:1).
+   Tural's call (2026-07-13): keep the brand green and fix the text. Where a run
+   can reach AA by qualifying as WCAG "large text" (needs only 3:1), do that at
+   full white — #fff on #00A568 = 3.19:1: body copy → 24px regular (≥18pt); the
+   ghost-light button label → 19px at the button's 700 weight (≥14pt bold). The
+   yellow accents can't reach 3:1 at any size (2.65:1), so on these bands they go
+   full white too. Scoped to .section--green so it re-applies on every page reusing
+   the stat / final-CTA bands and never touches .accent--yellow or the ghost-light
+   button on other surfaces (e.g. the forest footer). Backgrounds and already-
+   passing runs (the forest btn--dark label) are left alone. Tural will fold this
+   into the design source later. */
+.section--green p {
+  font-size: 24px;
+  color: #fff;
+}
+.section--green .btn--ghost-light {
+  font-size: 19px;
+  color: #fff;
+}
+.section--green .accent--yellow {
+  color: #fff;
+}
+
 .container {
   max-width: 1280px;
   margin: 0 auto;
@@ -880,6 +906,16 @@ code,
   color: var(--fl-green);
   font-size: 14px;
   opacity: 0.8;
+}
+
+/* WCAG 2.2.2 amendment (not in the source comp) — honor a reduced-motion
+   preference by stopping the auto-scrolling marquee. Its venue names are already
+   fully present and legible without the animation. Tural will fold this into the
+   design source later. */
+@media (prefers-reduced-motion: reduce) {
+  .marquee__track {
+    animation: none;
+  }
 }
 @keyframes marquee {
   from {

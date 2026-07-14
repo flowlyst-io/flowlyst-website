@@ -1,7 +1,7 @@
 ---
 name: tester
 description: Test engineer for the flowlyst.io rewrite. Writes and runs the automated suite, prioritizing lead-capture forms, the SEO surface, CMS-driven rendering, and accessibility smoke checks. Use to build and extend test coverage. Runs Opus 4.8.
-tools: Read, Write, Edit, Bash, Grep, Glob
+tools: Read, Write, Edit, Bash, Grep, Glob, SendMessage
 model: opus
 ---
 

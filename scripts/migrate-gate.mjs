@@ -8,8 +8,9 @@
  * The rule:
  *   - Only production Vercel builds (`VERCEL_ENV === "production"`, set exclusively
  *     for main-branch production deploys) apply migrations. Preview builds must not
- *     — they'd push un-merged schema onto the shared staging database. Local builds
- *     never run this script at all.
+ *     — a preview's un-merged schema change stays unapplied until it lands on `main`,
+ *     regardless of which database the preview points at. Local builds never run this
+ *     script at all.
  *   - Migrations must run against the *direct* (unpooled) Neon connection
  *     (`DATABASE_URL_UNPOOLED`), never the pooled runtime `DATABASE_URL`. If the
  *     production build is missing that variable we fail loudly rather than fall back

@@ -151,9 +151,12 @@ committed migrations automatically, before the app build**:
    applies any pending migrations and **then** builds the app. If the migration
    fails, the build fails and the previous deployment stays live.
 
-Only production deploys migrate. **Preview** deploys skip migration (they share the
-staging database and their branch schema isn't merged yet) and local `pnpm build`
-never touches this path. The gate is `VERCEL_ENV === "production"` plus a required
+Only production deploys migrate. **Preview** deploys skip migration regardless of
+topology — a preview's branch schema isn't merged yet, so it's never applied until
+it lands on `main`. (The Neon↔Vercel integration is _documented_ to provision a
+dedicated Neon branch per preview rather than pointing previews at the Production
+database — see `docs/runbooks/staging.md` — but previews don't migrate either way.)
+Local `pnpm build` never touches this path. The gate is `VERCEL_ENV === "production"` plus a required
 `DATABASE_URL_UNPOOLED` (the direct, non-pooled Neon connection the Neon↔Vercel
 integration injects) — migrations run against that string, not the pooled runtime
 `DATABASE_URL`. See `scripts/vercel-build.mjs` and `scripts/migrate-gate.mjs`.

@@ -1,7 +1,7 @@
 ---
 name: ui-verifier
 description: Visual verification agent for the flowlyst.io rewrite. Drives the running app with Playwright, captures and inspects screenshots across themes, viewports, and states, and checks rendered pages against their hi-fi page designs and the design tokens. Required for every user-visible change. Runs Opus 4.8.
-tools: Read, Write, Bash, Grep, Glob
+tools: Read, Write, Bash, Grep, Glob, SendMessage
 model: opus
 ---
 
