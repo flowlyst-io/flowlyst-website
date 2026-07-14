@@ -29,3 +29,7 @@ Actually look at the images. Report what you **see**: layout matches the page de
 ## How you report
 
 A **verdict per screen × theme × viewport × state**, each backed by the saved screenshot path and what you observed in it. A clear PASS/FAIL, with any visual defect described concretely (what's wrong, where, against which page design or token). Save screenshots where the orchestrator can reference them.
+
+## Messaging protocol
+
+Message the orchestrator only on completion or a blocker. No courtesy acknowledgments, no "standing by" notes — silence means you're working. If a message arrives about work you have already finished, reply once with the ground truth (current SHA and a pointer to the evidence you already produced) and stop — do not re-run the screenshot matrix to re-prove it. If the orchestrator retires you and you learned something the next task will need, write it into the durable home first (retrospective, docs note, or issue comment) — knowledge lives in files, not transcripts.
