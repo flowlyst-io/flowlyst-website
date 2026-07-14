@@ -46,9 +46,11 @@ export const metadata: Metadata = {
   },
 }
 
-// Past venues (PRD §4.4 / §5). Static content per the design; a 5-column row that
-// collapses responsively via `.stat-band__grid` (--stat-band-cols: 5).
-const VENUES = ['ASBO International', 'NJASBO', 'CPS Annual', 'AASA', 'Regional PD'] as const
+// Past venues (PRD §4.4 / §5) — exactly the three attributable to Aziz; listing
+// more (e.g. AASA, which the PRD names as an audience example, not a venue) would
+// overclaim a real person's speaking history. A 3-column row that collapses
+// responsively via `.stat-band__grid` (--stat-band-cols: 3).
+const VENUES = ['ASBO International', 'NJASBO', 'CPS'] as const
 
 // Topics Aziz speaks on (PRD §4.4). Tabular rows, mirroring the design.
 type Topic = { num: string; tag: string; title: string; copy: string }
@@ -121,14 +123,16 @@ export default function KeynotesPage() {
             A keynote on AI in K-12, <em>from someone who’s rolled it out.</em>
           </>
         }
-        lead="Aziz Aghayev speaks at state and national association events on AI for K-12 administrators, school finance modernization, and district operations."
+        lead="Aziz Aghayev — a former school CFO with 15+ years in K-12 finance, now flowlyst’s founder — speaks at state and national association events on AI for K-12 administrators, school finance modernization, and district operations."
         primaryCta="Submit a speaking request"
         primaryHref="#request"
+        secondaryCta="Meet Aziz"
+        secondaryHref="/about"
         badges={['ASBO International', 'NJASBO · CPS', '3-day response']}
         visual={<KeynoteHeroArt />}
       />
 
-      {/* PAST VENUES — 5-column row, responsive via stat-band__grid. */}
+      {/* PAST VENUES — 3-column row, responsive via stat-band__grid. */}
       <section className="section section--cream" data-testid="keynotes-venues">
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
@@ -136,7 +140,7 @@ export default function KeynotesPage() {
               Past venues
             </div>
           </div>
-          <div className="stat-band__grid" style={{ '--stat-band-cols': 5 } as React.CSSProperties}>
+          <div className="stat-band__grid" style={{ '--stat-band-cols': 3 } as React.CSSProperties}>
             {VENUES.map((venue) => (
               <div
                 key={venue}
