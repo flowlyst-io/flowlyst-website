@@ -111,6 +111,14 @@ the next 06:00 UTC run. Options:
 `alwaysInsertFields: true` keeps the media DB schema identical in both modes, so a
 single committed migration is valid everywhere.
 
+Both modes render featured/hero images through `next/image`: filesystem media
+resolves to a same-origin URL that `mediaSrc` (`src/utilities/mediaSrc.ts`)
+normalizes to a relative `/api/media/file/…` path (matched by `images.localPatterns`),
+while Blob URLs pass through to `images.remotePatterns` — so images optimize in every
+env. Deployed environments serving real content should still set
+`BLOB_READ_WRITE_TOKEN`: Blob gives the optimizer a CDN-backed public origin and
+durable storage, which the ephemeral local filesystem on a serverless deploy does not.
+
 ## CSV export (lead inboxes)
 
 `@payloadcms/plugin-import-export`, scoped to **demo requests** and **newsletter

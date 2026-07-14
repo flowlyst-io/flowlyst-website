@@ -2,6 +2,7 @@ import React from 'react'
 import Image from 'next/image'
 
 import type { Media } from '@/payload-types'
+import { mediaSrc } from '@/utilities/mediaSrc'
 
 /**
  * Blog presentational atoms, ported from the design (`design/site/home.jsx`
@@ -103,19 +104,21 @@ export function PostThumb({
   sizes?: string
 }) {
   if (image?.url) {
-    // next/image optimizes the uploaded featured image (AVIF/WebP + a right-sized
-    // srcset) and, with `priority`, preloads it — so the article hero paints as a
-    // lightweight LCP element (#69). Sources are configured in next.config: local
-    // Payload media (`/api/media/file/**`, localPatterns) and production Vercel Blob
-    // (`*.public.blob.vercel-storage.com`, remotePatterns). `fill` makes the image
-    // absolutely fill this relative box, so it occupies the wrapper's reserved
-    // aspect-ratio (or fixed-160) space exactly — no CLS. `sizes` defaults to the
-    // grid-card responsive steps (1 col ≤680, 2 col ≤960, else ~360px); the hero
-    // call sites pass their own to match the reading column.
+    // next/image optimizes the uploaded featured image (WebP + a right-sized srcset)
+    // and, with `priority`, preloads it — so the article hero paints as a lightweight
+    // LCP element (#69). `mediaSrc` normalizes the URL for the optimizer: filesystem
+    // media resolves to an absolute same-origin URL that next/image would reject, so
+    // mediaSrc strips it to a relative `/api/media/file/…` path matched by
+    // localPatterns; production Vercel Blob URLs (foreign host) pass through to
+    // remotePatterns. `fill` makes the image absolutely fill this relative box, so it
+    // occupies the wrapper's reserved aspect-ratio (or fixed-160) space exactly — no
+    // CLS. `sizes` defaults to the grid-card responsive steps (1 col ≤680, 2 col
+    // ≤960, else ~360px); the hero call sites pass their own to match the reading
+    // column.
     return (
       <div style={{ position: 'relative', width: '100%', height: fill ? '100%' : 160 }}>
         <Image
-          src={image.url}
+          src={mediaSrc(image.url)}
           alt={image.alt ?? ''}
           fill
           sizes={sizes ?? '(max-width: 680px) 100vw, (max-width: 960px) 50vw, 360px'}

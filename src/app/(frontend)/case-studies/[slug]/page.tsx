@@ -10,6 +10,7 @@ import type { CaseStudy, Media } from '@/payload-types'
 import { FinalCTA } from '@/components/FinalCTA'
 import { getServerURL } from '@/utilities/serverURL'
 import { serializeJsonLd } from '@/utilities/jsonLd'
+import { mediaSrc } from '@/utilities/mediaSrc'
 import { RichTextBody } from './RichTextBody'
 
 /**
@@ -230,11 +231,13 @@ export default async function CaseStudyDetailPage({
           )}
           {hero?.url && (
             // next/image optimizes the hero and preloads it (priority) so it paints as
-            // a light LCP element (#69, same pattern as the blog reader). The relative
-            // 16/9 box reserves the exact space the plain <img> did (no CLS); `fill`
-            // makes the image cover it. Media origins are allowed in next.config
-            // (localPatterns `/api/media/file/**`, blob remotePatterns). `sizes` matches
-            // the 760px reading column (full width below ~872px).
+            // a light LCP element (#69, same pattern as the blog reader). `mediaSrc`
+            // normalizes the URL: filesystem media resolves to an absolute same-origin
+            // URL next/image would reject, so it is stripped to a relative
+            // `/api/media/file/…` path matched by localPatterns; Vercel Blob URLs pass
+            // through to remotePatterns. The relative 16/9 box reserves the exact space
+            // the plain <img> did (no CLS); `fill` makes the image cover it. `sizes`
+            // matches the 760px reading column (full width below ~872px).
             <div
               style={{
                 position: 'relative',
@@ -246,7 +249,7 @@ export default async function CaseStudyDetailPage({
               }}
             >
               <Image
-                src={hero.url}
+                src={mediaSrc(hero.url)}
                 alt={hero.alt ?? ''}
                 fill
                 priority
