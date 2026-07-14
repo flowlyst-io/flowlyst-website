@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test'
 import { expect } from '@playwright/test'
+import { E2E_BASE_URL } from './serverURL'
 
 export interface LoginOptions {
   page: Page
@@ -13,11 +14,7 @@ export interface LoginOptions {
 /**
  * Logs the user into the admin panel via the login page.
  */
-export async function login({
-  page,
-  serverURL = 'http://localhost:3000',
-  user,
-}: LoginOptions): Promise<void> {
+export async function login({ page, serverURL = E2E_BASE_URL, user }: LoginOptions): Promise<void> {
   await page.goto(`${serverURL}/admin/login`)
 
   await page.fill('#field-email', user.email)

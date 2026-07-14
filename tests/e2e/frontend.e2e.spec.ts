@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Frontend', () => {
   test('homepage responds 200 and renders the real hero', async ({ page }) => {
-    const response = await page.goto('http://localhost:3000')
+    // Relative path resolves against use.baseURL (PLAYWRIGHT_PORT-derived) — never a
+    // hard-coded :3000, which under parallel worktrees could hit another server.
+    const response = await page.goto('/')
 
     // Server-rendered page must return a 200.
     expect(response?.status()).toBe(200)
@@ -18,7 +20,7 @@ test.describe('Frontend', () => {
   })
 
   test('renders the shared shell (header nav + footer)', async ({ page }) => {
-    await page.goto('http://localhost:3000')
+    await page.goto('/')
 
     // Primary nav links are present (scoped to the header nav landmark, since the
     // same labels also appear in the footer).
@@ -39,7 +41,7 @@ test.describe('Frontend', () => {
 
   test('mobile hamburger drawer opens, is keyboard closable, at 390px', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
-    await page.goto('http://localhost:3000')
+    await page.goto('/')
 
     // No horizontal overflow at 390px (WCAG 1.4.10 reflow regression guard —
     // the footer CTA band used to push the document to 404px).

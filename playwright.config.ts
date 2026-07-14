@@ -9,6 +9,18 @@ import 'dotenv/config'
 const isCI = !!process.env.CI
 
 /**
+ * Port the E2E web server binds to (and the base URL the tests hit). Defaults to
+ * 3000 — unset `PLAYWRIGHT_PORT` behaves exactly as before. Set it per checkout so
+ * parallel worktrees never share a server: with `reuseExistingServer` on (local),
+ * a hard-coded :3000 lets one worktree's suite silently run against ANOTHER
+ * worktree's dev server. `next dev`/`next start` both honor the `PORT` env var, so
+ * passing it through `webServer.env` (Playwright merges it into the child's
+ * process.env, alongside DATABASE_URL/PAYLOAD_SECRET) binds the server to `PORT`.
+ */
+const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3000)
+const baseURL = `http://localhost:${PORT}`
+
+/**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
@@ -23,7 +35,7 @@ export default defineConfig({
   reporter: isCI ? [['github'], ['html', { open: 'never' }]] : 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
@@ -38,10 +50,15 @@ export default defineConfig({
    * In CI: serve the production build. CI applies the committed migrations before
    * this runs (see .github/workflows/ci.yml), and push is disabled in CI, so the
    * schema is deterministic. Never reuse a stale server in CI.
+   *
+   * `reuseExistingServer: !isCI` is intentionally unchanged — the reliable fix for
+   * cross-worktree contamination is a distinct `PLAYWRIGHT_PORT` per checkout (each
+   * worktree then owns its own server), not disabling reuse.
    */
   webServer: {
     command: isCI ? 'pnpm start' : 'pnpm dev',
-    url: 'http://localhost:3000',
+    url: baseURL,
+    env: { PORT: String(PORT) },
     reuseExistingServer: !isCI,
     timeout: 120_000,
   },

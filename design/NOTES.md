@@ -14,6 +14,8 @@ Pulled via DesignSync by the lead session on 2026-07-13, for issues #3 (design f
 | site/index.html | flowlyst Website | index.html — thin render harness for home.jsx (CDN React + Babel); open locally to render the reference for pixel comparison |
 | site/pages.jsx | flowlyst Website | pages.jsx — settled Direction C compositions for About, Blog index/post, Testimonials, Case studies, Request demo, Contact, Legal; the standalone `about.html` etc. upstream are earlier exploration, this is the reference (pulled 2026-07-13 for #7) |
 | site/about-preview.html | — (local glue, not an upstream snapshot) | thin render harness for AboutPage, modeled on index.html; loads site.jsx + home.jsx + pages.jsx |
+| site/solutions.jsx | flowlyst Website | solutions.jsx — settled Direction C compositions for the 4 solution pages (BudgetPage, TrainingPage, ConsultingPage, KeynotesPage); the standalone `budget-software.html` etc. upstream are earlier exploration, this is the reference (pulled 2026-07-13 for #8) |
+| site/budget-preview.html | — (local glue, not an upstream snapshot) | thin render harness for BudgetPage, modeled on index.html; loads site.jsx + home.jsx (ProductMock) + solutions.jsx |
 
 Findings recorded at pull time:
 - **Light theme only.** The token contract defines no dark-mode tokens, and site.css declares "Surface strategy: LIGHT-FIRST" (dark exists only as the forest footer + one manifesto band). UI verification checks light theme at both viewports; a site-wide dark mode does not exist by design.
