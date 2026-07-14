@@ -18,9 +18,11 @@
  *   path segment as its slug, so the 15/16 legacy→new URL mapping holds with no
  *   redirect. The slugs below are the guard; they are never derived from the title.
  *
- * - IDEMPOTENT. Every entity is upserted by a stable natural key: blog posts + author
- *   by `slug`, media by `filename`. A second run updates in place and creates zero
- *   duplicates. All writes pass `context: { disableRevalidate: true }` because the
+ * - IDEMPOTENT. Blog posts + author upsert by `slug`; each post's featured image is
+ *   reused via the post relationship on re-run (filename is NOT a reliable key —
+ *   Payload suffixes on-disk filename collisions, see resolveFeaturedImage). A second
+ *   run updates in place and creates zero duplicates. All writes pass
+ *   `context: { disableRevalidate: true }` because the
  *   BlogPosts afterChange hook calls Next's revalidatePath, which throws outside a
  *   request scope (this standalone script) — the hook swallows it, but skipping it is
  *   cleaner and faster here.
@@ -258,7 +260,9 @@ async function main(): Promise<void> {
     })
     const existingDoc = existing.docs[0]
     const existingImageId =
-      existingDoc && typeof existingDoc.featuredImage === 'number' ? existingDoc.featuredImage : null
+      existingDoc && typeof existingDoc.featuredImage === 'number'
+        ? existingDoc.featuredImage
+        : null
 
     const media = await resolveFeaturedImage(payload, {
       existingImageId,
