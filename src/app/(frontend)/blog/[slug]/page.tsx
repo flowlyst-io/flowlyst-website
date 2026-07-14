@@ -244,7 +244,13 @@ export default async function BlogPostReaderPage({
           <div
             style={{ aspectRatio: '16/9', borderRadius: 4, overflow: 'hidden', marginBottom: 56 }}
           >
-            <PostThumb image={featured} index={0} fill priority />
+            <PostThumb
+              image={featured}
+              index={0}
+              fill
+              priority
+              sizes="(max-width: 872px) 100vw, 760px"
+            />
           </div>
         </div>
       </article>
