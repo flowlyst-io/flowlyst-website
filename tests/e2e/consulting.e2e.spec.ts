@@ -319,9 +319,10 @@ test.describe('Consulting page — responsive & accessibility smoke', () => {
   })
 
   test('at 768px the nav folds to the burger with no horizontal overflow', async ({ page }) => {
-    // Shared-chrome reflow guard (issue #45), mirrored from the homepage: the full
-    // horizontal nav needs ~809px, so at iPad-portrait 768 it must be folded into the
-    // hamburger or it forces a page-level horizontal scrollbar (WCAG 1.4.10 fail).
+    // Shared-chrome reflow guard (issues #45/#58), mirrored from the homepage: the
+    // full horizontal nav wraps to two lines below its ~908px single-line fit point,
+    // so it folds to the hamburger at <=959px; at 768 it must be folded or it wraps /
+    // forces a page-level horizontal scrollbar (WCAG 1.4.10 fail).
     await page.setViewportSize({ width: 768, height: 1024 })
     await page.goto(PATH)
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
