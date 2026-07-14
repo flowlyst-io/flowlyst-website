@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { resendAdapter } from '@payloadcms/email-resend'
 import { importExportPlugin } from '@payloadcms/plugin-import-export'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
@@ -82,6 +83,20 @@ export default buildConfig({
   ],
   globals: [SiteSettings],
   editor: lexicalEditor(),
+  // Transactional email via Resend, keyed on env (PRD §8). Configured ONLY when
+  // RESEND_API_KEY is set: locally / in CI (and before Tural runs the Resend
+  // runbook) it's undefined, and Payload falls back to logging email to the
+  // console. The lead-notification helpers (src/email/leadNotifications.ts)
+  // additionally skip-and-log when the key is unset, so an unconfigured
+  // environment never errors. `defaultFromAddress` is EMAIL_FROM (a verified
+  // Resend sender per the runbook); no key values are hard-coded here.
+  email: process.env.RESEND_API_KEY
+    ? resendAdapter({
+        apiKey: process.env.RESEND_API_KEY,
+        defaultFromAddress: process.env.EMAIL_FROM || 'noreply@flowlyst.io',
+        defaultFromName: 'flowlyst',
+      })
+    : undefined,
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

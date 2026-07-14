@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
+import { notifyDemoRequest } from '@/email/leadNotifications'
+import type { DemoRequest } from '@/payload-types'
 
 /**
  * Demo requests inbox (PRD §8.1, §9). The highest-intent lead.
@@ -31,6 +33,16 @@ export const DemoRequests: CollectionConfig = {
     read: isAdmin,
     update: isAdmin,
     delete: isAdmin,
+  },
+  hooks: {
+    // Notify sales when a demo request is created (PRD §8.1). Runs after the
+    // write, and the helper never throws / skips when email is unconfigured, so
+    // a mail problem can never fail persistence (review invariant d).
+    afterChange: [
+      ({ doc, operation, req }) => {
+        if (operation === 'create') void notifyDemoRequest(req.payload, doc as DemoRequest)
+      },
+    ],
   },
   fields: [
     // --- Internal triage (sidebar) ---
@@ -75,6 +87,7 @@ export const DemoRequests: CollectionConfig = {
         { label: 'AI Training', value: 'ai-training' },
         { label: 'Budget Software', value: 'budget-software' },
         { label: 'Consulting', value: 'consulting' },
+        { label: 'Keynotes', value: 'keynotes' },
       ],
     },
     {
@@ -109,7 +122,24 @@ export const DemoRequests: CollectionConfig = {
     {
       name: 'consent',
       type: 'checkbox',
-      admin: { description: 'Requester consented to be contacted.' },
+      // Required-true on submit (PRD §8.1 consent). `defaultValue: false` makes
+      // the field present even when a submitter omits it, so `validate` reliably
+      // runs and rejects the omitted / unchecked case (Payload does not run a
+      // field validate for an absent field). Scoped to `create` so an Admin
+      // editing an existing row is never blocked by it.
+      defaultValue: false,
+      validate: (value: unknown, { operation }: { operation?: string }) =>
+        operation !== 'create' || value === true || 'You must agree to be contacted.',
+      admin: { description: 'Requester consented to be contacted (required on submit).' },
+    },
+    // Anti-spam honeypot — hidden from the admin UI; empty in real submissions.
+    // Server-validated: a filled value (a bot completing a field no human sees)
+    // is rejected. Mirrors the SpeakingRequests template.
+    {
+      name: 'botField',
+      type: 'text',
+      admin: { hidden: true },
+      validate: (value: unknown) => (value ? 'This submission was flagged as spam.' : true),
     },
   ],
 }
