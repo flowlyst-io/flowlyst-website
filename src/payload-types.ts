@@ -515,7 +515,7 @@ export interface DemoRequest {
   district?: string | null;
   workEmail: string;
   phone?: string | null;
-  interests?: ('ai-training' | 'budget-software' | 'consulting')[] | null;
+  interests?: ('ai-training' | 'budget-software' | 'consulting' | 'keynotes')[] | null;
   /**
    * Requester’s preferred date/time (free text).
    */
@@ -528,9 +528,10 @@ export interface DemoRequest {
   heardAboutUs?: ('google' | 'ai-assistant' | 'referral' | 'event' | 'social' | 'other') | null;
   anythingElse?: string | null;
   /**
-   * Requester consented to be contacted.
+   * Requester consented to be contacted (required on submit).
    */
   consent?: boolean | null;
+  botField?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -577,8 +578,9 @@ export interface ContactMessage {
   internalNotes?: string | null;
   name: string;
   email: string;
-  reason?: ('general' | 'press' | 'partnerships' | 'training' | 'support') | null;
+  reason?: ('press' | 'partnership' | 'training' | 'support' | 'other') | null;
   message: string;
+  botField?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -594,6 +596,7 @@ export interface NewsletterSubscriber {
    * Where the signup came from (e.g. /blog).
    */
   source?: string | null;
+  botField?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1112,6 +1115,7 @@ export interface DemoRequestsSelect<T extends boolean = true> {
   heardAboutUs?: T;
   anythingElse?: T;
   consent?: T;
+  botField?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1146,6 +1150,7 @@ export interface ContactMessagesSelect<T extends boolean = true> {
   email?: T;
   reason?: T;
   message?: T;
+  botField?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1157,6 +1162,7 @@ export interface NewsletterSubscribersSelect<T extends boolean = true> {
   email?: T;
   status?: T;
   source?: T;
+  botField?: T;
   updatedAt?: T;
   createdAt?: T;
 }

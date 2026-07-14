@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
+import { notifySpeakingRequest } from '@/email/leadNotifications'
+import type { SpeakingRequest } from '@/payload-types'
 
 /**
  * Speaking requests inbox (PRD §4.4, §8, §9). Event organizers ask Aziz to keynote
@@ -37,6 +39,17 @@ export const SpeakingRequests: CollectionConfig = {
     read: isAdmin,
     update: isAdmin,
     delete: isAdmin,
+  },
+  hooks: {
+    // Notify on a new speaking request (Phase 3 foundation wired this collection
+    // into the shared notifier — the "#14 wires the notifier" note above). After-
+    // write, non-throwing, skips when email is unconfigured — never fails
+    // persistence (invariant d).
+    afterChange: [
+      ({ doc, operation, req }) => {
+        if (operation === 'create') void notifySpeakingRequest(req.payload, doc as SpeakingRequest)
+      },
+    ],
   },
   fields: [
     // --- Internal triage (sidebar) ---
