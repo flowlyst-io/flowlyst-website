@@ -51,18 +51,19 @@ export const metadata: Metadata = {
   },
 }
 
-// Filter chips. "All" plus the three real serviceCategory values — the design's chip
-// row also shows "Consulting", but the BlogPosts enum has no such value, so a
-// Consulting chip would be a dead filter. Omitted (adjudicated; flagged for the
-// design fold-in list). See src/components/blog/format.ts.
+// Filter chips: "All" plus every real serviceCategory value, in the design's chip-row
+// order (All, AI Training, Budget Software, Consulting, General). "Consulting" was added
+// to the BlogPosts enum in #20, so its chip is a live filter now (no longer omitted).
+// See src/components/blog/format.ts.
 const CATEGORIES: Array<{ value: '' | BlogCategory; label: string }> = [
   { value: '', label: 'All' },
   { value: 'ai-training', label: 'AI Training' },
   { value: 'budget-software', label: 'Budget Software' },
+  { value: 'consulting', label: 'Consulting' },
   { value: 'general', label: 'General' },
 ]
 
-const VALID_CATEGORIES: BlogCategory[] = ['ai-training', 'budget-software', 'general']
+const VALID_CATEGORIES: BlogCategory[] = ['ai-training', 'budget-software', 'consulting', 'general']
 
 const asMedia = (value: unknown): Media | null =>
   value && typeof value === 'object' ? (value as Media) : null

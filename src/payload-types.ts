@@ -185,7 +185,7 @@ export interface BlogPost {
   };
   featuredImage?: (number | null) | Media;
   author?: (number | null) | Author;
-  serviceCategory: 'ai-training' | 'budget-software' | 'general';
+  serviceCategory: 'ai-training' | 'budget-software' | 'consulting' | 'general';
   /**
    * Free-form tags. Press enter after each.
    */
@@ -320,6 +320,10 @@ export interface CaseStudy {
   slug: string;
   heroImage?: (number | null) | Media;
   serviceCategory: 'ai-training' | 'budget-software' | 'consulting' | 'general';
+  /**
+   * Index-card summary (1–2 sentences). Falls back to the SEO meta description on the card when left empty.
+   */
+  excerpt?: string | null;
   districtInfo?: {
     /**
      * District / organization name.
@@ -331,6 +335,10 @@ export interface CaseStudy {
      */
     studentCount?: number | null;
   };
+  /**
+   * Implementation timeline, shown as an index-card chip, e.g. "6 weeks". Optional.
+   */
+  implementationDuration?: string | null;
   intro?: {
     root: {
       type: string;
@@ -392,7 +400,7 @@ export interface CaseStudy {
     [k: string]: unknown;
   } | null;
   /**
-   * Headline outcome numbers, e.g. "Hours saved" → "1,200/yr".
+   * Headline outcome numbers, e.g. "Hours saved" → "1,200/yr". By convention the FIRST metric is the headline stat shown on the index card (there is no separate headlineStat field).
    */
   metrics?:
     | {
@@ -941,6 +949,7 @@ export interface CaseStudiesSelect<T extends boolean = true> {
   slug?: T;
   heroImage?: T;
   serviceCategory?: T;
+  excerpt?: T;
   districtInfo?:
     | T
     | {
@@ -948,6 +957,7 @@ export interface CaseStudiesSelect<T extends boolean = true> {
         state?: T;
         studentCount?: T;
       };
+  implementationDuration?: T;
   intro?: T;
   challenge?: T;
   solution?: T;

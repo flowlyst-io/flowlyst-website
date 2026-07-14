@@ -52,6 +52,14 @@ export const CaseStudies: CollectionConfig = {
       ],
     },
     {
+      name: 'excerpt',
+      type: 'textarea',
+      admin: {
+        description:
+          'Index-card summary (1–2 sentences). Falls back to the SEO meta description on the card when left empty.',
+      },
+    },
+    {
       name: 'districtInfo',
       type: 'group',
       label: 'District',
@@ -70,6 +78,14 @@ export const CaseStudies: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'implementationDuration',
+      type: 'text',
+      admin: {
+        description:
+          'Implementation timeline, shown as an index-card chip, e.g. "6 weeks". Optional.',
+      },
+    },
     { name: 'intro', type: 'richText', label: 'Introduction' },
     { name: 'challenge', type: 'richText' },
     { name: 'solution', type: 'richText' },
@@ -78,7 +94,10 @@ export const CaseStudies: CollectionConfig = {
       name: 'metrics',
       type: 'array',
       labels: { singular: 'Metric', plural: 'Metrics' },
-      admin: { description: 'Headline outcome numbers, e.g. "Hours saved" → "1,200/yr".' },
+      admin: {
+        description:
+          'Headline outcome numbers, e.g. "Hours saved" → "1,200/yr". By convention the FIRST metric is the headline stat shown on the index card (there is no separate headlineStat field).',
+      },
       fields: [
         {
           type: 'row',

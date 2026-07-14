@@ -20,13 +20,13 @@ import { FinalCTA } from '@/components/FinalCTA'
  * hooks call `revalidatePath('/case-studies')`, so a publish/unpublish/edit refreshes
  * this list without a redeploy.
  *
- * Design-vs-schema note (surfaced to the orchestrator): the design card shows a
- * headline stat, an implementation-duration chip, and a two-line summary. The
- * (migrated, off-limits) collection has no headline-stat, implementation-duration,
- * or excerpt field, so the card maps: headline stat → `metrics[0]`, summary →
- * `meta.description`, size chip → `districtInfo.studentCount`, tag → `serviceCategory`.
- * The implementation-duration chip is dropped (no field) — graceful degradation, not
- * invention. Real content lands with #20.
+ * Card field mapping (design `CaseStudiesPage` card): headline stat → `metrics[0]`
+ * (the first metric is the headline-stat convention — there is no separate field);
+ * summary → `excerpt`, falling back to `meta.description` when the excerpt is empty;
+ * implementation chip → `implementationDuration`; size chip →
+ * `districtInfo.studentCount`; tag → `serviceCategory`. The `excerpt` and
+ * `implementationDuration` fields were added to the collection in #20 so the card
+ * matches the comp; each chip renders only when its field is set (graceful degradation).
  */
 
 const CANONICAL_PATH = '/case-studies'
@@ -65,6 +65,13 @@ function studentCountChip(caseStudy: CaseStudy): string | null {
   const count = caseStudy.districtInfo?.studentCount
   if (typeof count !== 'number' || count <= 0) return null
   return `~${count.toLocaleString('en-US')} students`
+}
+
+// Implementation-duration chip label, e.g. "Implementation: 6 weeks" (design comp).
+// Null when the field is unset so the chip is omitted rather than showing an empty label.
+function implementationChip(caseStudy: CaseStudy): string | null {
+  const duration = caseStudy.implementationDuration?.trim()
+  return duration ? `Implementation: ${duration}` : null
 }
 
 export default async function CaseStudiesIndexPage() {
@@ -148,7 +155,10 @@ function ArrowRight() {
 function CaseCard({ caseStudy, index }: { caseStudy: CaseStudy; index: number }) {
   const districtName = caseStudy.districtInfo?.name?.trim()
   const headlineMetric = caseStudy.metrics?.[0]
-  const summary = caseStudy.meta?.description?.trim()
+  // Excerpt is the card summary; the SEO meta description is the backward-compatible
+  // fallback for cases authored before the excerpt field existed (#20).
+  const summary = caseStudy.excerpt?.trim() || caseStudy.meta?.description?.trim()
+  const implChip = implementationChip(caseStudy)
   const sizeChip = studentCountChip(caseStudy)
 
   // Panel palette cycles green / forest / cream, matching the design comp.
@@ -202,7 +212,7 @@ function CaseCard({ caseStudy, index }: { caseStudy: CaseStudy; index: number })
           {headlineMetric && (
             <div style={{ marginTop: 24 }}>
               <div
-                style={{ fontSize: 48, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1 }}
+                style={{ fontSize: 56, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1 }}
               >
                 {headlineMetric.value}
               </div>
@@ -242,9 +252,11 @@ function CaseCard({ caseStudy, index }: { caseStudy: CaseStudy; index: number })
               {summary}
             </p>
           )}
-          {sizeChip && (
+          {(implChip || sizeChip) && (
+            // Chip order follows the design comp: implementation duration, then size.
             <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-              <span className="chip">{sizeChip}</span>
+              {implChip && <span className="chip">{implChip}</span>}
+              {sizeChip && <span className="chip">{sizeChip}</span>}
             </div>
           )}
           <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--fl-green-700)' }}>

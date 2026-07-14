@@ -217,6 +217,90 @@ describe('Case studies index — CMS rendering', () => {
   })
 })
 
+describe('Case studies index — excerpt summary + implementation chip (#20)', () => {
+  it('uses the excerpt as the card summary when set (not the meta description)', async () => {
+    const excerpt = `Excerpt summary under test ${stamp}`
+    const metaDesc = `META-FALLBACK-${stamp} must be overridden by the excerpt`
+    await payload.create({
+      collection: 'case-studies',
+      data: {
+        title: `Excerpt Card ${stamp}`,
+        slug: `excerpt-card-${stamp}`,
+        serviceCategory: 'consulting',
+        excerpt,
+        meta: { description: metaDesc },
+        _status: 'published',
+      },
+      context: { disableRevalidate: true },
+    })
+
+    const html = await renderIndex()
+    expect(html, 'the excerpt is the card summary').toContain(excerpt)
+    expect(html, 'the meta description is NOT used when an excerpt exists').not.toContain(metaDesc)
+  })
+
+  it('falls back to the meta description as the summary when the excerpt is empty', async () => {
+    const metaDesc = `META-SUMMARY-${stamp} used because no excerpt was authored`
+    await payload.create({
+      collection: 'case-studies',
+      data: {
+        title: `Fallback Card ${stamp}`,
+        slug: `fallback-card-${stamp}`,
+        serviceCategory: 'budget-software',
+        meta: { description: metaDesc },
+        _status: 'published',
+      },
+      context: { disableRevalidate: true },
+    })
+
+    const html = await renderIndex()
+    expect(html, 'meta description is the summary when the excerpt is absent').toContain(metaDesc)
+  })
+
+  it('renders the implementation chip when implementationDuration is set', async () => {
+    await payload.create({
+      collection: 'case-studies',
+      data: {
+        title: `Impl Chip Card ${stamp}`,
+        slug: `impl-chip-card-${stamp}`,
+        serviceCategory: 'consulting',
+        implementationDuration: '6 weeks',
+        districtInfo: { studentCount: 12000 },
+        _status: 'published',
+      },
+      context: { disableRevalidate: true },
+    })
+
+    const html = await renderIndex()
+    expect(html, 'the implementation chip renders its labelled duration').toContain(
+      'Implementation: 6 weeks',
+    )
+    // Order (design comp): implementation chip precedes the size chip.
+    expect(
+      html.indexOf('Implementation: 6 weeks'),
+      'implementation chip renders before the size chip',
+    ).toBeLessThan(html.indexOf('~12,000 students'))
+  })
+
+  it('omits the implementation chip when implementationDuration is unset', async () => {
+    await payload.create({
+      collection: 'case-studies',
+      data: {
+        title: `No Impl Card ${stamp}`,
+        slug: `no-impl-card-${stamp}`,
+        serviceCategory: 'general',
+        districtInfo: { studentCount: 9000 },
+        _status: 'published',
+      },
+      context: { disableRevalidate: true },
+    })
+
+    const html = await renderIndex()
+    expect(html, 'the card (with a size chip) still renders').toMatch(/~9,000 students/)
+    expect(html, 'no implementation chip without the field').not.toContain('Implementation:')
+  })
+})
+
 describe('Case study detail — CMS rendering', () => {
   const baseData = () => ({
     serviceCategory: 'consulting' as const,
