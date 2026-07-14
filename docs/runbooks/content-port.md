@@ -90,12 +90,12 @@ A defensible topical mapping (proposal only, apply in `/admin` if you like it):
 
 ## Environment variables
 
-| Var                     | Required                           | Notes                                                                                                                                                                                                                                                                         |
-| ----------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`          | **yes**                            | The target database. For staging, use the **same pooled Neon string** the staging app uses (the script does data writes, not DDL).                                                                                                                                            |
-| `PAYLOAD_SECRET`        | **yes**                            | Same value as the deployed environment.                                                                                                                                                                                                                                       |
-| `BLOB_READ_WRITE_TOKEN` | **yes for staging/prod**           | With it set, the 7 featured images upload to **Vercel Blob** (where the deployed app serves media from). **Without it, images write to a local `./media` folder that the deployed site cannot see** — so the posts would render with the fallback art, not their real images. |
-| `CI`                    | **set to `true` for staging/prod** | Disables Payload's dev-only schema auto-`push`, so the script writes **data only** and never touches the deployed schema. **Do not omit this when pointing at Neon.**                                                                                                         |
+| Var                     | Required                           | Notes                                                                                                                                                                                                                                                                                                                                                                       |
+| ----------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`          | **yes**                            | The target database. For staging, use the **same pooled Neon string** the staging app uses (the script does data writes, not DDL).                                                                                                                                                                                                                                          |
+| `PAYLOAD_SECRET`        | **yes**                            | Same value as the deployed environment.                                                                                                                                                                                                                                                                                                                                     |
+| `BLOB_READ_WRITE_TOKEN` | **yes for staging/prod**           | With it set, the 7 featured images upload to **Vercel Blob** (where the deployed app serves media from). **Without it, images write to a local `./media` folder that the deployed site cannot see** — so the posts would render with the fallback art, not their real images.                                                                                               |
+| `CI`                    | **baked into `pnpm content:port`** | Disables Payload's dev-only schema auto-`push`, so the run writes **data only** and never touches the deployed schema. `pnpm content:port` sets `CI=true` for you — **use that command, not a bare `tsx …`**: `@payload-config` reads `process.env.CI` at import time, so a forgotten `CI=true` under `tsx` (where `NODE_ENV` is undefined) would push schema against Neon. |
 
 You need internet access to `https://flowlyst.io` on the machine running the script
 (it fetches the live posts).
@@ -114,10 +114,15 @@ pnpm install
 export DATABASE_URL='<staging pooled Neon connection string>'
 export PAYLOAD_SECRET='<staging PAYLOAD_SECRET>'
 export BLOB_READ_WRITE_TOKEN='<staging Vercel Blob token>'
-export CI=true    # data-only: disables dev schema push against Neon
 
-pnpm tsx scripts/migrate-legacy-content.ts
+# Runs the port with CI=true baked in (data-only — never pushes schema to Neon).
+pnpm content:port
 ```
+
+> **Always use `pnpm content:port`, never a bare `tsx scripts/migrate-legacy-content.ts`.**
+> The `content:port` script is the only invocation that guarantees `CI=true`; running
+> the file directly against Neon without it would let Payload push schema. If you must
+> invoke `tsx` by hand, prefix it inseparably: `CI=true tsx scripts/migrate-legacy-content.ts`.
 
 ### Expected output
 
@@ -152,7 +157,14 @@ dev check):
    - **reading time** (2–3 min),
    - the full body (intro, `##` subheads, bullet lists),
    - a valid **`Article`** JSON-LD block in the page source (`type="application/ld+json"`).
-3. In `/admin` → Blog Posts, all 7 show `_status: Published` with their featured image.
+3. **Spot-check the two silently-failing scraped fields on 1–2 posts.** The **excerpt**
+   (the lead sentence above the body) and the **tags** are read from presentational
+   legacy markup; if that markup ever drifts, they fail quietly (a wrong-but-present
+   excerpt, or silently-empty tags) rather than erroring. Open a post in `/admin` and
+   confirm its **Excerpt** reads sensibly and its **Tags** list is populated (each post
+   has ~9 tags) — e.g. `ai-tools-school-business-officials` should open with "Discover
+   how simple AI tools like ChatGPT and Excel's AI features…".
+4. In `/admin` → Blog Posts, all 7 show `_status: Published` with their featured image.
 
 ---
 
