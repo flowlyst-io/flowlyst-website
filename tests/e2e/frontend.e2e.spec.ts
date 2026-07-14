@@ -41,7 +41,7 @@ test.describe('Frontend', () => {
 
   test('mobile hamburger drawer opens, is keyboard closable, at 390px', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
-    await page.goto('http://localhost:3000')
+    await page.goto('/')
 
     // No horizontal overflow at 390px (WCAG 1.4.10 reflow regression guard —
     // the footer CTA band used to push the document to 404px).
