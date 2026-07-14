@@ -1342,3 +1342,21 @@ code,
   outline-offset: 2px;
   border-radius: var(--radius-xs);
 }
+
+/* ============================================================
+   /request-demo — page-specific (#14)
+   The proof column sticks beside the tall demo form on desktop.
+   Below 680px the global rule collapses the inline 2-col grid to
+   one column; drop the sticky there so the stacked proof column
+   can't pin over the form.
+   ============================================================ */
+.request-demo__aside {
+  position: sticky;
+  top: 100px;
+}
+@media (max-width: 680px) {
+  .request-demo__aside {
+    position: static;
+    top: auto;
+  }
+}
