@@ -106,6 +106,11 @@ export function SpeakingRequestForm() {
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
       setState('error')
+      // Move focus to the first invalid field (form order == REQUIRED order,
+      // since only required fields can error) so keyboard/AT users land on the
+      // problem. The inputs stay mounted through the error re-render.
+      const firstInvalid = REQUIRED.find((name) => nextErrors[name])
+      if (firstInvalid) document.getElementById(fieldId(firstInvalid))?.focus()
       return
     }
 
@@ -289,7 +294,11 @@ export function SpeakingRequestForm() {
 
       {/* Honeypot — visually hidden, kept out of the tab order and off assistive
           tech. A real visitor never fills it; a bot that fills every field trips
-          the server-side `botField` validator. */}
+          the server-side `botField` validator. The name/id/label are a
+          non-semantic token ("botField"), NOT a real field name like company or
+          email: password managers and browser autofill ignore autoComplete="off"
+          and fill by field semantics, which would fill the trap for a real user
+          and kill their lead. Keep this name off every autofill heuristic. */}
       <div
         aria-hidden="true"
         style={{
@@ -301,10 +310,10 @@ export function SpeakingRequestForm() {
           whiteSpace: 'nowrap',
         }}
       >
-        <label htmlFor={`${baseId}-company`}>Company (leave this blank)</label>
+        <label htmlFor={`${baseId}-botField`}>Leave this field empty</label>
         <input
-          id={`${baseId}-company`}
-          name="company"
+          id={`${baseId}-botField`}
+          name="botField"
           type="text"
           tabIndex={-1}
           autoComplete="off"
