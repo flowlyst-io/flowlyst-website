@@ -280,7 +280,7 @@ export default async function BudgetSoftwarePage() {
         data-testid="budget-promises"
       >
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32 }}>
+          <div className="stat-band__grid" style={{ '--stat-band-cols': 4 } as React.CSSProperties}>
             {PROMISES.map((p) => (
               <div
                 key={p.stat}

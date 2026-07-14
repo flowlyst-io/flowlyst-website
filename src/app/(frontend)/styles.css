@@ -1022,6 +1022,36 @@ code,
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
+
+/* ============================================================
+   Solution-page stat / promise band grid (additive; new class).
+   Reusable across the inline stat bands on the solution pages —
+   Budget's service-promises band is 4 columns; Keynotes' venues
+   row is 5 (design/site/solutions.jsx), and #9/#12/#13 consume
+   the same class. The desktop column count is passed inline as
+   --stat-band-cols; the band collapses to 2 columns at ≤960px
+   and 1 at ≤680px. The class OWNS all three breakpoints (its own
+   @media blocks, separate from the shared 680/960 rules) so it
+   never depends on the generic inline-grid collapse selector,
+   and minmax(0,1fr) tracks so a wide min-content cell (e.g. a
+   64px/800 stat like "CFOs") can't force the row past the
+   container and trigger a page-wide horizontal scrollbar. */
+.stat-band__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--stat-band-cols, 4), minmax(0, 1fr));
+  gap: 32px;
+}
+@media (max-width: 960px) {
+  .stat-band__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 680px) {
+  .stat-band__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .mt-16 {
   margin-top: 16px;
 }
