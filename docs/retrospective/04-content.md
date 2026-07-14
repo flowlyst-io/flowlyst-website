@@ -40,8 +40,13 @@ fields, the 48→56px card headline-stat fix, and `next.config` Blob
 `remotePatterns` — one additive migration. #71 ported the **7 legacy blog
 posts** via an idempotent Local-API script + runbook; every legacy
 `/blog/<slug>` preserved 1:1 (no redirect), slug parity verified through
-`formatSlug` (PRD §10.1). #20 stays referenced-not-closed — testimonial and
-case-study content is Tural/Aziz's editorial call.
+`formatSlug` (PRD §10.1). Categories were kept **faithful to source** — the
+legacy site exposed a category for exactly 1 of 7 posts, so all 7 ported as
+`general` (the known value + collection default); a topical re-map is offered in
+the runbook as an editorial decision, deliberately not baked into the port as
+source truth. #20 was **reopened** after an unintended auto-close at #68's merge;
+its remaining scope — Tural's runbook run + editorial testimonial/case-study
+content — is tracked on #70.
 
 **#69 — image LCP (PR #72, image half).** Converted the three CMS-image sites
 from `<img>` to `next/image` (`fill` + `priority` + `sizes`, aspect boxes kept
