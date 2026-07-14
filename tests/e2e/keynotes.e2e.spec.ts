@@ -313,6 +313,15 @@ test.describe('Keynotes speaking-request form — delivery path (invariant d)', 
     await page.getByLabel('Event name').fill(eventName)
     await page.getByLabel('Event date or timeframe').fill(eventDate)
 
+    // Filling only the visible fields must leave the honeypot empty — the original
+    // silent-lead-drop bug was an autofill-prone honeypot getting filled and failing
+    // a real visitor's submit. (Playwright doesn't simulate browser autofill; the
+    // structural guards that defeat it are asserted in the honeypot test below.)
+    await expect(
+      page.locator('input[name="botField"]'),
+      'honeypot stays empty for a real submission',
+    ).toHaveValue('')
+
     await page.getByRole('button', { name: /submit speaking request/i }).click()
 
     // The success state renders only after the POST resolved `res.ok` (201) — so
@@ -365,6 +374,13 @@ test.describe('Keynotes speaking-request form — delivery path (invariant d)', 
 
     await page.getByRole('button', { name: /submit speaking request/i }).click()
 
+    // Keyboard/AT users land on the problem: focus jumps to the first invalid field
+    // in REQUIRED order — with everything empty that is "Your name" (contactName).
+    await expect(
+      page.getByLabel('Your name'),
+      'focus moves to the first invalid field on submit',
+    ).toBeFocused()
+
     // Each required field surfaces an inline error + aria-invalid + aria-describedby.
     for (const label of ['Your name', 'Work email', 'Event name', 'Event date or timeframe']) {
       const input = page.getByLabel(label)
@@ -402,8 +418,44 @@ test.describe('Keynotes speaking-request form — delivery path (invariant d)', 
     await expect(email).toHaveAttribute('aria-invalid', 'true')
     const describedby = await email.getAttribute('aria-describedby')
     await expect(page.locator(`[id="${describedby}"]`)).toHaveText(/valid email/i)
+    // Focus jumps to the first invalid field in REQUIRED order. Here the required
+    // fields are filled and only the email is malformed, so focus lands on the email
+    // input — proving "first INVALID", not merely "the first field".
+    await expect(email, 'focus moves to the offending email field').toBeFocused()
     await expect(page.getByTestId('keynotes-form-success')).toHaveCount(0)
     expect(posts, 'a bad email address never reaches the API').toHaveLength(0)
+  })
+
+  test('the honeypot is hidden, out of the tab order, and autofill-proof (anti-lead-drop)', async ({
+    page,
+  }) => {
+    // The original bug: an autofill-prone honeypot (name="company") that password
+    // managers / browser autofill would fill for a REAL visitor, tripping the trap
+    // and silently dropping the lead (invariant d). These guards pin the fix.
+    await page.goto(PATH)
+    const honeypot = page.locator('input[name="botField"]')
+    await expect(honeypot, 'the honeypot input exists').toHaveCount(1)
+
+    // Out of the tab order and off browser-autofill heuristics.
+    await expect(honeypot).toHaveAttribute('tabindex', '-1')
+    await expect(honeypot).toHaveAttribute('autocomplete', 'off')
+
+    // Off the accessibility tree: it lives inside an aria-hidden wrapper.
+    await expect(
+      page.locator('[aria-hidden="true"] input[name="botField"]'),
+      'honeypot is inside an aria-hidden container',
+    ).toHaveCount(1)
+
+    // Not actually visible: the wrapper is a 1x1 clip box. We assert the wrapper's
+    // bounding box (<=1px), NOT locator.isVisible() — Playwright ignores ancestor
+    // clip/overflow and reports this pattern as visible (a known false positive).
+    const wrapper = page.locator('div[aria-hidden="true"]', {
+      has: page.locator('input[name="botField"]'),
+    })
+    const box = await wrapper.boundingBox()
+    expect(box, 'the honeypot wrapper has a layout box').not.toBeNull()
+    expect(box!.width, 'honeypot wrapper collapses to <=1px wide').toBeLessThanOrEqual(1)
+    expect(box!.height, 'honeypot wrapper collapses to <=1px tall').toBeLessThanOrEqual(1)
   })
 })
 
