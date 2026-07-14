@@ -1,7 +1,44 @@
-import type { CollectionConfig } from 'payload'
+import type {
+  CollectionAfterChangeHook,
+  CollectionAfterDeleteHook,
+  CollectionConfig,
+} from 'payload'
+import { revalidatePath } from 'next/cache'
 
 import { isAdminOrEditor, publishedOrStaff } from '@/access'
 import { validateURL } from '@/fields/validators'
+
+/**
+ * On-demand revalidation for the testimonials index (issue #1 "content revalidation
+ * mechanism" decision). Payload 3 runs in-process with Next, so creating, editing,
+ * unpublishing, or deleting a testimonial calls `revalidatePath('/testimonials')`
+ * directly — no token endpoint, no HTTP round-trip — and the change appears without a
+ * redeploy.
+ *
+ * Guarded: `revalidatePath` throws when there is no Next request scope (Local API
+ * seeds, migrations, and the integration tests that `payload.create` testimonials), so
+ * the call is wrapped and a failure is logged, never rethrown. Revalidation can never
+ * fail the write (same principle as the never-throwing lead-notification hooks).
+ */
+function revalidateTestimonialsIndex(payload: { logger: { warn: (msg: string) => void } }): void {
+  try {
+    revalidatePath('/testimonials')
+  } catch (err) {
+    payload.logger.warn(
+      `Testimonials revalidatePath('/testimonials') skipped (no request scope): ${String(err)}`,
+    )
+  }
+}
+
+const revalidateAfterChange: CollectionAfterChangeHook = ({ doc, req }) => {
+  revalidateTestimonialsIndex(req.payload)
+  return doc
+}
+
+const revalidateAfterDelete: CollectionAfterDeleteHook = ({ doc, req }) => {
+  revalidateTestimonialsIndex(req.payload)
+  return doc
+}
 
 /**
  * Testimonials (PRD §9). CMS-driven (PRD §13: dynamic, not hardcoded) so the
@@ -24,6 +61,10 @@ export const Testimonials: CollectionConfig = {
     create: isAdminOrEditor,
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
+  },
+  hooks: {
+    afterChange: [revalidateAfterChange],
+    afterDelete: [revalidateAfterDelete],
   },
   fields: [
     { name: 'quote', type: 'textarea', required: true },
