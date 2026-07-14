@@ -1,7 +1,7 @@
 import type { CollectionConfig, PayloadRequest } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
-import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
+import { isAdmin, isAdminFieldLevel } from '@/access'
 import { sendNewsletterConfirmation } from '@/email/leadNotifications'
 
 /**
@@ -16,8 +16,9 @@ import { sendNewsletterConfirmation } from '@/email/leadNotifications'
  * UPSERT: the public signup form must POST to the custom `/subscribe` endpoint
  * (below), NOT the raw `create` — re-subscribing an existing email there is
  * idempotent (updates the row, no duplicate, no error). The raw collection
- * `create` stays `anyone` (admin/internal use) but 400s on a duplicate email,
- * because Payload can't cleanly make a raw create idempotent. See the endpoint.
+ * `create` is **Admin-only**: `/subscribe` runs with `overrideAccess`, so it's
+ * unaffected, and closing anonymous raw create removes the only public path that
+ * could 400 on a duplicate (or bypass the endpoint). See the endpoint.
  */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -31,7 +32,7 @@ export const NewsletterSubscribers: CollectionConfig = {
     group: 'Leads',
   },
   access: {
-    create: anyone,
+    create: isAdmin,
     read: isAdmin,
     update: isAdmin,
     delete: isAdmin,
@@ -54,23 +55,24 @@ export const NewsletterSubscribers: CollectionConfig = {
       // Find-or-create by email: a new email is created (afterChange sends the
       // confirmation); an existing email is re-subscribed (status → subscribed)
       // with no duplicate row and no error, and the confirmation is sent here.
+      //
+      // Response is a UNIFORM `200 { ok: true }` for every outcome — success,
+      // re-subscribe, honeypot, and invalid input all look identical from the
+      // outside. That closes membership enumeration: a caller can't tell whether
+      // an email was already subscribed (or exists) from the response.
       path: '/subscribe',
       method: 'post',
       handler: async (req: PayloadRequest) => {
+        const ok = () => Response.json({ ok: true }, { status: 200 })
+
         await addDataAndFileToRequest(req)
         const data = (req.data ?? {}) as { email?: string; source?: string; botField?: string }
 
-        // Honeypot — a filled value is a bot; succeed without persisting so the
-        // trap isn't revealed.
-        if (data.botField) return Response.json({ ok: true }, { status: 200 })
-
+        // Honeypot (bot) or malformed email: succeed uniformly without
+        // persisting. `/subscribe` is the only public write path, so nothing is
+        // stored for these; a real form validates the address client-side first.
         const email = (data.email ?? '').trim().toLowerCase()
-        if (!EMAIL_RE.test(email)) {
-          return Response.json(
-            { errors: [{ message: 'Enter a valid email address.' }] },
-            { status: 400 },
-          )
-        }
+        if (data.botField || !EMAIL_RE.test(email)) return ok()
 
         const source = typeof data.source === 'string' ? data.source : undefined
 
@@ -91,17 +93,19 @@ export const NewsletterSubscribers: CollectionConfig = {
             data: { status: 'subscribed', ...(source ? { source } : {}) },
             overrideAccess: true,
           })
+          // Re-subscribe is an update; afterChange only mails on create, so send
+          // the confirmation here.
           await sendNewsletterConfirmation(req.payload, email)
-          return Response.json({ ok: true, resubscribed: true }, { status: 200 })
+          return ok()
         }
 
-        const created = await req.payload.create({
+        await req.payload.create({
           collection: 'newsletter-subscribers',
           data: { email, status: 'subscribed', ...(source ? { source } : {}) },
           overrideAccess: true,
         })
         // afterChange(create) sends the confirmation — not re-sent here.
-        return Response.json({ ok: true, id: created.id }, { status: 201 })
+        return ok()
       },
     },
   ],
