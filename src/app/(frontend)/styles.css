@@ -1144,18 +1144,28 @@ code,
   }
 }
 
-/* ---------- Nav-only breakpoint (issue #45) ----------
+/* ---------- Nav-only breakpoint (issues #45, #58) ----------
    A11y-driven responsive amendment to the reference (WCAG 1.4.10 reflow).
    The full horizontal nav (brand + 6 links + Contact + Request-a-demo CTA)
-   measures ~809px min-content, but site.css folds to the hamburger only at
-   <=680px — so 681-808px (iPad portrait = 768) forced documentElement.scrollWidth
-   to 809 and a ~41px page-level horizontal scrollbar on every page. Fold the nav
-   to its drawer at <=820px (margin above the measured 809px fit point). This
-   moves ONLY the nav: the generic content breakpoints (grid collapse, footer
-   stacking) stay at 680 below, so only the nav switches to the burger earlier.
-   Design-source fold-in still pending — site.css needs the same 680->820 change
-   upstream. (Same pattern as the .footer__cta phone amendment below.) */
-@media (max-width: 820px) {
+   folds to the hamburger drawer here rather than overflowing.
+
+   #45 folded at <=820px, chosen from a 809px `documentElement.scrollWidth`
+   measurement. But scrollWidth is the WRONG signal: the nav links have no
+   `white-space: nowrap`, so once the row can't fit on one line the labels WRAP
+   to two lines ("Budget Software" -> "Budget" / "Software") instead of forcing a
+   horizontal scrollbar. scrollWidth therefore stayed == viewport (no overflow)
+   while the nav silently rendered two lines across the whole 821-959 band on
+   every page (#58). The true SINGLE-LINE fit point, measured with Nunito loaded,
+   is ~908px (links wrap at <=905, clear at >=910; the load-time fallback font is
+   narrower and clears even earlier). Fold at <=959px: generous margin above the
+   ~908px fit point, and it lands the nav fold exactly on the existing 960px
+   tablet reflow breakpoint above, so the nav switches to the burger precisely
+   where the page adopts its tablet layout. The full nav returns at >=960px (its
+   tablet padding comes from the 960px block above). Generic content breakpoints
+   (grid collapse, footer stacking) stay at 680 below — this moves ONLY the nav.
+   Design-source fold-in still pending — site.css needs the same change upstream.
+   (Same pattern as the .footer__cta phone amendment below.) */
+@media (max-width: 959px) {
   .nav {
     padding: 14px 20px !important;
   }
@@ -1209,6 +1219,22 @@ code,
   }
   .nav__cta .btn {
     width: 100%;
+  }
+}
+
+/* ---------- Full-nav gutter step (issue #58) ----------
+   The nav folds out to the full row at >=960px, but the comp's 56px `.nav`
+   gutter needs ~962px for the single-line row — so with that gutter the full nav
+   wraps for the first pixel above the fold (w=961 measured: 28px tablet gutter at
+   960 fits, 56px base gutter at 961 wraps, 962 fits again). Hold the tablet 28px
+   horizontal gutter across the narrow band right above the fold so the full nav
+   clears its own fold-out cleanly; the comp's 56px gutter resumes at >=964 where
+   the row has room. Reuses the tablet block's 28px value — no new gutter value,
+   and only the horizontal gutter is touched (vertical padding is left to inherit). */
+@media (min-width: 960px) and (max-width: 963px) {
+  .nav {
+    padding-left: 28px;
+    padding-right: 28px;
   }
 }
 

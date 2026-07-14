@@ -229,16 +229,19 @@ test.describe('Homepage — accessibility smoke', () => {
   })
 })
 
-// ------------- Responsive nav — WCAG 1.4.10 reflow (issue #45) ---------------
+// ------------- Responsive nav — WCAG 1.4.10 reflow (issues #45, #58) ----------
 
-test.describe('Homepage — nav folds to the hamburger before it overflows', () => {
-  // The full horizontal nav (brand + 6 links + Contact + Request-a-demo CTA)
-  // needs ~809px; site.css engaged the burger only at <=680px, so at iPad-portrait
-  // 768 the nav forced documentElement.scrollWidth to 809 — a page-level horizontal
-  // scrollbar (WCAG 1.4.10 reflow fail) on every page. styles.css raises the nav's
-  // fold breakpoint to <=820px. This guard pins that: at 768 the page must not
-  // scroll horizontally and the burger — not the desktop link row — is the nav
-  // control. Anchored to the 809px overflow condition, not the current link count.
+test.describe('Homepage — nav folds to the hamburger before it wraps', () => {
+  // The full horizontal nav (brand + 6 links + Contact + Request-a-demo CTA) has
+  // no `white-space: nowrap`, so when the row can't fit it WRAPS the labels to two
+  // lines rather than overflowing. #45 folded to the burger at <=820px off a 809px
+  // scrollWidth reading, but the true single-line fit point is ~908px (Nunito), so
+  // 821-959 silently rendered a two-line nav on every page (#58). styles.css now
+  // folds at <=959px and holds the compact gutter across 960-963 so the full nav
+  // clears its own fold-out. These guards pin the behaviour at three widths:
+  // 768 and 900 (folded, previously overflowing / wrapping) and 960 (full nav,
+  // single line). Anchored to the fold/wrap condition, not the current link count.
+
   test('at 768px width there is no horizontal overflow and the burger is the nav control', async ({
     page,
   }) => {
@@ -253,6 +256,58 @@ test.describe('Homepage — nav folds to the hamburger before it overflows', () 
     // drawer (display:none until opened), so the burger is THE nav control here.
     await expect(page.locator('.nav__burger')).toBeVisible()
     await expect(page.locator('.nav__links a').first()).toBeHidden()
+  })
+
+  test('at 900px (the old wrap band) the nav is folded to the burger, not wrapped', async ({
+    page,
+  }) => {
+    // 821-959 used to show the full nav with labels wrapped to two lines (#58);
+    // the raised fold now covers the whole band. Font-independent assertion — the
+    // drawer-hidden link row can't wrap regardless of which font is loaded.
+    await page.setViewportSize({ width: 900, height: 900 })
+    await page.goto('/')
+
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    expect(scrollWidth, 'no page-level horizontal scrollbar at 900px').toBe(900)
+
+    await expect(page.locator('.nav__burger')).toBeVisible()
+    await expect(page.locator('.nav__links a').first()).toBeHidden()
+  })
+
+  test('at 960px the full nav is restored on a single line (no wrap)', async ({ page }) => {
+    await page.setViewportSize({ width: 960, height: 900 })
+    await page.goto('/')
+    // Nunito must be settled before measuring row height, or the load-time
+    // fallback metrics make the height flaky.
+    await page.evaluate(() => document.fonts.ready)
+
+    // Full nav restored: burger hidden, desktop link row visible.
+    await expect(page.locator('.nav__burger')).toBeHidden()
+    await expect(page.locator('.nav__links a').first()).toBeVisible()
+
+    // One line: the links row is a single line box (~28px), not the ~49px
+    // two-line wrap — "links visible" alone passes even when visible-and-wrapped.
+    const rowHeight = await page
+      .locator('.nav__links')
+      .evaluate((el) => el.getBoundingClientRect().height)
+    expect(
+      rowHeight,
+      'nav links row must be a single line (<=35px), not wrapped',
+    ).toBeLessThanOrEqual(35)
+
+    // 961px specifically guards the min-width:960/max-width:963 gutter rule: at 961
+    // the comp's 56px gutter would leave the row 1px short and wrap it (960 is saved
+    // by the tablet block's 28px gutter, so the assertion above would still pass if
+    // that rule were deleted). This is the pixel that actually breaks without it.
+    await page.setViewportSize({ width: 961, height: 900 })
+    await page.evaluate(() => document.fonts.ready)
+    const rowHeight961 = await page
+      .locator('.nav__links')
+      .evaluate((el) => el.getBoundingClientRect().height)
+    expect(
+      rowHeight961,
+      'full nav must stay single-line at 961px (the gutter-step edge)',
+    ).toBeLessThanOrEqual(35)
   })
 })
 

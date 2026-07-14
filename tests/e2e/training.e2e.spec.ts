@@ -315,12 +315,13 @@ test.describe('AI Training page — #agenda anchor target', () => {
 
 // ------------------- Responsive nav & reflow (WCAG 1.4.10) ------------------
 
-test.describe('AI Training page — nav folds to the hamburger before it overflows', () => {
-  // Shared-chrome guard mirrored from home.e2e.spec.ts (issue #45): the full desktop nav
-  // needs ~809px, so at iPad-portrait 768 it used to force a page-level horizontal
-  // scrollbar. styles.css folds the nav to the burger at <=820px. This pins that on the
-  // training page: at 768 the page must not scroll horizontally and the burger — not the
-  // desktop link row — is the nav control.
+test.describe('AI Training page — nav folds to the hamburger before it wraps', () => {
+  // Shared-chrome guard mirrored from home.e2e.spec.ts (issues #45/#58): the full
+  // desktop nav has no nowrap, so below its ~908px single-line fit point the labels
+  // wrap to two lines. styles.css folds the nav to the burger at <=959px. This pins
+  // that on the training page: at 768 the page must not scroll horizontally and the
+  // burger — not the desktop link row — is the nav control. (home.e2e pins the full
+  // 768/900/960 behaviour.)
   test('at 768px width there is no horizontal overflow and the burger is the nav control', async ({
     page,
   }) => {

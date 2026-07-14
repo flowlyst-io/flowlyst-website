@@ -566,9 +566,10 @@ test.describe('Contact page — responsive & accessibility smoke', () => {
   test('at 768px width there is no horizontal overflow and the burger is the nav control', async ({
     page,
   }) => {
-    // The site.css nav folds to the hamburger at <=820px; at iPad-portrait 768 the
-    // desktop link row would otherwise force a page-level horizontal scrollbar (WCAG
-    // 1.4.10 reflow). Mirrors the home-page guard.
+    // The nav folds to the hamburger at <=959px (issues #45/#58); at iPad-portrait
+    // 768 the desktop link row would otherwise wrap / force a page-level horizontal
+    // scrollbar (WCAG 1.4.10 reflow). Mirrors the home-page guard, which pins the
+    // full 768/900/960 fold behaviour.
     await page.setViewportSize({ width: 768, height: 1024 })
     await page.goto(PATH)
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
