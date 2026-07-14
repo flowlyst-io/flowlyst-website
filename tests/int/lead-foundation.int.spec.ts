@@ -393,6 +393,41 @@ describe('NewsletterSubscribers — /subscribe endpoint, uniqueness, PII', () =>
       payload.find({ collection: 'newsletter-subscribers', overrideAccess: false }),
     ).rejects.toThrow()
   })
+
+  it('denies an anonymous RAW create — public signup must go through /subscribe', async () => {
+    // Raw collection `create` is Admin-only (the public path is the idempotent,
+    // honeypot-guarded, anti-enumeration `/subscribe` endpoint). An anonymous raw
+    // create must be rejected.
+    await expect(
+      payload.create({
+        collection: 'newsletter-subscribers',
+        data: { email: `news-rawanon-${stamp}@example.org` },
+        overrideAccess: false, // anonymous
+      }),
+    ).rejects.toThrow()
+    // And nothing persisted under that identity.
+    const found = await findSubscribers(`news-rawanon-${stamp}@example.org`)
+    expect(found.totalDocs, 'a denied raw create must persist nothing').toBe(0)
+  })
+
+  it('allows an Admin raw create but denies an Editor (admin-only write)', async () => {
+    const created = await payload.create({
+      collection: 'newsletter-subscribers',
+      data: { email: `news-rawadmin-${stamp}@example.org` },
+      overrideAccess: false,
+      user: admin,
+    })
+    expect(created.id, 'an Admin may raw-create').toBeDefined()
+
+    await expect(
+      payload.create({
+        collection: 'newsletter-subscribers',
+        data: { email: `news-raweditor-${stamp}@example.org` },
+        overrideAccess: false,
+        user: editor, // content role — not the lead inboxes (PRD §9)
+      }),
+    ).rejects.toThrow()
+  })
 })
 
 // ===================== Email notifier — the IRON RULE (§8, invariant d) =======
