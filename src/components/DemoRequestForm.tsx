@@ -79,40 +79,21 @@ const INITIAL: Values = {
   consent: false,
 }
 
-// Client-required = the comp's asterisked fields + consent. (Server hard-requires
-// only fullName / workEmail / consent; the rest are client-strict to match the comp.)
-type ErrorKey =
-  | 'fullName'
-  | 'title'
-  | 'district'
-  | 'workEmail'
-  | 'phone'
-  | 'datePreference'
-  | 'consent'
+// Client-required set = the server's hard-required set (fullName / workEmail /
+// consent + email format). Adjudication on #14: PRD §8.1 "keep it short" beats the
+// comp's required-markers on title / district / phone / date, and aligning the
+// client to the server contract avoids over-blocking the highest-intent form.
+// Those four fields render without an asterisk and never block submission.
+type ErrorKey = 'fullName' | 'workEmail' | 'consent'
 
 // The required text fields are exactly the non-consent error keys (all of them
 // are also TextField / Values keys), so validation can index both records safely.
 type RequiredTextField = Exclude<ErrorKey, 'consent'>
 
-const REQUIRED_TEXT: RequiredTextField[] = [
-  'fullName',
-  'title',
-  'district',
-  'workEmail',
-  'phone',
-  'datePreference',
-]
+const REQUIRED_TEXT: RequiredTextField[] = ['fullName', 'workEmail']
 
 // Focus order for the first-invalid field (mirrors visual/DOM order).
-const FOCUS_ORDER: ErrorKey[] = [
-  'fullName',
-  'title',
-  'district',
-  'workEmail',
-  'phone',
-  'datePreference',
-  'consent',
-]
+const FOCUS_ORDER: ErrorKey[] = ['fullName', 'workEmail', 'consent']
 
 // Pragmatic email shape check — the collection's `email` field re-validates server-side.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -277,10 +258,8 @@ export function DemoRequestForm() {
         <Field
           name="title"
           label="Title"
-          required
           value={values.title}
           onChange={setText('title')}
-          error={errors.title}
           fieldId={fieldId}
           errorId={errorId}
         />
@@ -290,10 +269,8 @@ export function DemoRequestForm() {
         <Field
           name="district"
           label="District / org"
-          required
           value={values.district}
           onChange={setText('district')}
-          error={errors.district}
           fieldId={fieldId}
           errorId={errorId}
         />
@@ -315,10 +292,8 @@ export function DemoRequestForm() {
           name="phone"
           label="Phone"
           type="tel"
-          required
           value={values.phone}
           onChange={setText('phone')}
-          error={errors.phone}
           fieldId={fieldId}
           errorId={errorId}
         />
@@ -326,10 +301,8 @@ export function DemoRequestForm() {
           name="datePreference"
           label="Date preference"
           type="date"
-          required
           value={values.datePreference}
           onChange={setText('datePreference')}
-          error={errors.datePreference}
           fieldId={fieldId}
           errorId={errorId}
         />
