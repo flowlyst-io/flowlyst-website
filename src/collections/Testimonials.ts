@@ -3,40 +3,24 @@ import type {
   CollectionAfterDeleteHook,
   CollectionConfig,
 } from 'payload'
-import { revalidatePath } from 'next/cache'
 
 import { isAdminOrEditor, publishedOrStaff } from '@/access'
 import { validateURL } from '@/fields/validators'
+import { revalidatePaths } from '@/utilities/revalidate'
 
 /**
- * On-demand revalidation for the testimonials index (issue #1 "content revalidation
- * mechanism" decision). Payload 3 runs in-process with Next, so creating, editing,
- * unpublishing, or deleting a testimonial calls `revalidatePath('/testimonials')`
- * directly — no token endpoint, no HTTP round-trip — and the change appears without a
- * redeploy.
- *
- * Guarded: `revalidatePath` throws when there is no Next request scope (Local API
- * seeds, migrations, and the integration tests that `payload.create` testimonials), so
- * the call is wrapped and a failure is logged, never rethrown. Revalidation can never
- * fail the write (same principle as the never-throwing lead-notification hooks).
+ * On-demand revalidation for the testimonials index (issue #1 decision). Creating,
+ * editing, unpublishing, or deleting a testimonial refreshes `/testimonials` without
+ * a redeploy via the shared never-throw `revalidatePaths` helper — the guard and the
+ * settled import-style rationale live there.
  */
-function revalidateTestimonialsIndex(payload: { logger: { warn: (msg: string) => void } }): void {
-  try {
-    revalidatePath('/testimonials')
-  } catch (err) {
-    payload.logger.warn(
-      `Testimonials revalidatePath('/testimonials') skipped (no request scope): ${String(err)}`,
-    )
-  }
-}
-
 const revalidateAfterChange: CollectionAfterChangeHook = ({ doc, req }) => {
-  revalidateTestimonialsIndex(req.payload)
+  revalidatePaths(['/testimonials'], req)
   return doc
 }
 
 const revalidateAfterDelete: CollectionAfterDeleteHook = ({ doc, req }) => {
-  revalidateTestimonialsIndex(req.payload)
+  revalidatePaths(['/testimonials'], req)
   return doc
 }
 

@@ -4,6 +4,7 @@ import { nunito } from './fonts'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { getServerURL } from '@/utilities/serverURL'
+import { serializeJsonLd } from '@/utilities/jsonLd'
 import './styles.css'
 
 const serverURL = getServerURL()
@@ -53,7 +54,7 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
       <body>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationSchema) }}
         />
         <a href="#main-content" className="skip-link">
           Skip to content

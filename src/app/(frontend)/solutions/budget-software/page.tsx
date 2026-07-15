@@ -9,6 +9,7 @@ import { SolutionHero } from '@/components/solutions/SolutionHero'
 import { SectionHead } from '@/components/solutions/SectionHead'
 import { ProductMock } from '@/components/solutions/ProductMock'
 import { getServerURL } from '@/utilities/serverURL'
+import { serializeJsonLd } from '@/utilities/jsonLd'
 
 /**
  * Budget Software solution page (`/solutions/budget-software`, PRD §4.1 / §7 / §11)
@@ -168,7 +169,7 @@ export default async function BudgetSoftwarePage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceSchema) }}
       />
 
       <SolutionHero
