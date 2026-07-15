@@ -1386,3 +1386,200 @@ code,
     top: auto;
   }
 }
+
+/* ============================================================
+   Legal pages — /privacy, /terms, /cookies (#22)
+   design/site/pages.jsx → LegalPage: a sticky left TOC (cross-nav
+   between the three docs) beside a 720px content column. The
+   220px sidebar / 80px gap / sticky top:100px are the comp's own
+   values (top:100px mirrors .request-demo__aside above). It
+   collapses to one column at the 960px reflow breakpoint, where
+   the sidebar stops sticking and stacks above the copy. Colors
+   are tokens; small text uses --c-ink-2, NOT the parked-AA-fail
+   --c-ink-3 the comp painted it with (see LegalPage.tsx header).
+   ============================================================ */
+.legal {
+  padding: 56px 56px 120px;
+}
+.legal__grid {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.legal__nav {
+  position: sticky;
+  top: 100px;
+}
+.legal__toc {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+.legal__toc-link {
+  display: block;
+  padding-left: 12px;
+  border-left: 2px solid var(--c-cream-2);
+  color: var(--c-ink-2);
+  text-decoration: none;
+}
+.legal__toc-link:hover {
+  color: var(--c-ink);
+}
+.legal__toc-link--active {
+  border-left-color: var(--fl-green);
+  color: var(--c-ink);
+}
+.legal__updated {
+  margin-top: 32px;
+  font-size: var(--fs-caption);
+  color: var(--c-ink-2);
+}
+.legal__body {
+  max-width: 720px;
+}
+.legal__title {
+  margin-bottom: 24px;
+}
+.legal__lead {
+  margin-bottom: 40px;
+}
+.legal__draft {
+  padding: 16px 20px;
+  margin-bottom: 40px;
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-xs);
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--c-ink);
+}
+.legal__section {
+  margin-bottom: 40px;
+}
+.legal__heading {
+  margin-bottom: 16px;
+}
+.legal__subheading {
+  font-size: var(--fs-body-lg);
+  font-weight: 700;
+  color: var(--c-ink);
+  margin: 24px 0 12px;
+}
+.legal__p {
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  color: var(--c-ink);
+  margin-bottom: 14px;
+}
+.legal__list {
+  margin: 0 0 14px;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  color: var(--c-ink);
+}
+.legal__flag {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  margin: 0 0 16px;
+  background: var(--danger-soft);
+  border-left: 3px solid var(--danger);
+  border-radius: var(--radius-xs);
+}
+.legal__flag-label {
+  font-size: var(--fs-caption);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fl-red-600);
+}
+.legal__flag-text {
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--c-ink);
+}
+@media (max-width: 960px) {
+  .legal {
+    padding: 56px 40px 96px;
+  }
+  .legal__grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .legal__nav {
+    position: static;
+    top: auto;
+  }
+}
+@media (max-width: 680px) {
+  .legal {
+    padding: 40px 20px 72px;
+  }
+}
+
+/* ============================================================
+   Cookie-consent banner (#22). Not in the page comp — composed
+   only from design-system tokens. position:fixed so it overlays
+   the page instead of pushing content: its appearance shifts no
+   layout, so CLS stays 0 (PRD §10.2). z-index sits above page
+   content but below the nav / mobile drawer (z-index 50). Stacks
+   its actions below the copy on narrow screens.
+   ============================================================ */
+.cookie-consent {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  background: var(--c-ink);
+  color: var(--c-cream);
+  box-shadow: var(--shadow-lg);
+  padding: 16px 24px;
+}
+.cookie-consent__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.cookie-consent__text {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--c-cream);
+}
+.cookie-consent__link {
+  color: var(--fl-green-200);
+  text-decoration: underline;
+}
+.cookie-consent__link:hover {
+  color: var(--fl-green-100);
+}
+.cookie-consent__actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+@media (max-width: 680px) {
+  .cookie-consent {
+    padding: 16px 20px;
+  }
+  .cookie-consent__inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .cookie-consent__actions {
+    justify-content: flex-end;
+  }
+}
