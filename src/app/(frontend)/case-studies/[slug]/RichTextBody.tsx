@@ -63,7 +63,11 @@ export function RichTextBody({ data }: { data: CaseStudyRichText }) {
                 lineHeight: 1.7,
                 color: 'var(--c-ink)',
                 margin: '0 0 24px',
+                // Restore the markers + indent Tailwind preflight strips (matches the
+                // blog reader's ArticleBody list converter — the #66 fix, ported here).
                 paddingLeft: 24,
+                listStyleType: Tag === 'ol' ? 'decimal' : 'disc',
+                listStylePosition: 'outside',
               }}
             >
               {children}
