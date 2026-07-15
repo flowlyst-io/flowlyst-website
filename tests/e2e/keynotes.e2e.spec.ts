@@ -36,7 +36,8 @@ const PATH = '/solutions/keynotes'
 // --------------------------- dedicated admin --------------------------------
 
 // Own admin identity for this file — deliberately NOT the shared seedTestUser
-// (dev@payloadcms.com) that admin.e2e.spec.ts seeds/cleans, because Playwright runs
+// (dev-e2e-<hash>@payloadcms.com, derived per checkout+port) that admin.e2e.spec.ts
+// seeds/cleans, because Playwright runs
 // spec files in parallel: sharing that record races (one file's afterAll deletes the
 // user mid-login for the other). A per-run stamped email keeps the two isolated.
 const KN_ADMIN = {
