@@ -256,5 +256,21 @@ test.describe('Legal pages — accessibility and cross-navigation', () => {
         390,
       )
     })
+
+    test(`${p.path} h1 uses the comp's smaller clamp, not the site-wide .h1`, async ({ page }) => {
+      // The comp (design/site/pages.jsx) sizes the legal h1 at clamp(40px, 5vw, 64px),
+      // NOT the global .h1 clamp(56px, 7vw, 100px). At 1440px, 5vw=72px clamps to the
+      // 64px max; the global scale would render 100px. Guards against a regression that
+      // drops the scoped override and lets the legal h1 inherit the site-wide size.
+      await page.setViewportSize({ width: 1440, height: 900 })
+      await page.goto(p.path)
+      const size = await page
+        .locator('h1')
+        .evaluate((el) => parseFloat(getComputedStyle(el).fontSize))
+      expect(size, `${p.path} h1 must not exceed the comp's 64px max at 1440`).toBeLessThanOrEqual(
+        64,
+      )
+      expect(size, `${p.path} h1 must be at least the comp's 40px min`).toBeGreaterThanOrEqual(40)
+    })
   }
 })
