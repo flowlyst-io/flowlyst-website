@@ -1443,6 +1443,12 @@ code,
   max-width: 720px;
 }
 .legal__title {
+  /* The comp sizes the legal h1 SMALLER than the site-wide .h1 clamp
+     (56–100px): design/site/pages.jsx (~line 640) uses clamp(40px, 5vw, 64px).
+     Scope the override to the legal shell only — never touch the global .h1.
+     .legal__title follows .h1 in source order at equal specificity, so it wins
+     without !important; the h1 keeps .h1's family/weight/line-height. */
+  font-size: clamp(40px, 5vw, 64px);
   margin-bottom: 24px;
 }
 .legal__lead {
