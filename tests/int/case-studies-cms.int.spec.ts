@@ -109,6 +109,43 @@ function lexicalWithLink(prefix: string, linkText: string, url: string) {
   }
 }
 
+// Lexical state with a bullet list of the given items — used to prove the RichTextBody
+// list converter restores the markers + indent Tailwind preflight strips.
+function lexicalWithList(items: string[]) {
+  return {
+    root: {
+      type: 'root',
+      format: '' as const,
+      indent: 0,
+      version: 1,
+      direction: 'ltr' as const,
+      children: [
+        {
+          type: 'list',
+          tag: 'ul' as const,
+          listType: 'bullet' as const,
+          start: 1,
+          format: '' as const,
+          indent: 0,
+          version: 1,
+          direction: 'ltr' as const,
+          children: items.map((text, i) => ({
+            type: 'listitem',
+            value: i + 1,
+            format: '' as const,
+            indent: 0,
+            version: 1,
+            direction: 'ltr' as const,
+            children: [
+              { type: 'text', format: 0, style: '', mode: 'normal', detail: 0, text, version: 1 },
+            ],
+          })),
+        },
+      ],
+    },
+  }
+}
+
 async function renderIndex(): Promise<string> {
   const element = await (
     CaseStudiesIndexPage as unknown as (props: unknown) => Promise<ReactElement>
@@ -535,6 +572,25 @@ describe('Case study rich text — link scheme sanitization (review finding 3)',
   it('renders a relative link as an anchor (no scheme is safe)', () => {
     const html = renderBody(lexicalWithLink('See ', 'about', '/about'))
     expect(html).toContain('href="/about"')
+  })
+})
+
+describe('Case study rich text — list markers (#67, ports the blog #66 fix)', () => {
+  // Renders RichTextBody directly. Tailwind preflight resets `list-style: none` and
+  // drops list padding, so the converter must re-declare the markers + indent — the
+  // same gap the blog reader closed in #66, deliberately left for case-studies until
+  // this sweep.
+  const renderList = (data: ReturnType<typeof lexicalWithList>): string =>
+    renderToStaticMarkup(RichTextBody({ data }))
+
+  it('restores list-style + indent so bullets render (Tailwind preflight strips them)', () => {
+    const html = renderList(lexicalWithList([`first ${stamp}`, `second ${stamp}`]))
+    expect(html, 'a <ul> is emitted').toMatch(/<ul\b/)
+    expect(html, 'items are <li>').toMatch(/<li\b/)
+    expect(html, 'markers restored via list-style-type').toContain('list-style-type:disc')
+    expect(html, 'indent restored').toContain('padding-left:24px')
+    expect(html).toContain(`first ${stamp}`)
+    expect(html).toContain(`second ${stamp}`)
   })
 })
 
