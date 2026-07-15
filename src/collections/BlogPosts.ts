@@ -1,35 +1,11 @@
 import type { CollectionConfig } from 'payload'
-import { revalidatePath } from 'next/cache'
 
 import { isAdminOrEditor, publishedOrStaff } from '@/access'
 import { seoFields } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
 import { readingTimeMinutes } from '@/utilities/readingTime'
 import { buildPreviewUrl } from '@/utilities/previewUrl'
-
-/**
- * On-demand revalidation (issue #1 decision log). Payload 3 runs in-process with
- * Next, so a content change calls Next's `revalidatePath()` directly — no webhook,
- * no token endpoint, no cron. The `/blog` index and the affected post path are
- * dropped so new/edited/unpublished posts appear (or disappear) without a redeploy
- * (#18's hard requirement). The hook lives in this collection file, not a shared
- * helper, so the three Phase 4 content lanes stay conflict-free (per the #1 decision).
- *
- * Wrapped in try/catch: these hooks ALSO fire from the Payload Local API OUTSIDE a
- * Next request (integration tests, seed scripts), where `revalidatePath` has no
- * render/request store to write to and throws. Swallowing that keeps a Local-API
- * write from failing — the write itself still commits; there is simply nothing to
- * revalidate. Callers that want to opt out entirely can set `context.disableRevalidate`.
- */
-function revalidateBlog(slug?: string | null): void {
-  try {
-    revalidatePath('/blog')
-    if (slug) revalidatePath(`/blog/${slug}`)
-  } catch {
-    // Outside a Next request context (Local API / tests) there is nothing to
-    // revalidate; the underlying content write still succeeds.
-  }
-}
+import { revalidatePaths } from '@/utilities/revalidate'
 
 /**
  * Blog posts (PRD §9). The richest content type:
@@ -145,19 +121,21 @@ export const BlogPosts: CollectionConfig = {
     ],
     afterChange: [
       ({ doc, previousDoc, req }) => {
-        if (req?.context?.disableRevalidate) return doc
         const slug = (doc as { slug?: string })?.slug
-        revalidateBlog(slug)
-        // If the slug changed, drop the old post path too so the stale URL 404s.
         const prevSlug = (previousDoc as { slug?: string })?.slug
-        if (prevSlug && prevSlug !== slug) revalidateBlog(prevSlug)
+        // Drop the index + the post path; on a slug rename drop the old path too so
+        // the stale URL 404s.
+        revalidatePaths(
+          ['/blog', slug && `/blog/${slug}`, prevSlug && prevSlug !== slug && `/blog/${prevSlug}`],
+          req,
+        )
         return doc
       },
     ],
     afterDelete: [
       ({ doc, req }) => {
-        if (req?.context?.disableRevalidate) return doc
-        revalidateBlog((doc as { slug?: string })?.slug)
+        const slug = (doc as { slug?: string })?.slug
+        revalidatePaths(['/blog', slug && `/blog/${slug}`], req)
         return doc
       },
     ],

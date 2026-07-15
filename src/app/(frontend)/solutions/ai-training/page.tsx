@@ -4,6 +4,7 @@ import { FinalCTA } from '@/components/FinalCTA'
 import { SolutionHero } from '@/components/solutions/SolutionHero'
 import { SectionHead } from '@/components/solutions/SectionHead'
 import { getServerURL } from '@/utilities/serverURL'
+import { serializeJsonLd } from '@/utilities/jsonLd'
 
 /**
  * AI Training solution page (`/solutions/ai-training`, PRD §4.2 / §3.4 / §7 / §11),
@@ -174,7 +175,7 @@ export default function AiTrainingPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceSchema) }}
       />
 
       <SolutionHero

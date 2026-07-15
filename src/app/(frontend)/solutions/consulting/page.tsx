@@ -5,6 +5,7 @@ import { FinalCTA } from '@/components/FinalCTA'
 import { SolutionHero } from '@/components/solutions/SolutionHero'
 import { SectionHead } from '@/components/solutions/SectionHead'
 import { getServerURL } from '@/utilities/serverURL'
+import { serializeJsonLd } from '@/utilities/jsonLd'
 
 /**
  * AI & Automation Consulting solution page (`/solutions/consulting`, PRD §4.3 /
@@ -148,7 +149,7 @@ export default function ConsultingPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceSchema) }}
       />
 
       <SolutionHero

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Mark } from '@/components/Mark'
 import { FinalCTA } from '@/components/FinalCTA'
 import { getServerURL } from '@/utilities/serverURL'
+import { serializeJsonLd } from '@/utilities/jsonLd'
 
 /**
  * About (`/about`) — the real page for issue #7, built against the settled design
@@ -109,7 +110,7 @@ export default function AboutPage() {
       {/* Founder structured data (PRD §6). The layout owns the Organization node. */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(personSchema) }}
       />
 
       {/* HERO — cream, type-led, soft warm wash + oversized faded mark */}

@@ -6,6 +6,7 @@ import { SolutionHero } from '@/components/solutions/SolutionHero'
 import { SectionHead } from '@/components/solutions/SectionHead'
 import { SpeakingRequestForm } from '@/components/solutions/SpeakingRequestForm'
 import { getServerURL } from '@/utilities/serverURL'
+import { serializeJsonLd } from '@/utilities/jsonLd'
 
 /**
  * Keynotes solution page (`/solutions/keynotes`, PRD §4.4 / §7). Aziz Aghayev's
@@ -113,7 +114,7 @@ export default function KeynotesPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceSchema) }}
       />
 
       <SolutionHero
