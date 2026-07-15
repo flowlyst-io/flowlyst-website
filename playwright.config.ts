@@ -38,6 +38,33 @@ export default defineConfig({
     baseURL,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    /*
+     * Seed an ACCEPTED cookie-consent cookie for every spec (issue #22). The consent
+     * banner is mounted globally in the frontend layout and, with no consent cookie,
+     * renders a `position: fixed` bottom overlay on first visit. That overlay sits over
+     * the footer links and the bottom of the demo/contact forms, so Playwright's
+     * actionability checks would fail across the existing suite. Seeding the cookie
+     * keeps the banner hidden everywhere by default; the dedicated cookie-consent spec
+     * resets storageState (`test.use`) so it starts with no cookie and exercises the
+     * banner. `domain: 'localhost'` matches the baseURL host; `expires: -1` is a
+     * session cookie (persists for each test's context). The banner reads this via
+     * document.cookie, so it must be non-httpOnly.
+     */
+    storageState: {
+      cookies: [
+        {
+          name: 'fl_cookie_consent',
+          value: 'accepted',
+          domain: 'localhost',
+          path: '/',
+          expires: -1,
+          httpOnly: false,
+          secure: false,
+          sameSite: 'Lax',
+        },
+      ],
+      origins: [],
+    },
   },
   projects: [
     {

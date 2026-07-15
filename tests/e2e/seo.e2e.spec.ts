@@ -23,6 +23,9 @@ const STATIC_PATHS = [
   '/blog',
   '/testimonials',
   '/case-studies',
+  '/privacy',
+  '/terms',
+  '/cookies',
 ]
 
 const AI_CRAWLERS = ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended']
