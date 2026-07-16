@@ -29,7 +29,7 @@ Actually look at the images. Report what you **see**: layout matches the page de
 ## Screenshot economy
 
 - **Full matrix only when it's due** — first verification of a page, or a structural/layout change. For fix-pass deltas, re-shoot only the page × theme × viewport × state combos the delta touches (delta-scoped verification, per the CLAUDE.md cost rules).
-- **Shoot the region that changed** — for single-section deltas, clip to the affected section instead of full-page captures.
+- **Shoot the region that changed** — for single-section deltas, capture just the affected section instead of full-page shots.
 - **Keep passes bounded** — if a pass would exceed ~12 screenshots, state why or split the verification.
 
 ## How you report
