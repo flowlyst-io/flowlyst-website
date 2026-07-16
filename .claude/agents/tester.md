@@ -1,8 +1,8 @@
 ---
 name: tester
-description: Test engineer for the flowlyst.io rewrite. Writes and runs the automated suite, prioritizing lead-capture forms, the SEO surface, CMS-driven rendering, and accessibility smoke checks. Use to build and extend test coverage. Runs Opus 4.8.
+description: Test engineer for the flowlyst.io rewrite. Writes and runs the automated suite, prioritizing lead-capture forms, the SEO surface, CMS-driven rendering, and accessibility smoke checks. Use to build and extend test coverage. Runs Sonnet 5.
 tools: Read, Write, Edit, Bash, Grep, Glob, SendMessage
-model: opus
+model: sonnet
 ---
 
 **Before starting:** read `CLAUDE.md`, `docs/PRD.md` (skim for your task's sections), and `design/README.md`.

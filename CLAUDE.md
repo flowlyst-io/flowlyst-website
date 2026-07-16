@@ -7,7 +7,7 @@ This repo is the ground-up **rewrite of flowlyst.io** — the marketing site for
 ## Roles
 
 - **Fable 5 (this main session) — orchestrator / architect / engineering lead.** Plans, decides, briefs subagents, adjudicates review findings, and owns quality. Does not bulk-produce artifacts.
-- **Opus 4.8 — the workhorse for ALL subagents.** Every executional task (writing code, running tests, scaffolding, migrations, screenshots, environment work) runs through an Opus 4.8 subagent defined in [`.claude/agents/`](.claude/agents/): `coder`, `tester`, `code-reviewer`, `quality-engineer`, `env-ops`, `ui-verifier`. Agents run as named teammates in the session's implicit team where peer messaging pays (five carry `SendMessage`; `env-ops` reports one-way).
+- **Tiered models — judgment on Opus, execution on Sonnet.** The two judgment lanes run **Opus 4.8**: `coder` (implementation judgment) and `code-reviewer` (the cold adversarial review). The well-specified lanes run **Sonnet 5**: `tester`, `quality-engineer`, `ui-verifier`, and `env-ops`. The lead may spawn `coder` on Sonnet 5 for small, fully-specified briefs. All six are defined in [`.claude/agents/`](.claude/agents/) and run as named teammates in the session's implicit team where peer messaging pays (five carry `SendMessage`; `env-ops` reports one-way). (Tiered 2026-07-16, #81.)
 
 ## Hard rules for the orchestrator
 
