@@ -1,6 +1,6 @@
 ---
 name: coder
-description: Senior Next.js/TypeScript engineer for the flowlyst.io rewrite. Implements exactly what a brief specifies — pages, components, routes, forms, CMS wiring — against the App Router and the synced design system. Use for all source-code production. Runs Opus 4.8.
+description: Senior Next.js/TypeScript engineer for the flowlyst.io rewrite. Implements exactly what a brief specifies — pages, components, routes, forms, CMS wiring — against the App Router and the synced design system. Use for all source-code production. Runs Opus 4.8 (the lead may spawn small, fully-specified briefs on Sonnet 5).
 tools: Read, Write, Edit, Bash, Grep, Glob, SendMessage
 model: opus
 ---

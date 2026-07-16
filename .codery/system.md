@@ -22,7 +22,7 @@ The **old site** — `naysaziz/flowlyst-landing`, a Next.js + React-Admin monore
 
 ## Operating model
 
-The **main session runs on Fable 5** as orchestrator/architect: it plans, briefs, adjudicates review findings, and owns quality. It never bulk-produces artifacts. **All production work runs through Opus 4.8 agents** defined in [`.claude/agents/`](../.claude/agents/) — `coder`, `tester`, `code-reviewer`, `quality-engineer`, `env-ops`, `ui-verifier` — spawned as named teammates in the session's implicit team; five of the six carry `SendMessage` for peer messaging and direct reports to the orchestrator, with `env-ops` reporting one-way (amended 2026-07-14 — closes #44's spec lag; the SendMessage tool grants landed in 739c1b7). The full contract is in [`CLAUDE.md`](../CLAUDE.md).
+The **main session runs on Fable 5** as orchestrator/architect: it plans, briefs, adjudicates review findings, and owns quality. It never bulk-produces artifacts. **Production work runs through tiered agents** defined in [`.claude/agents/`](../.claude/agents/) — `coder` and `code-reviewer` on **Opus 4.8** (implementation judgment; the cold adversarial review), and `tester`, `quality-engineer`, `ui-verifier`, and `env-ops` on **Sonnet 5** (well-specified execution); the lead may drop `coder` to Sonnet 5 for small, fully-specified briefs (amended 2026-07-16, #81) — spawned as named teammates in the session's implicit team; five of the six carry `SendMessage` for peer messaging and direct reports to the orchestrator, with `env-ops` reporting one-way (amended 2026-07-14 — closes #44's spec lag; the SendMessage tool grants landed in 739c1b7). The full contract is in [`CLAUDE.md`](../CLAUDE.md).
 
 ## Stages (per work item)
 
@@ -98,5 +98,5 @@ Trunk-based. Feature branches `feature/<issue>-<slug>`. **Squash merge.** `main`
 - **Code + issues:** GitHub.
 - **Stack:** Next.js **latest stable + App Router** is decided; all other tech (CMS, testing, form/email delivery, styling, ISR) is decided **in-project, agile** as work reaches it, not upfront (Tural, 2026-07-12).
 - **Infra:** Vercel + Neon — **Tural-operated** (agents prepare config and runbooks; they never run Vercel/Neon commands). Since 2026-07-13 the rule is instruction-only — no ask-gates, no hook; sessions run full auto.
-- **Models:** Fable 5 orchestrates; Opus 4.8 executes.
+- **Models:** Fable 5 orchestrates; Opus 4.8 judges and implements (`coder`, `code-reviewer`); Sonnet 5 runs the well-specified lanes (`tester`, `quality-engineer`, `ui-verifier`, `env-ops`) (#81).
 - **Autonomy:** overnight, unattended runs are wanted.
