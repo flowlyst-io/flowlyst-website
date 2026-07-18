@@ -141,6 +141,9 @@ describe('sitemap() — static routes', () => {
       '/blog',
       '/testimonials',
       '/case-studies',
+      '/privacy',
+      '/terms',
+      '/cookies',
     ]
     for (const path of expectedPaths) {
       expect(urls, `sitemap lists ${path}`).toContain(`${base}${path}`)
