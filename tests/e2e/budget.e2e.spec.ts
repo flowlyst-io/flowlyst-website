@@ -315,7 +315,7 @@ test.describe('Budget page — responsive & accessibility smoke', () => {
 
   test('heading levels within the page never skip', async ({ page }) => {
     await page.goto(PATH)
-    // Scope to the page's own <main> — the footer's h3/h5 chrome is not this page's
+    // Scope to the page's own <main> — the footer's h3/h4 chrome is not this page's
     // content and its structure isn't under test here.
     const levels = await page.$$eval('#main-content :is(h1,h2,h3,h4,h5,h6)', (els) =>
       els.map((el) => Number(el.tagName.slice(1))),
