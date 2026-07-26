@@ -16,5 +16,10 @@
       "Read(./.env)", "Read(./.env.*)", "Read(**/.env)", "Read(**/.env.*)",
       "Read(**/*.pem)", "Read(**/secrets/**)"
     ]
+  },
+  "hooks": {
+    "TeammateIdle": [
+      {"hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/teammate-idle-report-gate.py"}]}
+    ]
   }
 }
