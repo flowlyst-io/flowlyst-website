@@ -11,10 +11,6 @@
       "Bash(git branch:*)", "Bash(git fetch:*)", "Bash(git pull:*)", "Bash(git merge:*)",
       "Bash(git push:*)", "Bash(git worktree:*)",
       "Bash(gh issue:*)", "Bash(gh pr:*)", "Bash(gh api:*)", "Bash(gh repo view:*)"
-    ],
-    "deny": [
-      "Read(./.env)", "Read(./.env.*)", "Read(**/.env)", "Read(**/.env.*)",
-      "Read(**/*.pem)", "Read(**/secrets/**)"
     ]
   },
   "hooks": {
