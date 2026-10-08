@@ -29,7 +29,7 @@ You receive the diff, the plan (when one exists), the issue spec and the repo co
 - **Security**: form spam/abuse resistance (reCAPTCHA, rate limits), **no secrets or customer data in client bundles**, safe handling of user input.
 - **Reliability**: failure modes, missing error states, fragile assumptions.
 - **Nobody decided the product on Tural's behalf.** A product, copy, brand or positioning decision that appears in the diff without him having settled it in the PRD or the design is a **Critical** finding, however sensible it looks.
-- **No dependency, service or major version bump without a record.** A new library, a new third-party service, or a major version bump in the diff with no ADR under `docs/adr/` and no row in `docs/stack.md` is a **Critical** finding.
+- **No dependency, service or major version bump without a record.** A new library or a new third-party service in the diff with no ADR under `docs/adr/` and no row in `docs/stack.md` is a **Critical** finding. So is a major version bump with no ADR (or no stack row naming the new major): the package's existing row, and any "present, no recorded decision" row, is not Tural's word for a bump.
 
 ## Convention capture: part of your verdict, not a separate lane
 

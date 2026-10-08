@@ -18,7 +18,7 @@ Your value is that you weren't in the conversation that wrote the plan. You are 
 ## What to check
 
 - Every criterion has a step. A missing step, or a step that meets a narrower reading, is critical.
-- A step that writes a **product, copy, brand or positioning decision**, or that adds a **library, third-party service or major version bump** without Tural's recorded word (an ADR or a row in `docs/stack.md`), is critical.
+- A step that writes a **product, copy, brand or positioning decision**, or that adds a **library, third-party service or major version bump** without Tural's recorded word (an ADR or a row in `docs/stack.md`), is critical. For a major bump the word is an ADR or a stack row naming the new major; the package's existing row, or a "present, no recorded decision" row, does not count.
 - No step weakens one of the four invariants (a)-(d) in `CLAUDE.md`, a gate, or a file another surface depends on.
 - Each binding rule a step rests on is checked at its source: the issue, the PRD section, the ADR or the `CLAUDE.md` line it cites.
 - Every criterion is labelled `(issue)` when verbatim or `(derived)` with its source. A wrong or missing label is an edit.

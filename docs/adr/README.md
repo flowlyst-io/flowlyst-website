@@ -33,7 +33,7 @@ No records yet. Decisions taken before this record existed live on issue #1 (Arc
 ```markdown
 # NNNN. <Short title in title case>
 
-- **Status**: Proposed | Accepted | Superseded by [NNNN](./NNNN-...) | Deprecated
+- **Status**: Proposed | Accepted | Superseded by NNNN | Deprecated
 - **Date**: YYYY-MM-DD
 
 ## Context
