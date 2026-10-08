@@ -46,23 +46,23 @@ Each is a peer dependency of a decided package, a type package for one, or the d
 
 These were in `package.json` when the record began and no decision for them is on issue #1. They are listed so the dependency check is silent; "present" is not "decided". "First added" is the commit that first put the name in `package.json`.
 
-| Package                            | First added                                                                         | Described in                         |
-| ---------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------ |
-| `@payloadcms/plugin-import-export` | `b71651a` P1: CMS content model (#27)                                               | [`docs/cms.md`](./cms.md) (line 124) |
-| `@payloadcms/storage-vercel-blob`  | `b71651a` P1: CMS content model (#27)                                               | [`docs/cms.md`](./cms.md) (line 106) |
-| `@testing-library/jest-dom`        | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `@testing-library/react`           | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `@vitejs/plugin-react`             | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `cross-env`                        | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `dompurify` (pnpm override)        | `56554b7` chore(deps): remediate Dependabot alerts (#30) (#49)                      |                                      |
-| `dotenv`                           | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `eslint`                           | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `eslint-config-next`               | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `postcss` (also a pnpm override)   | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `prettier`                         | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `sharp`                            | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `tsx`                              | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `vite-tsconfig-paths`              | `1bb48b7` P1: Scaffold (#23)                                                        |                                      |
-| `pnpm` (package manager)           | `1bb48b7` P1: Scaffold (#23); #1 lists "package manager confirmation" as still open |                                      |
+| Package                            | First added                                                                         | Described in              |
+| ---------------------------------- | ----------------------------------------------------------------------------------- | ------------------------- |
+| `@payloadcms/plugin-import-export` | `b71651a` P1: CMS content model (#27)                                               | [`docs/cms.md`](./cms.md) |
+| `@payloadcms/storage-vercel-blob`  | `b71651a` P1: CMS content model (#27)                                               | [`docs/cms.md`](./cms.md) |
+| `@testing-library/jest-dom`        | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `@testing-library/react`           | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `@vitejs/plugin-react`             | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `cross-env`                        | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `dompurify` (pnpm override)        | `56554b7` chore(deps): remediate Dependabot alerts (#30) (#49)                      |                           |
+| `dotenv`                           | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `eslint`                           | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `eslint-config-next`               | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `postcss` (also a pnpm override)   | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `prettier`                         | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `sharp`                            | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `tsx`                              | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `vite-tsconfig-paths`              | `1bb48b7` P1: Scaffold (#23)                                                        |                           |
+| `pnpm` (package manager)           | `1bb48b7` P1: Scaffold (#23); #1 lists "package manager confirmation" as still open |                           |
 
 Issue #1 also lists the media storage adapter ("Vercel Blob expected") as still to be decided, which is why `@payloadcms/storage-vercel-blob` sits in this tier and not the one above.
