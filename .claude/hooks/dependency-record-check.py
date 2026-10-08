@@ -95,7 +95,7 @@ def main() -> None:
     lines = [
         f"Dependency-record check: {len(missing)} package(s) in package.json with no decision record:",
         *[f"  - {n}" for n in missing],
-        "Each needs an ADR under docs/adr/ or an entry in docs/stack.md (CLAUDE.md, Technology gate).",
+        "Each needs an ADR under docs/adr/ or an entry in docs/stack.md (CLAUDE.md, Tural decides).",
         "A name counts only when it appears in backticks. This is a report, not a gate.",
     ]
     report = "\n".join(lines) + "\n"

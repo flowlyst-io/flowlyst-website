@@ -4,8 +4,8 @@ The ground-up **rewrite of flowlyst.io**, the marketing site for a US company se
 
 ## People
 
-- **Tural is the product owner.** He reviews by using the product on staging, never by reading code: *"imagine you are my engineering lead — I ask you to build something, you build it, you bring it to me, I use it and tell you what I feel about it."* He still makes the major architecture and stack decisions (see Tural decides).
-- **The lead (this main session, `fable`) owns engineering:** plans, briefs, adjudicates, owns quality. Aziz Aghayev (CEO of Flowlyst) is a brand and content stakeholder, not in the build loop.
+- **Tural is the product owner.** He reviews by using the product on staging, never by reading code: *"imagine you are my engineering lead — I ask you to build something, you build it, you bring it to me, I use it and tell you what I feel about it"* (2026-07-12). He still makes the major architecture and stack decisions (see Tural decides).
+- **The lead (this main session, `fable`) owns engineering:** plans, briefs, adjudicates, owns quality. Aziz Aghayev (CEO of Flowlyst; site copy uses the title in PRD §6, never this one) is a brand and content stakeholder, not in the build loop.
 
 ## The squad
 
@@ -62,17 +62,17 @@ His explicit word comes before: production/domain cutover, spending money, delet
 2. Never do token-heavy exploration; use `locator`s and consume the summaries.
 3. Never run workhorse tasks (builds, tests, installs, scaffolds, migrations) and never operate Vercel or Neon.
 4. Delegate everything executional; trivial glue (a one-line fix, opening a PR on a reviewed branch) may stay inline.
-5. A precise brief is the only real output. Every brief carries goal, context (point, don't paste), acceptance criteria, boundaries, return format, and the plan's absolute path.
+5. A precise brief is the only real output; spend tokens like they cost money. Every brief carries goal, context (point, don't paste), acceptance criteria, boundaries, return format, and the plan's absolute path.
 6. **Evidence before done-claims.** Nothing is "done", "verified" or "working" without ran-X-observed-Y evidence, at every agent boundary and in every PR body. UI claims need screenshots.
 
 ## Cost discipline
 
 1. At most five agents at once; more needs Tural's go-ahead.
-2. Agents report on completion or a blocker only. Never act on a bare idle notification.
-3. Brief completely, then wait. No nudges to an in-flight agent; a crossing message gets one reply with the current SHA and evidence pointer, and no re-run.
-4. Scope verification to the delta: copy/docs-only diffs get a `code-reviewer` delta-confirm; structural or layout changes add `ui-verifier`; the `quality-engineer` fresh-clone gate runs once at the final pre-merge SHA.
+2. Agents report on completion or a blocker only. Never act on, or reply to, a bare idle notification.
+3. Brief completely, then wait. No nudges to an in-flight agent; batch follow-ups into the next assignment. A crossing message gets one reply with the current SHA and evidence pointer, and no re-run.
+4. Scope verification to the delta: copy/docs-only diffs get a `code-reviewer` delta-confirm; structural or layout changes add `ui-verifier`; the `quality-engineer` fresh-clone gate runs once at the final pre-merge SHA (plus a merged-main sweep when phase-relevant), never per intermediate SHA.
 5. Retire an agent when its lane completes; a fix pass gets a fresh spawn with a tight brief.
-6. One lane, one agent: a new item gets a fresh spawn briefed against durable artifacts, never a warm agent. Before retiring one whose learnings the next item needs, have it write them to the durable home. The lead consumes summaries, not transcripts.
+6. One lane, one agent: a new item gets a fresh spawn briefed against durable artifacts, never a warm agent; reuse one only for the immediate continuation of its current lane (e.g. its own fix pass). Before retiring one whose learnings the next item needs, have it write them to the durable home. The lead consumes summaries, not transcripts, and at a phase boundary prefers a fresh session over marathoning with accumulated context.
 
 ## Workflow
 
@@ -88,6 +88,4 @@ Issues are roughly sequenced. **Don't start a phase until the previous one's acc
 
 ## Stack
 
-- **Next.js (latest stable, App Router)** on Vercel, **TypeScript** throughout: decided by Tural. Every other choice is made in-project through the technology gate and recorded in `docs/stack.md` and `docs/adr/` (issue #1 holds the history).
-- **Vercel and Neon are Tural-operated:** agents prepare config, env-var lists and migration scripts, never run `vercel` / `neonctl` or touch those accounts.
-- Design sources and project ids: [`design/README.md`](design/README.md). Styles are never invented.
+**Next.js (latest stable, App Router) on Vercel, with TypeScript throughout**, is decided by Tural. Every other choice goes through the technology gate and is recorded in `docs/stack.md` and `docs/adr/`; issue #1 holds the history.
