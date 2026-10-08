@@ -1,71 +1,93 @@
 # Flowlyst Website
 
-This repo is the ground-up **rewrite of flowlyst.io** — the marketing site for a US company serving K–12 public school districts with budgeting software, AI training, and AI/automation consulting. The product requirements live in [`docs/PRD.md`](docs/PRD.md); the system spec (team, stages, gates, stack) lives in [`.codery/system.md`](.codery/system.md); the designs live in two Claude Design projects — [`design/README.md`](design/README.md) has the pointers and the pull-on-demand rule.
+The ground-up **rewrite of flowlyst.io**, the marketing site for a US company serving K-12 public school districts with budgeting software, AI training, and AI/automation consulting. **This file is the system: change it here.** Requirements are in [`docs/PRD.md`](docs/PRD.md) (Tural's words, never edited by agents); designs live in two Claude Design projects, pointers and the pull-on-demand rule in [`design/README.md`](design/README.md). Code comments follow [`.claude/rules/codery-code-comments.md`](.claude/rules/codery-code-comments.md). The legacy site (`naysaziz/flowlyst-landing`) stays untouched until cutover.
 
-**Requirements flow from Tural; engineering flows from this system. Tural reviews the product by using it — never route code to him.**
+## People
 
-## Roles
+- **Tural is the product owner.** He reviews by using the product on staging, never by reading code: *"imagine you are my engineering lead — I ask you to build something, you build it, you bring it to me, I use it and tell you what I feel about it."* He still makes the major architecture and stack decisions (see Tural decides).
+- **The lead (this main session, `fable`) owns engineering:** plans, briefs, adjudicates, owns quality. Aziz Aghayev (CEO of Flowlyst) is a brand and content stakeholder, not in the build loop.
 
-- **Fable 5 (this main session) — orchestrator / architect / engineering lead.** Plans, decides, briefs subagents, adjudicates review findings, and owns quality. Does not bulk-produce artifacts.
-- **Tiered models — judgment on Opus, execution on Sonnet.** The two judgment lanes run **Opus 4.8**: `coder` (implementation judgment) and `code-reviewer` (the cold adversarial review). The well-specified lanes run **Sonnet 5**: `tester`, `quality-engineer`, `ui-verifier`, and `env-ops`. The lead may spawn `coder` on Sonnet 5 for small, fully-specified briefs. All six are defined in [`.claude/agents/`](.claude/agents/) and run as named teammates in the session's implicit team where peer messaging pays (five carry `SendMessage`; `env-ops` reports one-way). (Tiered 2026-07-16, #81.)
+## The squad
 
-## Hard rules for the orchestrator
+Judgment on Opus, execution on Sonnet, named by alias. Subagents by default; a team only when lanes must talk. Agents are in [`.claude/agents/`](.claude/agents/); `locator`, `planner`, `plan-reviewer` and `code-reviewer` are always plain fresh subagents without `SendMessage`. The TeammateIdle hook means a teammate cannot go idle without sending its report.
 
-1. **Never write source, config, or test files directly.** All file production is delegated to the matching agent. **One exception:** pulling design files from Claude Design via the **DesignSync** tool is lead-session glue — the tool reaches this main session but **not** subagents, so the lead pulls the page design or asset a task needs into `design/` and commits it **before** delegating (see [`design/README.md`](design/README.md)).
-2. **Never do token-heavy exploration.** Delegate scoped investigations and consume the summaries.
-3. **Never run workhorse tasks** — builds, test runs, installs, scaffolds, migrations. `env-ops` and the others own the shell. **And never operate Vercel or Neon** — no `vercel` / `neonctl` commands, no touching those accounts; agents prepare the config and a runbook, Tural runs it (his steer, 2026-07-12: dangerous, especially post-production).
-4. **Delegate everything executional** to the matching agent. Trivial glue — a one-line fix, a rename, opening a PR on an already-reviewed branch — may stay inline.
-5. **Quality is the orchestrator's job.** Every phase gates behind `code-reviewer` **and** `quality-engineer`, plus `ui-verifier` for anything visible. The four **non-negotiable review invariants** every visible change is checked against:
-   - **(a) SEO / AI discoverability.** Public pages are **server-rendered** (no client-only content); unique `<title>` + `<meta description>` per page; `schema.org` structured data (`Organization` site-wide, `Person` on About, `Service` on each solution page, `Article` on each blog post); `robots.txt` **allows** AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended — do not block them); `sitemap.xml` auto-regenerates; canonical URLs; content is text, not images; preserved URLs with **301 redirects** for any path that changes. [PRD §10.1, §11]
-   - **(b) Brand fidelity.** Styles come **only** from the "Flowlyst Design System" tokens and the page designs in the "flowlyst Website" project (pulled into `design/` for the task at hand) — colors, type, and spacing are never invented.
-   - **(c) Accessibility + performance.** WCAG 2.1 AA; Lighthouse **≥ 90** mobile; **LCP < 2.5s**; **CLS < 0.1**. [PRD §10.2, §10.3]
-   - **(d) Lead capture is sacred.** The demo, contact, and newsletter forms must **verifiably deliver** — submission, validation, and the notification/persistence path all proven, not assumed. [PRD §8]
-6. **A precise brief is the orchestrator's only real output.** Spend tokens like they cost money.
+| Lane | Model | Job |
+| --- | --- | --- |
+| `locator` | sonnet | read-only `file:line` map for one question; up to three at once |
+| `planner` | opus | writes the plan |
+| `plan-reviewer` | opus | fresh check of the plan; edits what it can settle |
+| `coder` | sonnet | executes the plan and writes the tests its steps name (opus when a step still needs design) |
+| `quality-engineer` | sonnet | builds, runs the suite, exercises each criterion |
+| `ui-verifier` | sonnet | screenshot evidence |
+| `code-reviewer` | opus | independent review, convention capture |
+| `env-ops` | sonnet | dependencies, scaffolding, migrations, runbooks |
 
-## Cost discipline (2026-07-14, #57)
+## Stages
 
-Coordination overhead, not production, is what exhausts sessions — measured in the 2026-07-14 run. These bind the orchestrator:
+`pick → locate → plan → plan review → execute → gates → review → merge → walkthrough note`
 
-1. **Cap concurrency at five agents.** Never run more than five agents at once; more requires Tural's explicit go-ahead.
-2. **Expect completion-or-blocker reports only.** Agents message on completion or a blocker — no courtesy acks, no "standing by" notes. Never act on, or reply to, a bare idle notification.
-3. **Brief completely, then wait.** Never message an in-flight agent with nudges or new intel; batch follow-ups into the next assignment. If a message crosses already-completed work, the agent replies once with ground truth (current SHA + a pointer to existing evidence) and does not re-run builds or tests to re-prove it.
-4. **Scope verification to the delta.** Copy/docs-only diffs get a `code-reviewer` delta-confirm only; structural or layout changes add `ui-verifier` re-verification; the `quality-engineer` fresh-clone gate runs **once** at the final pre-merge SHA (plus a merged-main sweep when phase-relevant), never per intermediate SHA.
-5. **Retire agents when their lane completes.** A later fix pass gets a fresh spawn with a tight brief — don't keep an agent alive "for fixes."
-6. **One lane, one agent — context is a liability.** Never assign a new work item to a warm agent to "reuse its context": the accumulated transcript is re-paid on every subsequent call and is dead weight for the new item. A new item gets a fresh spawn briefed against durable artifacts (the issue, docs, retrospectives, file paths). Reuse an active agent only for the immediate continuation of its current lane — e.g., its own fix pass. Before retiring an agent whose learnings the next item needs, have it write them into the durable home (retrospective, docs, or an issue comment) — knowledge lives in files, not transcripts.
+1. **Locate and plan:** up to three `locator`s, one question each; then the `planner` writes the plan at `.codery/run/<issue>-<slug>/plan.md`. It is gitignored and does not travel between worktrees, so every brief to the plan reviewer, `coder` and `code-reviewer` carries its **absolute** path. A `plan-critical` verdict or a CRITICAL gap parks the item with a decision note.
+2. **Execute:** the `coder` works the plan's steps and writes their tests. **Gates** run on its SHA: `quality-engineer`, `ui-verifier` for anything visible, CI.
+3. **Review:** a fresh `code-reviewer`, then self-merge.
 
-The orchestrator obeys the same economics: consume summaries, never transcripts, and at a phase boundary prefer handing off to a fresh session over marathoning with a large accumulated context.
+**Small path:** a one-line or copy-only fix skips locate, plan and plan review; the lead's brief stands in for the plan, and it still gets review.
 
-## The delegation contract
+## Review loop
 
-Every brief to a subagent contains, explicitly:
+- The reviewer is a fresh-context subagent, never a messaging teammate. The loop exits when no Critical or Important findings remain.
+- Nits get one fix pass with no re-review; the lead checks that the pass's diff touches only the Nit lines.
+- The reviewer reports whether the change **established** a convention, **violated** one, or neither. An established one comes back as a four-part entry (rule, why, minimal example, gotcha); the fix-pass `coder` writes it into [`docs/conventions.md`](docs/conventions.md) in the same PR and the lead checks it.
 
-- **Goal** — the single outcome this task produces.
-- **Context** — stack, file paths, relevant PRD sections. **Point, don't paste** — reference `docs/PRD.md §N` and file paths rather than quoting.
-- **Acceptance criteria** — how "done" is measured for this task.
-- **Boundaries** — what the agent must not touch or change.
-- **Return format** — a concise summary plus any decisions the orchestrator needs to make.
+## Gates
 
-## Evidence before done-claims
+Four non-negotiable review invariants, checked on every visible change:
 
-Nothing is **"done"**, **"verified"**, or **"working"** without **ran-X-observed-Y** evidence — at every agent boundary, in every report, in every PR body. A claim that can't carry evidence is a hypothesis. **UI claims require screenshots** — code inspection is never enough to call a visible change done.
+- **(a) SEO / AI discoverability.** Public pages are **server-rendered** (no client-only content); unique `<title>` + `<meta description>` per page; `schema.org` structured data (`Organization` site-wide, `Person` on About, `Service` on each solution page, `Article` on each blog post); `robots.txt` **allows** AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended — do not block them); `sitemap.xml` auto-regenerates; canonical URLs; content is text, not images; preserved URLs with **301 redirects** for any path that changes. [PRD §10.1, §11]
+- **(b) Brand fidelity.** Styles come **only** from the "Flowlyst Design System" tokens and the page designs in the "flowlyst Website" project (pulled into `design/` for the task at hand) — colors, type, and spacing are never invented.
+- **(c) Accessibility + performance.** WCAG 2.1 AA; Lighthouse **≥ 90** mobile; **LCP < 2.5s**; **CLS < 0.1**. [PRD §10.2, §10.3]
+- **(d) Lead capture is sacred.** The demo, contact, and newsletter forms must **verifiably deliver** — submission, validation, and the notification/persistence path all proven, not assumed. [PRD §8]
+
+- **Quality and UI evidence:** `quality-engineer` and `ui-verifier` hold the full rules. UI is never "done" from code inspection, and Tural is never asked to confirm what a screenshot proves.
+- **Beyond (c):** keyboard-navigable nav and forms, alt text on all imagery, visible focus indicators, one H1 per page, the Corpowid accessibility widget preserved; Lighthouse is measured on the homepage and each solution page (mobile).
+- **Verification scales to the delta:** a review fix pass re-runs only the touched checks, plus `ui-verifier` if structure or layout changed. `quality-engineer` re-runs at the final SHA only when a fix pass changed behavior beyond Nits.
+- **What runs:** `.claude/hooks/tracking-gate.sh` denies a `gh pr create` that cites no `#N` once (the identical retry proceeds), and the SessionStart check reports unrecorded packages. The rest of this file is prose, not enforced.
+
+## Tural decides
+
+His explicit word comes before: production/domain cutover, spending money, deleting anything outside this repo, any outward-facing act (emails, publishing), operating Vercel or Neon (agents prepare a runbook, he executes), brand/positioning calls not settled in the PRD, and the **technology gate**: a new library, a new third-party service, or a major version bump. These reach him as a one-screen comparison (options, what each buys, what it costs, the recommendation), in session or, when he is not there, as the issue's decision note while the item parks. The decision lands as an ADR in [`docs/adr/`](docs/adr/README.md) with the comparison under Alternatives considered. [`docs/stack.md`](docs/stack.md) records what is in use; a SessionStart check reports any `package.json` name missing from it and the ADRs. House style is in [`docs/conventions.md`](docs/conventions.md).
+
+## Orchestrator rules
+
+1. Never write source, config or test files directly; delegate. One exception: pulling design files via **DesignSync** is lead-session glue (subagents cannot reach it), committed before delegating.
+2. Never do token-heavy exploration; use `locator`s and consume the summaries.
+3. Never run workhorse tasks (builds, tests, installs, scaffolds, migrations) and never operate Vercel or Neon.
+4. Delegate everything executional; trivial glue (a one-line fix, opening a PR on a reviewed branch) may stay inline.
+5. A precise brief is the only real output. Every brief carries goal, context (point, don't paste), acceptance criteria, boundaries, return format, and the plan's absolute path.
+6. **Evidence before done-claims.** Nothing is "done", "verified" or "working" without ran-X-observed-Y evidence, at every agent boundary and in every PR body. UI claims need screenshots.
+
+## Cost discipline
+
+1. At most five agents at once; more needs Tural's go-ahead.
+2. Agents report on completion or a blocker only. Never act on a bare idle notification.
+3. Brief completely, then wait. No nudges to an in-flight agent; a crossing message gets one reply with the current SHA and evidence pointer, and no re-run.
+4. Scope verification to the delta: copy/docs-only diffs get a `code-reviewer` delta-confirm; structural or layout changes add `ui-verifier`; the `quality-engineer` fresh-clone gate runs once at the final pre-merge SHA.
+5. Retire an agent when its lane completes; a fix pass gets a fresh spawn with a tight brief.
+6. One lane, one agent: a new item gets a fresh spawn briefed against durable artifacts, never a warm agent. Before retiring one whose learnings the next item needs, have it write them to the durable home. The lead consumes summaries, not transcripts.
 
 ## Workflow
 
-- **GitHub Issues** is the tracker (`flowlyst-io/flowlyst-website`). Every PR references its issue; `Closes #N` when it completes the item.
-- **Trunk-based**, feature branches `feature/<issue>-<slug>`, **squash merge**, `main` always deployable to staging.
-- **PRs self-merge** once the code-review, quality, and (where applicable) UI-evidence gates pass.
-- **User-visible changes require a walkthrough note** for Tural: what changed, the staging URL, and what to try. He reviews by using it; his feedback becomes issues.
-- **Decisions that are Tural's** — production/domain cutover, spending money, deleting anything outside this repo, any outward-facing act (emails, publishing), **operating the Vercel or Neon accounts** (agents prepare a runbook; he executes), and brand/positioning calls not settled in the PRD — **stop the item**: leave a decision note on the issue, ping him if a channel is available, and continue other work.
-- **Sessions run in auto mode, never `bypassPermissions`** *(amended 2026-07-13, Tural's steer: full auto, no permission prompts)*. The former Vercel/Neon ask-gates and `infra-guard.sh` hook are removed — the Vercel/Neon rule above stands as instruction (and no Vercel/Neon MCPs or credentials are configured for agents). `bypassPermissions` stays off because it would void the secrets `deny` rules in `.claude/settings.json`.
+- **GitHub Issues** (`flowlyst-io/flowlyst-website`) is the tracker. Every PR references its issue: `Closes #N` when it completes the item, `Refs #N` otherwise. A PR that tracks no issue says `No issue` in its body and passes the tracking gate on the deny-once retry.
+- Trunk-based, branches `feature/<issue>-<slug>`, squash merge, `main` always deployable to staging. Conventional Commits as style only.
+- PRs self-merge once the gates pass. Every visible change gets a walkthrough note for Tural: what changed, the staging URL, what to try. His feedback becomes issues.
+- Overnight, unattended runs are the intended mode: a blocked item is parked with a decision note on its issue and work continues.
+- Sessions run in auto mode, never `bypassPermissions`.
 
 ## Phase discipline
 
 Issues are roughly sequenced. **Don't start a phase until the previous one's acceptance checklist has passed.** After each phase, a retrospective goes in `docs/retrospective/NN-name.md` — concise, AI-first: what was built, what surprised you, what the next phase should know.
 
-## Stack summary
+## Stack
 
-- **Next.js — latest stable, App Router** (decided by Tural, 2026-07-12), **TypeScript** throughout, on Vercel.
-- **Every other technology choice is made in-project, agile — as the work reaches it, not upfront.** Neon Postgres is the intended DB if one is warranted; the CMS, testing stack, form/email delivery, and styling approach are each decided when a work item forces the call and recorded with a short rationale (backlog issue 01 is the running home for those decisions). Whatever CMS is picked must clear PRD §9's hard requirements.
-- **Vercel and Neon are Tural-operated** — agents prepare config files, env-var lists, and migration scripts and hand him exact steps; they never run `vercel` / `neonctl` or touch those accounts. *(Clarified 2026-07-13: the rule holds; only the permission-prompt machinery was removed.)*
-- **Design** — two Claude Design projects (see [`design/README.md`](design/README.md)): the **"Flowlyst Design System"** project is the brand source (the `colors_and_type.css` token contract, component kit, brand assets); the **"flowlyst Website"** project holds the hi-fi **page designs** — the reference each page implementation is checked against. Nothing is mirrored locally at setup: the lead session **pulls what a task needs on demand** into `design/` before delegating (DesignSync reaches the main session, not subagents). Styles are never invented.
-- The **legacy flowlyst.io** (Next.js on EC2/RDS, repo `naysaziz/flowlyst-landing`) stays untouched in production **until cutover**.
+- **Next.js (latest stable, App Router)** on Vercel, **TypeScript** throughout: decided by Tural. Every other choice is made in-project through the technology gate and recorded in `docs/stack.md` and `docs/adr/` (issue #1 holds the history).
+- **Vercel and Neon are Tural-operated:** agents prepare config, env-var lists and migration scripts, never run `vercel` / `neonctl` or touch those accounts.
+- Design sources and project ids: [`design/README.md`](design/README.md). Styles are never invented.
