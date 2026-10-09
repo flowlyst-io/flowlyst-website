@@ -20,7 +20,7 @@ jobs:
     # The job is not containerized, so the service is reachable at localhost:5432.
     services:
       postgres:
-        image: postgres:18-alpine
+        image: public.ecr.aws/docker/library/postgres:18-alpine
         env:
           POSTGRES_USER: flowlyst
           POSTGRES_PASSWORD: flowlyst
