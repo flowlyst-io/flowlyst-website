@@ -23,11 +23,11 @@ Drafted 2026-10-08 from `dig`, `curl` and the code on `main` (b173772).
 
 ## T-minus schedule
 
-| When | Do |
-| --- | --- |
-| Thu 10-08 to Fri 10-09 | Gates above. Decide Vercel plan and DB (Open decisions). |
-| Sat 10-10 to Mon 10-12 | Steps 1 to 7 (everything that does not change live traffic). Resend DNS records (step 6) are additive and safe now. |
-| Tue 10-13, a quiet hour | Steps 8 to 12 (domains, DNS flip, smoke). Keep an hour free to roll back. |
+| When                    | Do                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Thu 10-08 to Fri 10-09  | Gates above. Decide Vercel plan and DB (Open decisions).                                                            |
+| Sat 10-10 to Mon 10-12  | Steps 1 to 7 (everything that does not change live traffic). Resend DNS records (step 6) are additive and safe now. |
+| Tue 10-13, a quiet hour | Steps 8 to 12 (domains, DNS flip, smoke). Keep an hour free to roll back.                                           |
 
 ---
 
@@ -35,12 +35,13 @@ Drafted 2026-10-08 from `dig`, `curl` and the code on `main` (b173772).
 
 **Default recommendation: reuse the existing staging Neon project.** On the current Vercel project the "Production" environment already is staging (`staging.md` Part 4 step 6), it already holds the migrated schema and any content you entered, and the Neon region is locked to the Vercel region. Cutover then becomes "add the domain" with no data move.
 
-*Path A, reuse (recommended):*
+_Path A, reuse (recommended):_
+
 1. Neon console, open the project behind the staging deploy, confirm the **Production** branch is the one the Vercel integration points at.
 2. Delete the three smoke rows in `/admin` (do this now, before step 7b sets the production URL; see the warning in step 3) (speaking_requests id 1, demo_requests id 1, contact_messages id 1, "STAGING SMOKE TEST", #70). Step 12 starts from empty lead tables so a real submission is unambiguous.
 3. Also consider Neon plan limits (Free auto-suspends and has compute-hour caps); the Launch plan is the usual upgrade for a live site. Spending call, yours.
 
-*Path B, fresh production database:* follow `staging.md` Parts 1 to 3 and Part 6 ("Connect the Neon-Vercel integration") with project name `flowlyst-production`, Postgres **18**, region **`aws-us-east-1`** (matching Vercel's function region). Copy the **direct** (non-`-pooler`) string for the bootstrap. Re-enter all CMS content afterwards (testimonials, case studies, site settings). Only choose this if you want staging content kept separate.
+_Path B, fresh production database:_ follow `staging.md` Parts 1 to 3 and Part 6 ("Connect the Neon-Vercel integration") with project name `flowlyst-production`, Postgres **18**, region **`aws-us-east-1`** (matching Vercel's function region). Copy the **direct** (non-`-pooler`) string for the bootstrap. Re-enter all CMS content afterwards (testimonials, case studies, site settings). Only choose this if you want staging content kept separate.
 
 **Verify:** Neon console shows the database `Active`; Vercel project, Settings, Environment Variables lists `DATABASE_URL` (pooled, host contains `-pooler`) and `DATABASE_URL_UNPOOLED` for **Production**, both integration-managed. Do not edit them by hand.
 
@@ -62,25 +63,26 @@ Rotating `PAYLOAD_SECRET` on a database that already has users invalidates their
 
 Vercel, project, Settings, Environment Variables. Set the values for the **Production** environment (add Preview as noted). A change takes effect only on the **next deploy**; `NEXT_PUBLIC_SERVER_URL` is inlined at build time, so it needs its own redeploy (step 7b).
 
-| Variable | Secret? | Value / source | Environments | Notes |
-| --- | --- | --- | --- | --- |
-| `DATABASE_URL` | secret | Neon-Vercel integration (pooled). **Do not hand-set.** | Prod | Required at runtime. |
-| `DATABASE_URL_UNPOOLED` | secret | Neon-Vercel integration (direct). **Do not hand-set.** | Prod | Required at **build** time; production builds apply migrations with it and fail closed without it. |
-| `PAYLOAD_SECRET` | **secret, you generate** | `<PAYLOAD_SECRET>` (step 2) | Prod, Preview | Required. |
-| `BLOB_READ_WRITE_TOKEN` | **secret, Vercel generates** | Created when you attach the Blob store (`staging.md` Part 5); select Production | Prod, Preview | Without it uploads go to local disk the deployed site cannot serve. Path B: create a new store. |
-| `CRON_SECRET` | **secret, you generate** | `<CRON_SECRET>` (step 2) | Prod only | Absent means scheduled publishing is denied. |
-| `PREVIEW_SECRET` | **secret, you generate** | `<PREVIEW_SECRET>` (step 2) | Prod, Preview | Absent means draft preview is denied (no fallback). |
-| `RESEND_API_KEY` | **secret, Resend generates** | `re_...` from step 6 | Prod (and Preview if you want staging email) | Unset means submissions persist but no email is sent (logged `skipped`). |
-| `EMAIL_FROM` | not secret | `noreply@flowlyst.io` (must be on the Resend-verified domain) | Prod | Defaults to this value if unset, but the domain must still be verified. |
-| `SALES_NOTIFY_TO` | not secret | e.g. `sales@flowlyst.io` | Prod | Demo requests. Defaults to `info@flowlyst.io`. |
-| `CONTACT_NOTIFY_TO` | not secret | e.g. `info@flowlyst.io` | Prod | Contact form. Default `info@flowlyst.io`. |
-| `SPEAKING_NOTIFY_TO` | not secret | e.g. `speaking@flowlyst.io` | Prod | Keynote requests. Default falls back to `SALES_NOTIFY_TO`, then `info@flowlyst.io`. |
-| `NEXT_PUBLIC_SERVER_URL` | not secret | `https://flowlyst.io` | Prod | **Do not set yet: set it in step 7b.** Drives sitemap `<loc>`, the robots `Sitemap:` line, canonical/OG URLs, JSON-LD. **Set this explicitly**; do not rely on `VERCEL_PROJECT_PRODUCTION_URL`, which Vercel sets automatically and which may still resolve to the `.vercel.app` host. |
-| `ENABLE_EXPERIMENTAL_COREPACK` | not secret | `1` | Prod, Preview | Pins pnpm 10.4.1. Already set on staging; confirm. |
+| Variable                       | Secret?                      | Value / source                                                                  | Environments                                 | Notes                                                                                                                                                                                                                                                                                  |
+| ------------------------------ | ---------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                 | secret                       | Neon-Vercel integration (pooled). **Do not hand-set.**                          | Prod                                         | Required at runtime.                                                                                                                                                                                                                                                                   |
+| `DATABASE_URL_UNPOOLED`        | secret                       | Neon-Vercel integration (direct). **Do not hand-set.**                          | Prod                                         | Required at **build** time; production builds apply migrations with it and fail closed without it.                                                                                                                                                                                     |
+| `PAYLOAD_SECRET`               | **secret, you generate**     | `<PAYLOAD_SECRET>` (step 2)                                                     | Prod, Preview                                | Required.                                                                                                                                                                                                                                                                              |
+| `BLOB_READ_WRITE_TOKEN`        | **secret, Vercel generates** | Created when you attach the Blob store (`staging.md` Part 5); select Production | Prod, Preview                                | Without it uploads go to local disk the deployed site cannot serve. Path B: create a new store.                                                                                                                                                                                        |
+| `CRON_SECRET`                  | **secret, you generate**     | `<CRON_SECRET>` (step 2)                                                        | Prod only                                    | Absent means scheduled publishing is denied.                                                                                                                                                                                                                                           |
+| `PREVIEW_SECRET`               | **secret, you generate**     | `<PREVIEW_SECRET>` (step 2)                                                     | Prod, Preview                                | Absent means draft preview is denied (no fallback).                                                                                                                                                                                                                                    |
+| `RESEND_API_KEY`               | **secret, Resend generates** | `re_...` from step 6                                                            | Prod (and Preview if you want staging email) | Unset means submissions persist but no email is sent (logged `skipped`).                                                                                                                                                                                                               |
+| `EMAIL_FROM`                   | not secret                   | `noreply@flowlyst.io` (must be on the Resend-verified domain)                   | Prod                                         | Defaults to this value if unset, but the domain must still be verified.                                                                                                                                                                                                                |
+| `SALES_NOTIFY_TO`              | not secret                   | e.g. `sales@flowlyst.io`                                                        | Prod                                         | Demo requests. Defaults to `info@flowlyst.io`.                                                                                                                                                                                                                                         |
+| `CONTACT_NOTIFY_TO`            | not secret                   | e.g. `info@flowlyst.io`                                                         | Prod                                         | Contact form. Default `info@flowlyst.io`.                                                                                                                                                                                                                                              |
+| `SPEAKING_NOTIFY_TO`           | not secret                   | e.g. `speaking@flowlyst.io`                                                     | Prod                                         | Keynote requests. Default falls back to `SALES_NOTIFY_TO`, then `info@flowlyst.io`.                                                                                                                                                                                                    |
+| `NEXT_PUBLIC_SERVER_URL`       | not secret                   | `https://flowlyst.io`                                                           | Prod                                         | **Do not set yet: set it in step 7b.** Drives sitemap `<loc>`, the robots `Sitemap:` line, canonical/OG URLs, JSON-LD. **Set this explicitly**; do not rely on `VERCEL_PROJECT_PRODUCTION_URL`, which Vercel sets automatically and which may still resolve to the `.vercel.app` host. |
+| `ENABLE_EXPERIMENTAL_COREPACK` | not secret                   | `1`                                                                             | Prod, Preview                                | Pins pnpm 10.4.1. Already set on staging; confirm.                                                                                                                                                                                                                                     |
 
 > **Warning: set `NEXT_PUBLIC_SERVER_URL` last (step 7b), after every `/admin` write.** Payload adds this URL to its CSRF allowlist (`src/payload.config.ts` does not override it), so once `https://flowlyst.io` is deployed, `/admin` saves from the `.vercel.app` origin fail silently. Every `/admin` write (first admin user, step 6a, testimonials and case studies in step 7, any content edit) must happen before step 7b, or after the DNS flip on `https://flowlyst.io`.
 
 **Not needed at launch (do not create):**
+
 - `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY`: reCAPTCHA is **parked** and no code on `main` reads them; forms rely on a server-validated honeypot (`resend-setup.md`, "Parked: reCAPTCHA"). Open decision below.
 - A revalidation secret: none exists on `main`. Content pages revalidate on publish from the CMS hooks with no shared secret. If PR #80 or a later PR introduces one, add it here before merging.
 - `VERCEL_PROJECT_PRODUCTION_URL`: Vercel-managed.
@@ -106,11 +108,12 @@ Skip on Path A (the schema is already there). On Path B follow `staging.md` Part
 **Verify:** you can log in and see the Content, Leads and Admin groups, then prove a write: edit a field in Site Settings (or any document), click Save, reload, and confirm the change persisted (a failed save shows no error under a CSRF block, so reload is the proof). Revert the edit.
 
 **6b. Resend.** Run [`resend-setup.md`](resend-setup.md) steps 1 and 2: create the key `flowlyst-production` (Sending access), add and verify the `flowlyst.io` domain. The DNS records Resend shows are **added to the existing zone in Google Cloud DNS** alongside the current ones:
+
 - Add exactly what Resend displays (typically DKIM `resend._domainkey` and an SPF/MX pair on a `send` subdomain). They do not collide with the Workspace records.
 - **If Resend asks for a root-level SPF `TXT`, do not add a second SPF record** (two SPF records invalidate both). Merge into the existing one: `v=spf1 include:_spf.google.com include:<resend-include> ~all`.
 - **Do not edit or remove** MX, `google._domainkey` or `_dmarc`.
-Then set `RESEND_API_KEY` (and the `*_NOTIFY_TO` vars) per step 3 and redeploy.
-**Verify:** Resend shows `flowlyst.io` **Verified**; `dig MX flowlyst.io +short` still returns the five Google hosts.
+  Then set `RESEND_API_KEY` (and the `*_NOTIFY_TO` vars) per step 3 and redeploy.
+  **Verify:** Resend shows `flowlyst.io` **Verified**; `dig MX flowlyst.io +short` still returns the five Google hosts.
 
 ## Step 7 — Port the blog content (must run BEFORE the DNS flip)
 
@@ -124,11 +127,13 @@ Path A where staging was already ported: re-run anyway; it is idempotent (expect
 Confirm nothing in 6a and 7 still needs an `/admin` write on the `.vercel.app` URL, then add `NEXT_PUBLIC_SERVER_URL` = `https://flowlyst.io` (Production) and **Redeploy** with "use existing build cache" unchecked so it is inlined. From here `/admin` saves work only on `https://flowlyst.io` (after step 10).
 
 **Verify** (live traffic is unaffected; this is the pre-flight):
+
 ```bash
 curl -s https://flowlyst-website.vercel.app/robots.txt
 curl -s https://flowlyst-website.vercel.app/sitemap.xml | grep -o '<loc>[^<]*' | head -5
 curl -s https://flowlyst-website.vercel.app/ | grep -o '<link rel="canonical"[^>]*>'
 ```
+
 Expect: the `Sitemap:` line and every `<loc>` start with `https://flowlyst.io`, the canonical is `https://flowlyst.io/`, robots allows `GPTBot`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`. **If any show `vercel.app`, stop: the 7b `NEXT_PUBLIC_SERVER_URL` did not reach the build.**
 
 ## Step 8 — Add the domains in Vercel (still no traffic change)
@@ -142,6 +147,7 @@ Expect: the `Sitemap:` line and every `<loc>` start with `https://flowlyst.io`, 
 ## Step 9 — Pre-flip redirect check on the `.vercel.app` URL
 
 Confirm the legacy URLs resolve on the new site while legacy still serves production:
+
 ```bash
 for p in / /about /contact /request-demo /blog /solutions/ai-training /solutions/budget-software /solutions/consulting \
   /blog/ai-predictive-analytics-staff-productivity /blog/ai-sis-erp-automation-schools /blog/ai-multi-year-forecasting-school-budgeting \
@@ -150,6 +156,7 @@ for p in / /about /contact /request-demo /blog /solutions/ai-training /solutions
   printf '%s %s\n' "$(curl -s -o /dev/null -w '%{http_code}' https://flowlyst-website.vercel.app$p)" "$p"; done
 curl -sI https://flowlyst-website.vercel.app/resources/case-studies | grep -iE '^(HTTP|location)'
 ```
+
 **Verify:** every line is `200`; `/resources/case-studies` is `301` with `location: /case-studies`. `/ai-chat` is the only known mismatch (your #70 decision); if a redirect was chosen it should be `301` here too.
 
 ## Step 10 — The DNS flip
@@ -163,12 +170,14 @@ In Google Cloud DNS, zone `flowlyst.io`. TTLs are already 240 s, so no lowering 
 4. **Do not touch anything else**: MX, TXT (SPF, DMARC, DKIM, Resend records), NS and SOA stay as they are.
 
 **Verify:**
+
 ```bash
 dig +short flowlyst.io A          # the Vercel value, not 3.12.162.23
 dig +short www.flowlyst.io        # the Vercel CNAME target
 dig +short flowlyst.io MX         # unchanged: five aspmx.l.google.com hosts
 dig +short flowlyst.io TXT        # SPF unchanged (plus Resend entries if root-level)
 ```
+
 In Vercel, Settings, Domains: both domains flip to **Valid Configuration**, and the certificate is issued automatically (usually within minutes). Send a test email to `info@flowlyst.io` from outside and confirm it arrives.
 
 ## Step 11 — Post-flip redirect and canonical verification
@@ -181,6 +190,7 @@ curl -s https://flowlyst.io/robots.txt
 curl -s https://flowlyst.io/sitemap.xml | grep -c '<loc>https://flowlyst.io'
 curl -s https://flowlyst.io/ | grep -o '<link rel="canonical"[^>]*>'
 ```
+
 Re-run the loop from step 9 with `https://flowlyst.io` in place of the `.vercel.app` host.
 **Verify:** `www` returns 301 to the bare host with the path preserved; `server` is no longer nginx; every sitemap `<loc>` and each canonical is on `flowlyst.io`, none on `vercel.app`; all 15 preserved legacy URLs return 200; robots allows the four AI crawlers.
 
@@ -188,16 +198,17 @@ Re-run the loop from step 9 with `https://flowlyst.io` in place of the `.vercel.
 
 Submit each form once on **`https://flowlyst.io`** with a clearly labelled test (`CUTOVER SMOKE TEST`, an address you control) and confirm the email arrives and the row exists in `/admin`:
 
-| Form | Where | Email expected at | Row in |
-| --- | --- | --- | --- |
-| Demo request | `/request-demo` | `SALES_NOTIFY_TO`: "New demo request" | Admin, Demo Requests |
-| Contact | `/contact` | `CONTACT_NOTIFY_TO`: "New contact message" | Admin, Contact Messages |
-| Newsletter | `/blog` (bottom) | **the subscriber's own address**: "You're subscribed to flowlyst" | Admin, Newsletter Subscribers (re-subscribing creates no duplicate) |
-| Speaking request | `/solutions/keynotes` | `SPEAKING_NOTIFY_TO`: "New speaking request" | Admin, Speaking Requests |
+| Form             | Where                 | Email expected at                                                 | Row in                                                              |
+| ---------------- | --------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Demo request     | `/request-demo`       | `SALES_NOTIFY_TO`: "New demo request"                             | Admin, Demo Requests                                                |
+| Contact          | `/contact`            | `CONTACT_NOTIFY_TO`: "New contact message"                        | Admin, Contact Messages                                             |
+| Newsletter       | `/blog` (bottom)      | **the subscriber's own address**: "You're subscribed to flowlyst" | Admin, Newsletter Subscribers (re-subscribing creates no duplicate) |
+| Speaking request | `/solutions/keynotes` | `SPEAKING_NOTIFY_TO`: "New speaking request"                      | Admin, Speaking Requests                                            |
 
 In the Resend dashboard, Emails, every send must show **Delivered**. A bounce usually means DKIM is not fully verified (step 6b). Then delete the four test rows.
 
 Also check, in a real browser:
+
 - [ ] **Corpowid widget** renders and opens on `https://flowlyst.io` (it may not initialise on a host the Corpowid account has not whitelisted; PR #78 saw a 404 "account id not correct" from `localhost`). If it fails on `flowlyst.io`, add the domain in the Corpowid account.
 - [ ] Cookie banner appears on first visit; `/privacy`, `/terms`, `/cookies` load.
 - [ ] `/admin` loads over `flowlyst.io` and you can log in.
