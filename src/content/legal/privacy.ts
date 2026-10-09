@@ -20,7 +20,7 @@ export const privacyDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'This policy explains how flowlyst, Inc. ("flowlyst", "we", "us") handles personal information collected through this marketing website. It covers the information you give us when you request a demo, contact us, subscribe to our newsletter, or ask us to speak at an event, along with information collected automatically as you browse.',
+          text: 'This policy explains how flowlyst LLC ("flowlyst", "we", "us") handles personal information collected through this marketing website. It covers the information you give us when you request a demo, contact us, subscribe to our newsletter, or ask us to speak at an event, along with information collected automatically as you browse.',
         },
         {
           kind: 'p',
@@ -28,7 +28,7 @@ export const privacyDoc: LegalDoc = {
         },
         {
           kind: 'flag',
-          text: 'Confirm the legal entity name and whether this policy should reference any parent/affiliate. The site-wide structured data uses "flowlyst, Inc." — confirm that is the registered entity.',
+          text: 'Confirm whether this policy should reference any parent or affiliate entity.',
         },
       ],
     },

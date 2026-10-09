@@ -133,7 +133,7 @@ export function Footer() {
         </div>
 
         <div className="footer__bottom">
-          <span>© 2026 flowlyst, Inc.</span>
+          <span>© 2026 flowlyst LLC</span>
           <span>flowlyst.io · K-12 first</span>
         </div>
       </div>

@@ -44,7 +44,7 @@ const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'flowlyst',
-  legalName: 'flowlyst, Inc.',
+  legalName: 'flowlyst LLC',
   url: serverURL,
   email: 'info@flowlyst.io',
   description:
