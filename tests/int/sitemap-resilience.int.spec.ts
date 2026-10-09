@@ -1,6 +1,6 @@
 // @vitest-environment node
 // sitemap.ts resilience (review note N2). A request-time DB failure must degrade to a
-// STATIC-only sitemap — the 11 public routes still served — rather than a 500. The
+// STATIC-only sitemap — the 14 public routes still served — rather than a 500. The
 // static entries carry no DB dependency, and the content queries are wrapped in a
 // log-and-continue guard (the same never-throw posture the content collections take).
 //
@@ -37,6 +37,9 @@ const STATIC_PATHS = [
   '/blog',
   '/testimonials',
   '/case-studies',
+  '/privacy',
+  '/terms',
+  '/cookies',
 ]
 
 describe('sitemap() — resilience (content query failure degrades to static-only)', () => {

@@ -1,11 +1,24 @@
 import React from 'react'
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { nunito } from './fonts'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
+import { CookieConsent } from '@/components/CookieConsent'
 import { getServerURL } from '@/utilities/serverURL'
 import { serializeJsonLd } from '@/utilities/jsonLd'
 import './styles.css'
+
+/**
+ * Corpowid accessibility widget (PRD §10.3–§10.4; issue #22). The exact embed —
+ * account id and src — is preserved from the legacy site's root layout. It loads
+ * BEFORE cookie consent, as an accessibility-essential service under our legitimate
+ * interest: gating an accessibility accommodation behind consent would withhold it
+ * from the users who most need it. That basis is stated in the cookie policy, which
+ * also flags for Tural to confirm the account is active and that the widget sets no
+ * non-essential/tracking cookies (if it does, it moves behind the consent banner).
+ */
+const CORPOWID_ACCOUNT = '0dad393b-e1f0-4586-aa19-31eedcf20a06'
 
 const serverURL = getServerURL()
 
@@ -64,6 +77,12 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
           {children}
         </main>
         <Footer />
+        <CookieConsent />
+        <Script
+          src="https://cdn.corpowid.com/corpowid.js"
+          data-account={CORPOWID_ACCOUNT}
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )
