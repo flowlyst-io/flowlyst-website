@@ -37,11 +37,11 @@ export const termsDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'This site is operated by flowlyst, Inc. You can reach us at info@flowlyst.io.',
+          text: 'This site is operated by flowlyst LLC. You can reach us at info@flowlyst.io.',
         },
         {
           kind: 'flag',
-          text: 'Confirm the registered entity name, state of incorporation, and business address to name here.',
+          text: 'Confirm the state of formation and business address to name here.',
         },
       ],
     },

@@ -36,7 +36,7 @@ test.describe('Frontend', () => {
     // Footer landmark (contentinfo) with legal links + copyright.
     const footer = page.getByRole('contentinfo')
     await expect(footer.getByRole('link', { name: 'Privacy' })).toBeVisible()
-    await expect(footer.getByText('© 2026 flowlyst, Inc.')).toBeVisible()
+    await expect(footer.getByText('© 2026 flowlyst LLC')).toBeVisible()
   })
 
   test('mobile hamburger drawer opens, is keyboard closable, at 390px', async ({ page }) => {
