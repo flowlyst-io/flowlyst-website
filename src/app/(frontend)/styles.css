@@ -554,12 +554,16 @@ code,
   transition: all 200ms cubic-bezier(0.22, 1, 0.36, 1);
   white-space: nowrap;
 }
+.btn:hover {
+  text-decoration: none;
+}
 .btn--primary {
   background: var(--fl-green);
   color: #fff;
   box-shadow: 0 8px 20px rgba(0, 165, 104, 0.28);
 }
 .btn--primary:hover {
+  color: #fff;
   background: var(--fl-green-600);
   transform: translateY(-1px);
   box-shadow: 0 12px 28px rgba(0, 165, 104, 0.36);
@@ -569,6 +573,7 @@ code,
   color: #fff;
 }
 .btn--dark:hover {
+  color: #fff;
   background: #1a211c;
   transform: translateY(-1px);
 }
@@ -578,6 +583,7 @@ code,
   color: inherit;
 }
 .btn--ghost:hover {
+  color: inherit;
   border-color: rgba(64, 64, 65, 0.4);
 }
 .btn--ghost-light {
@@ -586,6 +592,7 @@ code,
   color: var(--c-cream);
 }
 .btn--ghost-light:hover {
+  color: var(--c-cream);
   border-color: rgba(244, 241, 232, 0.55);
 }
 .btn--lg {
