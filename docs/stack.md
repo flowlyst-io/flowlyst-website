@@ -12,15 +12,16 @@ The decisions before this record existed were logged on issue #1 (Architecture d
 
 ## Decided (issue #1)
 
-| What                                            | Packages                     | Decided                                              | By                                                                  |
-| ----------------------------------------------- | ---------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------- |
-| Next.js (latest stable), App Router, TypeScript | `next`, `typescript`         | 2026-07-12, #1 table row                             | Tural                                                               |
-| Vercel + Neon Postgres                          | services, no package         | 2026-07-12, #1 table row                             | Tural                                                               |
-| Payload CMS 3, embedded in the Next.js app      | `payload`                    | 2026-07-13, #1 table row                             | Tural, on orchestrator recommendation                               |
-| Tailwind CSS v4                                 | `tailwindcss`                | 2026-07-13, #1 table row                             | Tural, on orchestrator recommendation                               |
-| Resend for email delivery                       | `@payloadcms/email-resend`   | 2026-07-13 row; 2026-07-14 comment names the package | Tural, on orchestrator recommendation (row); orchestrator (comment) |
-| Vitest + Playwright for testing                 | `vitest`, `@playwright/test` | 2026-07-13, #1 table row                             | Tural, on orchestrator recommendation                               |
-| Vercel Hobby (free) plan for staging            | service, no package          | 2026-07-13, #1 comment                               | Tural                                                               |
+| What                                            | Packages                     | Decided                                                    | By                                                                  |
+| ----------------------------------------------- | ---------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| Next.js (latest stable), App Router, TypeScript | `next`, `typescript`         | 2026-07-12, #1 table row                                   | Tural                                                               |
+| Vercel + Neon Postgres                          | services, no package         | 2026-07-12, #1 table row                                   | Tural                                                               |
+| Payload CMS 3, embedded in the Next.js app      | `payload`                    | 2026-07-13, #1 table row                                   | Tural, on orchestrator recommendation                               |
+| Tailwind CSS v4                                 | `tailwindcss`                | 2026-07-13, #1 table row                                   | Tural, on orchestrator recommendation                               |
+| Resend for email delivery                       | `@payloadcms/email-resend`   | 2026-07-13 row; 2026-07-14 comment names the package       | Tural, on orchestrator recommendation (row); orchestrator (comment) |
+| Vitest + Playwright for testing                 | `vitest`, `@playwright/test` | 2026-07-13, #1 table row                                   | Tural, on orchestrator recommendation                               |
+| Vercel Hobby (free) plan for staging            | service, no package          | 2026-07-13, #1 comment                                     | Tural                                                               |
+| Vercel Web Analytics                            | `@vercel/analytics`          | 2026-10-09, [ADR 0001](./adr/0001-vercel-web-analytics.md) | Tural                                                               |
 
 ## Companion of a decided choice
 

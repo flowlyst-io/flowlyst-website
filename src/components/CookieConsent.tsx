@@ -21,7 +21,7 @@ const noopSubscribe = () => () => {}
  * its appearance shifts no layout — CLS stays 0 (PRD §10.2, invariant c).
  *
  * Non-essential scripts gate on `hasConsent()` (src/utilities/consent.ts). The site
- * runs none today (no analytics; Corpowid loads pre-consent as accessibility-essential),
+ * runs none today (analytics is cookieless Vercel Web Analytics, no consent gate; Corpowid loads pre-consent as accessibility-essential),
  * so the banner records the choice for whatever is added later.
  *
  * Accessibility: a labelled `role="region"` containing real <button>s — reachable in

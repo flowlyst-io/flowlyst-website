@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import { Analytics } from '@vercel/analytics/next'
 import { nunito } from './fonts'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
@@ -78,6 +79,7 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
         </main>
         <Footer />
         <CookieConsent />
+        <Analytics />
         <Script
           src="https://cdn.corpowid.com/corpowid.js"
           data-account={CORPOWID_ACCOUNT}
