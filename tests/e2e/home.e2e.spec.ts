@@ -227,6 +227,40 @@ test.describe('Homepage — accessibility smoke', () => {
     await cta.focus()
     await expect(cta).toBeFocused()
   })
+
+  test('hovering the hero primary CTA keeps its text visible and un-underlined', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    const cta = page
+      .locator('[data-testid="home-hero"]')
+      .getByRole('link', { name: /request a demo/i })
+    await cta.hover()
+    const style = await cta.evaluate((el) => {
+      const cs = getComputedStyle(el)
+      return { color: cs.color, background: cs.backgroundColor, decoration: cs.textDecorationLine }
+    })
+    expect(style.color).toBe('rgb(255, 255, 255)')
+    expect(style.color).not.toBe(style.background)
+    expect(style.decoration).toBe('none')
+  })
+
+  test('hovering the final-CTA btn--dark link keeps its text colour and no underline', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    const cta = page.locator('a.btn--dark', { hasText: /request a demo/i })
+    await cta.scrollIntoViewIfNeeded()
+    const resting = await cta.evaluate((el) => getComputedStyle(el).color)
+    await cta.hover()
+    const style = await cta.evaluate((el) => {
+      const cs = getComputedStyle(el)
+      return { color: cs.color, background: cs.backgroundColor, decoration: cs.textDecorationLine }
+    })
+    expect(style.color).toBe(resting)
+    expect(style.color).not.toBe(style.background)
+    expect(style.decoration).toBe('none')
+  })
 })
 
 // ------------- Responsive nav — WCAG 1.4.10 reflow (issues #45, #58) ----------

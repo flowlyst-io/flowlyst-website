@@ -6,7 +6,12 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 
 ## Entries
 
-None yet.
+### Link-capable `.btn` variants restate their colour on hover
+
+1. **Rule**: every `.btn` variant that can render as a link restates its resting `color` in its `:hover` rule, and `.btn:hover` keeps `text-decoration: none`.
+2. **Why**: the global `a:hover` (specificity 0,1,1) beats a single-class variant (0,1,0). It recoloured and underlined link-buttons, and the green "Request a demo" text vanished on hover (2026-10-09).
+3. **Minimal example**: `.btn--x { color: #fff } .btn--x:hover { color: #fff; background: … }`
+4. **Gotcha**: a hover rule that only sets `background` looks fine on `<button>` but breaks on `<Link>`/`<a>`.
 
 ## The contract for this file
 
