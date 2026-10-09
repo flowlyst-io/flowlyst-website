@@ -63,7 +63,7 @@ export const privacyDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking). The site does not use advertising trackers. If that changes, any non-essential cookie will run only after you accept it in the cookie banner, and this policy and the cookie policy will be updated first.',
+          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking). The site does not use advertising trackers. If we add cookie-based analytics or advertising trackers, any non-essential cookie will run only after you accept it in the cookie banner, and this policy and the cookie policy will be updated first.',
         },
         {
           kind: 'flag',
@@ -105,7 +105,7 @@ export const privacyDoc: LegalDoc = {
         {
           kind: 'list',
           items: [
-            'Vercel — website hosting and content delivery (United States).',
+            'Vercel — website hosting, content delivery, and cookieless web analytics (United States).',
             'Neon — the database that stores your form submissions.',
             'Resend — sends the email notifications that tell our team about your request.',
             'Corpowid — provides the accessibility toolbar available on the site.',

@@ -29,7 +29,7 @@ export const cookiesDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'We keep the site light on cookies. Strictly necessary and accessibility features work by default because the site cannot function properly without them. Any non-essential cookie — such as analytics, if we ever add it — runs only after you accept it in the cookie banner. You can decline, and you can change your mind later by clearing your cookies for this site, which brings the banner back.',
+          text: 'We keep the site light on cookies. Strictly necessary and accessibility features work by default because the site cannot function properly without them. Any non-essential cookie runs only after you accept it in the cookie banner; our analytics is cookieless (see Analytics below). You can decline, and you can change your mind later by clearing your cookies for this site, which brings the banner back.',
         },
         {
           kind: 'p',
