@@ -69,7 +69,7 @@ export function Footer() {
             </div>
           </div>
           <div>
-            <h5>Solutions</h5>
+            <h4>Solutions</h4>
             <ul>
               <li>
                 <Link href="/solutions/budget-software">Budget Software</Link>
@@ -86,7 +86,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h5>Proof</h5>
+            <h4>Proof</h4>
             <ul>
               <li>
                 <Link href="/testimonials">Testimonials</Link>
@@ -100,7 +100,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h5>Company</h5>
+            <h4>Company</h4>
             <ul>
               <li>
                 <Link href="/about">About</Link>
@@ -117,7 +117,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h5>Legal</h5>
+            <h4>Legal</h4>
             <ul>
               <li>
                 <Link href="/privacy">Privacy</Link>
