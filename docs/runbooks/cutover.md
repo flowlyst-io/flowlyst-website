@@ -37,7 +37,7 @@ Drafted 2026-10-08 from `dig`, `curl` and the code on `main` (b173772).
 
 *Path A, reuse (recommended):*
 1. Neon console, open the project behind the staging deploy, confirm the **Production** branch is the one the Vercel integration points at.
-2. Delete the three smoke rows in `/admin` (speaking_requests id 1, demo_requests id 1, contact_messages id 1, "STAGING SMOKE TEST", #70). Step 12 starts from empty lead tables so a real submission is unambiguous.
+2. Delete the three smoke rows in `/admin` (do this now, before step 7b sets the production URL; see the warning in step 3) (speaking_requests id 1, demo_requests id 1, contact_messages id 1, "STAGING SMOKE TEST", #70). Step 12 starts from empty lead tables so a real submission is unambiguous.
 3. Also consider Neon plan limits (Free auto-suspends and has compute-hour caps); the Launch plan is the usual upgrade for a live site. Spending call, yours.
 
 *Path B, fresh production database:* follow `staging.md` Parts 1 to 3 and Part 6 ("Connect the Neon-Vercel integration") with project name `flowlyst-production`, Postgres **18**, region **`aws-us-east-1`** (matching Vercel's function region). Copy the **direct** (non-`-pooler`) string for the bootstrap. Re-enter all CMS content afterwards (testimonials, case studies, site settings). Only choose this if you want staging content kept separate.
@@ -60,7 +60,7 @@ Rotating `PAYLOAD_SECRET` on a database that already has users invalidates their
 
 ## Step 3 — Set production environment variables
 
-Vercel, project, Settings, Environment Variables. Set the values for the **Production** environment (add Preview as noted). A change takes effect only on the **next deploy**; `NEXT_PUBLIC_SERVER_URL` is inlined at build time, so a redeploy (step 5) is mandatory.
+Vercel, project, Settings, Environment Variables. Set the values for the **Production** environment (add Preview as noted). A change takes effect only on the **next deploy**; `NEXT_PUBLIC_SERVER_URL` is inlined at build time, so it needs its own redeploy (step 7b).
 
 | Variable | Secret? | Value / source | Environments | Notes |
 | --- | --- | --- | --- | --- |
@@ -75,15 +75,17 @@ Vercel, project, Settings, Environment Variables. Set the values for the **Produ
 | `SALES_NOTIFY_TO` | not secret | e.g. `sales@flowlyst.io` | Prod | Demo requests. Defaults to `info@flowlyst.io`. |
 | `CONTACT_NOTIFY_TO` | not secret | e.g. `info@flowlyst.io` | Prod | Contact form. Default `info@flowlyst.io`. |
 | `SPEAKING_NOTIFY_TO` | not secret | e.g. `speaking@flowlyst.io` | Prod | Keynote requests. Default falls back to `SALES_NOTIFY_TO`, then `info@flowlyst.io`. |
-| `NEXT_PUBLIC_SERVER_URL` | not secret | `https://flowlyst.io` | Prod | Drives sitemap `<loc>`, the robots `Sitemap:` line, canonical/OG URLs, JSON-LD. **Set this explicitly**; do not rely on `VERCEL_PROJECT_PRODUCTION_URL`, which Vercel sets automatically and which may still resolve to the `.vercel.app` host. |
+| `NEXT_PUBLIC_SERVER_URL` | not secret | `https://flowlyst.io` | Prod | **Do not set yet: set it in step 7b.** Drives sitemap `<loc>`, the robots `Sitemap:` line, canonical/OG URLs, JSON-LD. **Set this explicitly**; do not rely on `VERCEL_PROJECT_PRODUCTION_URL`, which Vercel sets automatically and which may still resolve to the `.vercel.app` host. |
 | `ENABLE_EXPERIMENTAL_COREPACK` | not secret | `1` | Prod, Preview | Pins pnpm 10.4.1. Already set on staging; confirm. |
+
+> **Warning: set `NEXT_PUBLIC_SERVER_URL` last (step 7b), after every `/admin` write.** Payload adds this URL to its CSRF allowlist (`src/payload.config.ts` does not override it), so once `https://flowlyst.io` is deployed, `/admin` saves from the `.vercel.app` origin fail silently. Every `/admin` write (first admin user, step 6a, testimonials and case studies in step 7, any content edit) must happen before step 7b, or after the DNS flip on `https://flowlyst.io`.
 
 **Not needed at launch (do not create):**
 - `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY`: reCAPTCHA is **parked** and no code on `main` reads them; forms rely on a server-validated honeypot (`resend-setup.md`, "Parked: reCAPTCHA"). Open decision below.
 - A revalidation secret: none exists on `main`. Content pages revalidate on publish from the CMS hooks with no shared secret. If PR #80 or a later PR introduces one, add it here before merging.
 - `VERCEL_PROJECT_PRODUCTION_URL`: Vercel-managed.
 
-**Verify:** Settings, Environment Variables shows every row above with Production ticked; `CRON_SECRET` is Production only. No variable value is visible in any screenshot you share.
+**Verify:** Settings, Environment Variables shows every row above except `NEXT_PUBLIC_SERVER_URL` (step 7b) with Production ticked; `CRON_SECRET` is Production only. No variable value is visible in any screenshot you share.
 
 ## Step 4 — (Path B only) bootstrap the schema
 
@@ -93,21 +95,15 @@ Skip on Path A (the schema is already there). On Path B follow `staging.md` Part
 
 ## Step 5 — Deploy and verify on the `.vercel.app` URL (domain not attached yet)
 
-1. Vercel, Deployments, **Redeploy** the latest `main` deployment (uncheck "use existing build cache" so the new `NEXT_PUBLIC_SERVER_URL` is inlined).
+1. Vercel, Deployments, **Redeploy** the latest `main` deployment (uncheck "use existing build cache").
 2. Wait for the build log line `[vercel-build] ... applying committed migrations` followed by a green build.
 
-**Verify** (live traffic is unaffected; this is the pre-flight):
-```bash
-curl -s https://flowlyst-website.vercel.app/robots.txt
-curl -s https://flowlyst-website.vercel.app/sitemap.xml | grep -o '<loc>[^<]*' | head -5
-curl -s https://flowlyst-website.vercel.app/ | grep -o '<link rel="canonical"[^>]*>'
-```
-Expect: the `Sitemap:` line and every `<loc>` start with `https://flowlyst.io`, the canonical is `https://flowlyst.io/`, robots allows `GPTBot`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`. **If any show `vercel.app`, stop: step 3's `NEXT_PUBLIC_SERVER_URL` did not reach the build.**
+**Verify:** the deploy is green and `https://flowlyst-website.vercel.app/` loads. The SEO URL checks run in step 7b, once the production URL is set.
 
 ## Step 6 — First admin user and Resend (additive, safe before the flip)
 
 **6a. First admin user.** Path A: your admin user already exists; log in at `https://flowlyst-website.vercel.app/admin` and skip to 6b. Path B: open `/admin` on the `.vercel.app` URL immediately after the deploy; Payload shows the **create first user** form while the users table is empty, and anyone who finds the URL first could claim it, so do this straight away. Use your own email and a unique password from the password manager.
-**Verify:** you can log in and see the Content, Leads and Admin groups.
+**Verify:** you can log in and see the Content, Leads and Admin groups, then prove a write: edit a field in Site Settings (or any document), click Save, reload, and confirm the change persisted (a failed save shows no error under a CSRF block, so reload is the proof). Revert the edit.
 
 **6b. Resend.** Run [`resend-setup.md`](resend-setup.md) steps 1 and 2: create the key `flowlyst-production` (Sending access), add and verify the `flowlyst.io` domain. The DNS records Resend shows are **added to the existing zone in Google Cloud DNS** alongside the current ones:
 - Add exactly what Resend displays (typically DKIM `resend._domainkey` and an SPF/MX pair on a `send` subdomain). They do not collide with the Workspace records.
@@ -121,7 +117,19 @@ Then set `RESEND_API_KEY` (and the `*_NOTIFY_TO` vars) per step 3 and redeploy.
 `pnpm content:port` **scrapes the live `https://flowlyst.io`** (`content-port.md`). After step 10 that URL is the new site, so the legacy source is gone. Run it now, from a local clone, against the production database, using the exact commands in `content-port.md` "Run it against staging" with the production pooled `DATABASE_URL`, `PAYLOAD_SECRET` and `BLOB_READ_WRITE_TOKEN`. Always use `pnpm content:port`, never bare `tsx`.
 
 Path A where staging was already ported: re-run anyway; it is idempotent (expect `7 updated, 0 uploaded`).
-**Verify:** expected output `7 created / 7 uploaded` (first run) and the checks in `content-port.md` "Verify" on the `.vercel.app` URL: `/blog` lists 7 posts, each `/blog/<slug>` renders, Article JSON-LD is present, `/admin` shows 7 Published. Then enter or confirm testimonials and case studies in `/admin` (no legacy source exists, #70).
+**Verify:** expected output `7 created / 7 uploaded` (first run) and the checks in `content-port.md` "Verify" on the `.vercel.app` URL: `/blog` lists 7 posts, each `/blog/<slug>` renders, Article JSON-LD is present, `/admin` shows 7 Published. Then enter or confirm testimonials and case studies in `/admin` on the `.vercel.app` URL (no legacy source exists, #70); this is a write, so it must finish before step 7b.
+
+## Step 7b — Set the production URL and redeploy (last `.vercel.app` admin write is behind you)
+
+Confirm nothing in 6a and 7 still needs an `/admin` write on the `.vercel.app` URL, then add `NEXT_PUBLIC_SERVER_URL` = `https://flowlyst.io` (Production) and **Redeploy** with "use existing build cache" unchecked so it is inlined. From here `/admin` saves work only on `https://flowlyst.io` (after step 10).
+
+**Verify** (live traffic is unaffected; this is the pre-flight):
+```bash
+curl -s https://flowlyst-website.vercel.app/robots.txt
+curl -s https://flowlyst-website.vercel.app/sitemap.xml | grep -o '<loc>[^<]*' | head -5
+curl -s https://flowlyst-website.vercel.app/ | grep -o '<link rel="canonical"[^>]*>'
+```
+Expect: the `Sitemap:` line and every `<loc>` start with `https://flowlyst.io`, the canonical is `https://flowlyst.io/`, robots allows `GPTBot`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`. **If any show `vercel.app`, stop: the 7b `NEXT_PUBLIC_SERVER_URL` did not reach the build.**
 
 ## Step 8 — Add the domains in Vercel (still no traffic change)
 
@@ -148,6 +156,7 @@ curl -sI https://flowlyst-website.vercel.app/resources/case-studies | grep -iE '
 
 In Google Cloud DNS, zone `flowlyst.io`. TTLs are already 240 s, so no lowering is needed; keep new records at **300 s or less** until the post-cutover checks pass.
 
+0. **Pre-Tuesday check:** before the day, confirm you can open the `flowlyst.io` zone in the Google Cloud DNS console and that you see the 5 MX records. If you cannot, fix access before Tuesday.
 1. **Record the current state first** (screenshot the zone's record list; this is your rollback source): `A flowlyst.io -> 3.12.162.23`, `CNAME www -> flowlyst.io.`
 2. **Change** the apex `A` record from `3.12.162.23` to the A value Vercel showed in step 8.
 3. **Change** the `www` record from `CNAME flowlyst.io.` to the CNAME value Vercel showed (classically `cname.vercel-dns.com.`).
@@ -209,7 +218,8 @@ Trigger: forms not delivering, widespread 5xx, wrong content, or email disruptio
 1. In Google Cloud DNS, set the apex `A` back to `3.12.162.23` and `www` back to `CNAME flowlyst.io.` (from your step 10 screenshot).
 2. **Verify:** `dig +short flowlyst.io A` returns `3.12.162.23` and `curl -sI https://flowlyst.io | grep -i '^server'` shows `nginx`. With a 240 s TTL, most resolvers recover within about 5 minutes; some resolvers may hold the old answer longer.
 3. Leave the Vercel domains attached (harmless while DNS points away) and keep the Vercel project running.
-4. Any form submissions made on the new site while live are in the production database; export from `/admin` before discarding anything.
+4. The legacy Let's Encrypt certificate expires **2026-12-18** and cannot renew via HTTP-01 once DNS points at Vercel, so the rollback window is bounded by that date; after it, rolling back serves an expired certificate.
+5. Any form submissions made on the new site while live are in the production database; export from `/admin` before discarding anything.
 
 Email is unaffected by a flip or a rollback because MX is never changed. **Do not decommission the legacy AWS host** until the new site has run cleanly for at least two weeks and you have decided to retire it (outside this runbook).
 
