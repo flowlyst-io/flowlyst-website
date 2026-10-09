@@ -63,7 +63,11 @@ export const privacyDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'The site does not use analytics or advertising trackers at this time. If that changes, any non-essential cookie will run only after you accept it in the cookie banner, and this policy and the cookie policy will be updated first.',
+          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking). The site does not use advertising trackers. If that changes, any non-essential cookie will run only after you accept it in the cookie banner, and this policy and the cookie policy will be updated first.',
+        },
+        {
+          kind: 'flag',
+          text: "Vercel Web Analytics was added 2026-10-09. Confirm this description matches Vercel's current documentation and add Vercel Web Analytics to the processor list below if counsel wants it named separately.",
         },
       ],
     },

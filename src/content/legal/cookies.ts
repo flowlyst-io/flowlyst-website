@@ -4,7 +4,7 @@ import type { LegalDoc } from './types'
  * Cookie policy — DRAFT (issue #22). Documents the cookies/storage the site ACTUALLY
  * uses today: the strictly-necessary consent cookie (`fl_cookie_consent`), the Payload
  * staff-session cookie on /admin, and the Corpowid accessibility widget's storage. The
- * site runs no analytics; reCAPTCHA is planned (PRD §10.4), not live. Unknowns —
+ * site runs cookieless Vercel Web Analytics only; reCAPTCHA is planned (PRD §10.4), not live. Unknowns —
  * chiefly Corpowid's exact cookie behavior — are `flag` blocks. Sign-off is Tural's.
  */
 export const cookiesDoc: LegalDoc = {
@@ -70,7 +70,11 @@ export const cookiesDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'The site uses no analytics or advertising cookies at this time. If we add analytics later, we will list it here and it will run only after you accept.',
+          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking). The site uses no advertising cookies. If we add any cookie-based analytics later, we will list it here and it will run only after you accept.',
+        },
+        {
+          kind: 'flag',
+          text: "Vercel Web Analytics was added 2026-10-09. Confirm this description matches Vercel's current documentation.",
         },
         {
           kind: 'subheading',

@@ -21,10 +21,11 @@ When **not** to write one:
 
 ## Index
 
-No records yet. Decisions taken before this record existed live on issue #1 (Architecture decision log) and in [stack.md](../stack.md).
+Decisions taken before this record existed live on issue #1 (Architecture decision log) and in [stack.md](../stack.md).
 
-| #   | Title | Status |
-| --- | ----- | ------ |
+| #    | Title                                                  | Status   |
+| ---- | ------------------------------------------------------ | -------- |
+| 0001 | [Vercel Web Analytics](./0001-vercel-web-analytics.md) | Accepted |
 
 ---
 
