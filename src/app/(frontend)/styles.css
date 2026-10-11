@@ -1602,3 +1602,8 @@ code,
     justify-content: flex-end;
   }
 }
+
+/* Badge hidden; RecaptchaNotice shows Google's required attribution instead. */
+.grecaptcha-badge {
+  visibility: hidden;
+}
