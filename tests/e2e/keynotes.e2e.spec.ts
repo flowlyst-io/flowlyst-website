@@ -377,6 +377,49 @@ test.describe('Keynotes speaking-request form — delivery path (invariant d)', 
     }
   })
 
+  test('without reCAPTCHA keys no Google script loads and no token is sent', async ({
+    page,
+    request,
+  }) => {
+    test.setTimeout(90_000)
+    const eventName = `E2E NoRC ${Date.now()}`
+    const googleRequests: string[] = []
+    let postHeaders: Record<string, string> | undefined
+    page.on('request', (req) => {
+      if (req.url().includes('recaptcha')) googleRequests.push(req.url())
+      if (req.method() === 'POST' && req.url().includes('/api/speaking-requests')) {
+        postHeaders = req.headers()
+      }
+    })
+
+    expect(await fetchHtml(request, PATH)).not.toContain('protected by reCAPTCHA')
+
+    await page.goto(PATH)
+    await expect(page.getByTestId('keynotes-form')).toBeVisible()
+    expect(googleRequests, 'nothing loads before interaction').toHaveLength(0)
+
+    await page.getByLabel('Your name').fill('No Captcha')
+    await page.getByLabel('Work email').fill(`e2e-norc-${Date.now()}@district.k12.us`)
+    await page.getByLabel('Event name').fill(eventName)
+    await page.getByLabel('Event date or timeframe').fill('Fall 2026')
+    await page.getByRole('button', { name: /submit speaking request/i }).click()
+
+    await expect(page.getByTestId('keynotes-form-success')).toBeVisible()
+    expect(googleRequests).toHaveLength(0)
+    expect(postHeaders).toBeDefined()
+    expect(postHeaders).not.toHaveProperty('x-recaptcha-token')
+
+    const ctx = await adminContext()
+    try {
+      const body = (await (await ctx.get(whereEvent(eventName))).json()) as {
+        docs: Array<{ id: number }>
+      }
+      for (const doc of body.docs) await ctx.delete(`/api/speaking-requests/${doc.id}`)
+    } finally {
+      await ctx.dispose()
+    }
+  })
+
   test('client validation blocks an empty submit: errors render and NO API call is made', async ({
     page,
   }) => {
