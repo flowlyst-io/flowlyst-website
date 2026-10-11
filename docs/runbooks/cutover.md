@@ -16,7 +16,7 @@ Drafted 2026-10-08 from `dig`, `curl` and the code on `main` (b173772).
 
 ## Go / no-go gates (all must be true before step 1)
 
-- [ ] PR #78 (legal pages, cookie consent, Corpowid) and PR #80 (perf/a11y) are merged and staging has redeployed. Today `https://flowlyst-website.vercel.app/privacy` returns **404**; the legacy footer links to it, so launching without #78 ships dead legal links.
+- [ ] PR #78 (legal pages, cookie consent) and PR #80 (perf/a11y) are merged and staging has redeployed. Today `https://flowlyst-website.vercel.app/privacy` returns **404**; the legacy footer links to it, so launching without #78 ships dead legal links.
 - [ ] Legal copy on `/privacy`, `/terms`, `/cookies` signed off by you (#70).
 - [ ] `/ai-chat` decided (#70): redirect target, or leave to 404. If redirect, an agent adds a 301 in `next.config.ts` and it is merged **before** step 9.
 - [ ] Decisions in "Open decisions" at the bottom are answered.
@@ -209,7 +209,6 @@ In the Resend dashboard, Emails, every send must show **Delivered**. A bounce us
 
 Also check, in a real browser:
 
-- [ ] **Corpowid widget** renders and opens on `https://flowlyst.io` (it may not initialise on a host the Corpowid account has not whitelisted; PR #78 saw a 404 "account id not correct" from `localhost`). If it fails on `flowlyst.io`, add the domain in the Corpowid account.
 - [ ] Cookie banner appears on first visit; `/privacy`, `/terms`, `/cookies` load.
 - [ ] `/admin` loads over `flowlyst.io` and you can log in.
 - [ ] Publish a trivial edit in `/admin` and see it on the live page without a deploy (on-demand revalidation).
@@ -241,4 +240,3 @@ Email is unaffected by a flip or a rollback because MX is never changed. **Do no
 3. **`/ai-chat`:** rebuild later, 301 to `/request-demo` (or `/contact`, `/`), or let it 404 (#70)?
 4. **Launch without reCAPTCHA?** PRD §10.4 lists it; it is parked and forms use a honeypot only. Launch on the honeypot, or hold for reCAPTCHA?
 5. **Speed Insights:** approve `@vercel/speed-insights` (technology gate; ADR needed) or use Lighthouse plus Search Console only?
-6. **Corpowid:** confirm the account is active, whitelisted for `flowlyst.io`, and sets no tracking cookies (#78 flag 11).

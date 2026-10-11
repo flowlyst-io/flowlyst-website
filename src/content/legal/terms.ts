@@ -25,10 +25,6 @@ export const termsDoc: LegalDoc = {
           kind: 'p',
           text: 'These terms apply to this website only. Use of the flowlyst budgeting product or any consulting, training, or speaking engagement is governed by the separate agreement for that service.',
         },
-        {
-          kind: 'flag',
-          text: 'Confirm scope: should these terms remain website-only, or also cover the SaaS product? If the product has its own agreement, keep this website-only and link the product terms.',
-        },
       ],
     },
     {
@@ -111,11 +107,17 @@ export const termsDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'To the fullest extent permitted by law, flowlyst will not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use of the site.',
+          text: 'To the fullest extent permitted by law, flowlyst will not be liable for any indirect, incidental, special, consequential, or punitive damages, or for any loss of profits, data, or goodwill, arising out of or relating to your use of the site. Our total liability for any claim relating to the site is limited to one hundred US dollars (US $100). Some jurisdictions do not allow certain limitations of liability, so some of these limits may not apply to you.',
         },
+      ],
+    },
+    {
+      id: 'indemnification',
+      heading: 'Indemnification',
+      blocks: [
         {
-          kind: 'flag',
-          text: 'Counsel to set the liability cap, carve-outs, and any indemnification clause. This section is placeholder boilerplate until reviewed.',
+          kind: 'p',
+          text: "You agree to indemnify and hold harmless flowlyst and its members, employees, and agents from any claims, losses, or expenses (including reasonable attorneys' fees) arising from your misuse of the site or your violation of these terms.",
         },
       ],
     },

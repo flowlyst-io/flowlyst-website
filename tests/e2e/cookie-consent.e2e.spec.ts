@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * Cookie-consent banner + Corpowid (issue #22, PRD §10.3–§10.4).
+ * Cookie-consent banner (issue #22, PRD §10.4).
  *
  * The rest of the suite seeds an accepted-consent cookie (playwright.config.ts `use`)
  * so the global banner never obscures other tests. THIS spec opts out — it resets
@@ -108,21 +108,5 @@ test.describe('Cookie consent — layout stability (CLS-safe overlay)', () => {
     })
     expect(style.position, 'banner is position: fixed (overlays, does not push)').toBe('fixed')
     expect(style.bottom, 'banner is anchored to the viewport bottom').toBe('0px')
-  })
-})
-
-test.describe('Corpowid accessibility widget (PRD §10.3)', () => {
-  test('loads BEFORE consent (accessibility-essential), with the preserved account id', async ({
-    page,
-  }) => {
-    await page.goto('/')
-    // Banner still visible == no consent given; the a11y widget must load anyway.
-    await expect(page.getByTestId('cookie-consent')).toBeVisible()
-    const script = page.locator('script[src*="corpowid.com"]')
-    await expect(script, 'the Corpowid embed is present in the DOM').toHaveCount(1)
-    await expect(script, 'the preserved account id is carried over').toHaveAttribute(
-      'data-account',
-      '0dad393b-e1f0-4586-aa19-31eedcf20a06',
-    )
   })
 })

@@ -48,7 +48,7 @@ Four non-negotiable review invariants, checked on every visible change:
 - **(d) Lead capture is sacred.** The demo, contact, and newsletter forms must **verifiably deliver** — submission, validation, and the notification/persistence path all proven, not assumed. [PRD §8]
 
 - **Quality and UI evidence:** `quality-engineer` and `ui-verifier` hold the full rules. UI is never "done" from code inspection, and Tural is never asked to confirm what a screenshot proves.
-- **Beyond (c):** keyboard-navigable nav and forms, alt text on all imagery, visible focus indicators, one H1 per page, the Corpowid accessibility widget preserved; Lighthouse is measured on the homepage and each solution page (mobile).
+- **Beyond (c):** keyboard-navigable nav and forms, alt text on all imagery, visible focus indicators, one H1 per page; Lighthouse is measured on the homepage and each solution page (mobile). (Corpowid removed at Tural's direction, 2026-10-11)
 - **Verification scales to the delta:** a review fix pass re-runs only the touched checks, plus `ui-verifier` if structure or layout changed. `quality-engineer` re-runs at the final SHA only when a fix pass changed behavior beyond Nits.
 - **What runs:** `.claude/hooks/tracking-gate.sh` denies a `gh pr create` that cites no `#N` once (the identical retry proceeds), and the SessionStart check reports unrecorded packages, and the TeammateIdle hook holds an idle teammate until it reports (twice, then allowed). The rest of this file is prose, not enforced.
 
