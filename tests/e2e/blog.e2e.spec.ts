@@ -525,6 +525,33 @@ test.describe('Newsletter mount on /blog — delivery path (invariant d)', () =>
       await ctx.dispose()
     }
   })
+
+  test('without reCAPTCHA keys the signup loads no Google script and sends no token', async ({
+    page,
+    request,
+  }) => {
+    test.setTimeout(90_000)
+    const googleRequests: string[] = []
+    let postHeaders: Record<string, string> | undefined
+    page.on('request', (req) => {
+      if (req.url().includes('recaptcha')) googleRequests.push(req.url())
+      if (req.method() === 'POST' && req.url().includes('/newsletter-subscribers/subscribe')) {
+        postHeaders = req.headers()
+      }
+    })
+
+    expect(await fetchHtml(request, '/blog')).not.toContain('protected by reCAPTCHA')
+
+    await page.goto('/blog')
+    await expect(page.getByTestId('newsletter-form')).toBeVisible()
+    await page.getByLabel('Email address').fill(`blog-e2e-sub-${stamp}-norc@district.k12.us`)
+    await page.getByRole('button', { name: /subscribe/i }).click()
+
+    await expect(page.getByTestId('newsletter-success')).toBeVisible()
+    expect(googleRequests).toHaveLength(0)
+    expect(postHeaders).toBeDefined()
+    expect(postHeaders).not.toHaveProperty('x-recaptcha-token')
+  })
 })
 
 // ============================ ACCESSIBILITY SMOKE =========================

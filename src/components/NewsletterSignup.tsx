@@ -2,6 +2,10 @@
 
 import React, { useId, useState } from 'react'
 
+import { RecaptchaNotice } from '@/components/RecaptchaNotice'
+import { getRecaptchaToken, loadRecaptcha } from '@/utilities/recaptchaClient'
+import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
+
 /**
  * Newsletter signup — a reusable client island (PRD §8.3). A single email field
  * + Subscribe button matching the design's `/blog` newsletter row
@@ -20,6 +24,9 @@ import React, { useId, useState } from 'react'
  *     already-subscribed (the endpoint deliberately hides that).
  *   - The error state fires ONLY on a network failure / non-2xx (a 5xx), never on
  *     a "already subscribed" or "invalid" outcome, because those also return 200.
+ *
+ * An invisible reCAPTCHA v3 token travels in a header (ADR 0002). A rejected token
+ * still returns the uniform 200, so the UI never learns the verdict.
  *
  * `source` (optional) tags where the signup came from (e.g. "blog") and is stored
  * on the subscriber row. Mirrors SpeakingRequestForm's a11y/state patterns scaled
@@ -69,10 +76,15 @@ export function NewsletterSignup({ source }: NewsletterSignupProps) {
     setState('submitting')
     setFieldError(undefined)
 
+    const token = await getRecaptchaToken('newsletter')
+
     try {
       const res = await fetch('/api/newsletter-subscribers/subscribe', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { [RECAPTCHA_HEADER]: token } : {}),
+        },
         body: JSON.stringify({ email: value, source, botField: honeypot }),
       })
       // The endpoint returns 200 for every real outcome; a non-ok response is a
@@ -107,7 +119,13 @@ export function NewsletterSignup({ source }: NewsletterSignupProps) {
   const showNetworkError = state === 'error' && !fieldError
 
   return (
-    <form onSubmit={handleSubmit} noValidate data-testid="newsletter-form">
+    <form
+      onSubmit={handleSubmit}
+      onFocus={() => void loadRecaptcha().catch(() => {})}
+      onPointerDown={() => void loadRecaptcha().catch(() => {})}
+      noValidate
+      data-testid="newsletter-form"
+    >
       <div style={{ display: 'flex', gap: 8 }}>
         <input
           id={emailId}
@@ -165,6 +183,8 @@ export function NewsletterSignup({ source }: NewsletterSignupProps) {
           onChange={(e) => setHoneypot(e.target.value)}
         />
       </div>
+
+      <RecaptchaNotice style={{ marginTop: 8 }} />
 
       {fieldError && (
         <p
