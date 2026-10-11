@@ -96,12 +96,10 @@ export function recaptchaGuard(action: RecaptchaAction): CollectionBeforeChangeH
     if ((data as { botField?: unknown } | undefined)?.botField) return data
 
     const result = await verifyRecaptcha(req.headers?.get(RECAPTCHA_HEADER), action)
-    const detail = `action=${action} outcome=${result.outcome} score=${result.score ?? 'n/a'}`
+    const detail = `action=${action} outcome=${result.outcome} score=${result.score ?? 'n/a'} codes=${result.codes?.join(',') ?? ''}`
 
     if (result.outcome === 'fail') {
-      req.payload.logger.warn(
-        `[recaptcha] rejected: ${detail} codes=${result.codes?.join(',') ?? ''}`,
-      )
+      req.payload.logger.warn(`[recaptcha] rejected: ${detail}`)
       throw new APIError('This submission was flagged as spam.', 400)
     }
     if (result.outcome === 'missing' || result.outcome === 'error') {

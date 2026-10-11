@@ -77,7 +77,7 @@ export const NewsletterSubscribers: CollectionConfig = {
         if (data.botField || !EMAIL_RE.test(email)) return ok()
 
         const check = await verifyRecaptcha(req.headers.get(RECAPTCHA_HEADER), 'newsletter')
-        const detail = `action=newsletter outcome=${check.outcome} score=${check.score ?? 'n/a'}`
+        const detail = `action=newsletter outcome=${check.outcome} score=${check.score ?? 'n/a'} codes=${check.codes?.join(',') ?? ''}`
         if (check.outcome === 'fail') {
           req.payload.logger.warn(`[recaptcha] rejected: ${detail}`)
           return ok()
