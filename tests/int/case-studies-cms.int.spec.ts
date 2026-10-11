@@ -23,6 +23,7 @@ import CaseStudiesIndexPage from '@/app/(frontend)/case-studies/page'
 import CaseStudyDetailPage, {
   generateMetadata as caseDetailMetadata,
 } from '@/app/(frontend)/case-studies/[slug]/page'
+import { ArticleBody } from '@/components/blog/ArticleBody'
 import { RichTextBody } from '@/app/(frontend)/case-studies/[slug]/RichTextBody'
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
@@ -591,6 +592,31 @@ describe('Case study rich text — list markers (#67, ports the blog #66 fix)', 
     expect(html, 'indent restored').toContain('padding-left:24px')
     expect(html).toContain(`first ${stamp}`)
     expect(html).toContain(`second ${stamp}`)
+  })
+
+  it('spaces list items like the blog reader (#79)', () => {
+    const data = lexicalWithList([`first ${stamp}`, `second ${stamp}`])
+    const caseStudy = renderList(data)
+    const blog = renderToStaticMarkup(ArticleBody({ body: data as never }))
+    expect(caseStudy.match(/<li\b[^>]*style="margin:0 0 8px"/g)).toHaveLength(2)
+    expect(blog.match(/<li\b[^>]*style="margin:0 0 8px"/g)).toHaveLength(2)
+  })
+
+  it('keeps no bullet on a wrapper item that holds only a sub-list (#79)', () => {
+    const data = lexicalWithList(['parent'])
+    const list = data.root.children[0] as { children: unknown[] }
+    list.children.push({
+      type: 'listitem',
+      value: 2,
+      format: '',
+      indent: 0,
+      version: 1,
+      direction: 'ltr',
+      children: [lexicalWithList(['child']).root.children[0]],
+    })
+    const html = renderList(data)
+    expect(html).toMatch(/<li[^>]*list-style-type:none[^>]*>\s*<ul/)
+    expect(html, 'wrapper is still spaced').toContain('list-style-type:none;margin:0 0 8px')
   })
 })
 
