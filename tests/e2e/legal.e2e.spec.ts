@@ -120,9 +120,7 @@ test.describe('Legal pages — server-rendered content (raw HTML, no JS)', () =>
       request,
     }) => {
       const html = await fetchHtml(request, p.path)
-      expect(html, 'draft notice must be gone after sign-off').not.toContain(
-        'Draft — pending final',
-      )
+      expect(html, 'draft markers must be gone after sign-off').not.toContain('Draft —')
       expect(html).not.toContain('legal__draft')
       const flagBlocks = html.match(/class="legal__flag"/g)?.length ?? 0
       if (p.hasFlag) expect(flagBlocks, `${p.path} must render a gap flag`).toBeGreaterThan(0)

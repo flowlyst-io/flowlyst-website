@@ -34,7 +34,7 @@ export type LegalDoc = {
   title: string
   /** Lead paragraph under the H1. */
   sub: string
-  /** Human-readable effective date shown in the sidebar (signed off 2026-10-11). */
+  /** Human-readable effective date shown in the sidebar. */
   lastUpdated: string
   sections: LegalSection[]
 }
