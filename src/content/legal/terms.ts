@@ -11,7 +11,7 @@ export const termsDoc: LegalDoc = {
   doc: 'terms',
   title: 'Terms of service',
   sub: 'The rules that govern your use of flowlyst.',
-  lastUpdated: 'Draft — pending review',
+  lastUpdated: 'October 11, 2026',
   sections: [
     {
       id: 'overview',

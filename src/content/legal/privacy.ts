@@ -13,7 +13,7 @@ export const privacyDoc: LegalDoc = {
   doc: 'privacy',
   title: 'Privacy policy',
   sub: "How we collect, use, and protect data from people who use flowlyst's site and services.",
-  lastUpdated: 'Draft — pending review',
+  lastUpdated: 'October 11, 2026',
   sections: [
     {
       id: 'overview',

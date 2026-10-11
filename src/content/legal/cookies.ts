@@ -11,7 +11,7 @@ export const cookiesDoc: LegalDoc = {
   doc: 'cookies',
   title: 'Cookie policy',
   sub: 'How we use cookies and similar technologies.',
-  lastUpdated: 'Draft — pending review',
+  lastUpdated: 'October 11, 2026',
   sections: [
     {
       id: 'overview',
