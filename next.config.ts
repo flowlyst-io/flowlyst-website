@@ -7,10 +7,16 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
+  // The frontend and Payload route groups each own a root layout, so unmatched URLs
+  // have no layout to compose a branded 404 from; src/app/global-not-found.tsx fills that gap.
+  experimental: { globalNotFound: true },
   images: {
     localPatterns: [
       {
         pathname: '/api/media/file/**',
+      },
+      {
+        pathname: '/images/**',
       },
     ],
     // Vercel Blob is the production media store (see the vercelBlobStorage plugin in

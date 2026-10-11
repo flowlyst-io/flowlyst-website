@@ -6,7 +6,7 @@ import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { CookieConsent } from '@/components/CookieConsent'
 import { getServerURL } from '@/utilities/serverURL'
-import { serializeJsonLd } from '@/utilities/jsonLd'
+import { OrganizationJsonLd } from '@/components/OrganizationJsonLd'
 import './styles.css'
 
 const serverURL = getServerURL()
@@ -19,25 +19,6 @@ export const metadata: Metadata = {
   title: 'flowlyst',
   description:
     'Software, training, and consulting for K–12 public school districts, built by former school CFOs and district leaders.',
-}
-
-/**
- * Site-wide Organization structured data (PRD §10.1; review invariant a). Emitted
- * from the root layout so it appears on every public page. Static by design —
- * contact/social enrichment from Site Settings can follow once those fields are
- * populated. `logo`/`sameAs` are omitted intentionally: no public logo asset ships
- * yet and no social links are configured, and the schema is valid without them.
- */
-const organizationSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'flowlyst',
-  legalName: 'flowlyst LLC',
-  url: serverURL,
-  email: 'info@flowlyst.io',
-  description:
-    'flowlyst gives K–12 public school district leaders software, training, and consulting built and delivered by the people who used to do their jobs.',
-  areaServed: 'US',
 }
 
 /**
@@ -54,10 +35,7 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
   return (
     <html lang="en" className={nunito.variable}>
       <body>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationSchema) }}
-        />
+        <OrganizationJsonLd />
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>

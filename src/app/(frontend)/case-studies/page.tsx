@@ -6,6 +6,7 @@ import config from '@payload-config'
 
 import type { CaseStudy } from '@/payload-types'
 import { FinalCTA } from '@/components/FinalCTA'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * Case studies index (`/case-studies`, PRD §7 / §9) — long-form district stories,
@@ -40,6 +41,7 @@ export const metadata: Metadata = {
   description: PAGE_DESCRIPTION,
   alternates: { canonical: CANONICAL_PATH },
   openGraph: {
+    images: [SOCIAL_IMAGE],
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: CANONICAL_PATH,
@@ -47,6 +49,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
+    images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,

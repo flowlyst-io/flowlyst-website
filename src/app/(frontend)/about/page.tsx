@@ -1,11 +1,13 @@
 import React from 'react'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 
 import { Mark } from '@/components/Mark'
 import { FinalCTA } from '@/components/FinalCTA'
 import { getServerURL } from '@/utilities/serverURL'
 import { serializeJsonLd } from '@/utilities/jsonLd'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * About (`/about`) — the real page for issue #7, built against the settled design
@@ -31,6 +33,7 @@ export const metadata: Metadata = {
     'flowlyst is K–12 first. Founder Aziz Aghayev is a former school CFO with 15+ years in district finance and a national speaker at ASBO International, NJASBO, and CPS.',
   alternates: { canonical: '/about' },
   openGraph: {
+    images: [SOCIAL_IMAGE],
     title: 'About flowlyst — built by former school CFOs for K–12 districts',
     description:
       'K–12 first, by former school CFOs and admin leaders. Meet founder Aziz Aghayev and the operator-credibility mission behind flowlyst.',
@@ -39,6 +42,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
+    images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
     title: 'About flowlyst — built by former school CFOs for K–12 districts',
     description:
@@ -48,14 +52,14 @@ export const metadata: Metadata = {
 
 /**
  * schema.org Person for Aziz Aghayev (PRD §6; review invariant a — Person on About).
- * Emitted alongside the layout's site-wide Organization node. `image` and `sameAs`
- * are omitted intentionally — no public headshot (#42) or founder social URL exists
- * yet, and the node is valid without them.
+ * Emitted alongside the layout's site-wide Organization node. `sameAs` is omitted
+ * intentionally — no founder social URL exists yet, and the node is valid without it.
  */
 const personSchema = {
   '@context': 'https://schema.org',
   '@type': 'Person',
   name: 'Aziz Aghayev',
+  image: `${serverURL}/images/aziz-aghayev.jpg`,
   jobTitle: 'Founder & Lead Consultant',
   url: `${serverURL}/about`,
   worksFor: {
@@ -365,9 +369,6 @@ function MeetAzizLink({ href, children }: { href: string; children: React.ReactN
   )
 }
 
-// Founder portrait placeholder (design/site/pages.jsx `FounderPortrait`). Pure SVG,
-// server-renderable; the real headshot lands in #42. The gradient art is decorative
-// (aria-hidden); the visible caption states it's a placeholder.
 function FounderPortrait() {
   return (
     <div
@@ -376,38 +377,15 @@ function FounderPortrait() {
         borderRadius: 4,
         overflow: 'hidden',
         position: 'relative',
-        background: 'linear-gradient(160deg, #3a4a40 0%, #1a2520 100%)',
       }}
     >
-      <svg
-        viewBox="0 0 400 500"
-        aria-hidden="true"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-      >
-        <defs>
-          <radialGradient id="founder-rim" cx="35%" cy="40%" r="65%">
-            <stop offset="0%" stopColor="rgba(255,220,180,0.5)" />
-            <stop offset="100%" stopColor="rgba(255,220,180,0)" />
-          </radialGradient>
-        </defs>
-        <ellipse cx="200" cy="200" rx="82" ry="96" fill="rgba(255,210,170,0.35)" />
-        <path d="M 75 500 Q 75 340 200 320 Q 325 340 325 500 Z" fill="rgba(20,30,25,0.85)" />
-        <ellipse cx="200" cy="200" rx="82" ry="96" fill="url(#founder-rim)" />
-      </svg>
-      <div
-        style={{
-          position: 'absolute',
-          left: 24,
-          bottom: 24,
-          color: 'rgba(255,255,255,0.85)',
-          fontSize: 11,
-          fontWeight: 800,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-        }}
-      >
-        Portrait placeholder
-      </div>
+      <Image
+        src="/images/aziz-aghayev.jpg"
+        alt="Aziz Aghayev, founder of flowlyst"
+        fill
+        sizes="(max-width: 900px) 100vw, 40vw"
+        style={{ objectFit: 'cover', objectPosition: '50% 20%' }}
+      />
     </div>
   )
 }

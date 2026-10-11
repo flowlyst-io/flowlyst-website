@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 
 import { LegalPage } from '@/components/legal/LegalPage'
 import { privacyDoc } from '@/content/legal/privacy'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * Privacy policy (`/privacy`) — issue #22, PRD §10.4 / §11. Fully server-rendered,
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
     'How flowlyst collects, uses, shares, and protects the personal information you provide through our website — and your privacy rights and choices.',
   alternates: { canonical: '/privacy' },
   openGraph: {
+    images: [SOCIAL_IMAGE],
     title: 'Privacy policy — flowlyst',
     description:
       'How flowlyst collects, uses, and protects the information you provide through our website, and your privacy rights and choices.',
@@ -24,6 +26,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
+    images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
     title: 'Privacy policy — flowlyst',
     description:

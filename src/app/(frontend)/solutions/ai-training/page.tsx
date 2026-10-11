@@ -5,6 +5,7 @@ import { SolutionHero } from '@/components/solutions/SolutionHero'
 import { SectionHead } from '@/components/solutions/SectionHead'
 import { getServerURL } from '@/utilities/serverURL'
 import { serializeJsonLd } from '@/utilities/jsonLd'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * AI Training solution page (`/solutions/ai-training`, PRD §4.2 / §3.4 / §7 / §11),
@@ -36,6 +37,7 @@ export const metadata: Metadata = {
   description: PAGE_DESCRIPTION,
   alternates: { canonical: CANONICAL_PATH },
   openGraph: {
+    images: [SOCIAL_IMAGE],
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: CANONICAL_PATH,
@@ -43,6 +45,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
+    images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,

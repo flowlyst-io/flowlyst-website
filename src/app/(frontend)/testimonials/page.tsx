@@ -6,6 +6,7 @@ import config from '@payload-config'
 
 import type { Testimonial } from '@/payload-types'
 import { FinalCTA } from '@/components/FinalCTA'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * Testimonials index (`/testimonials`, issue #18, PRD §7) — a filterable, CMS-driven
@@ -48,6 +49,7 @@ export const metadata: Metadata = {
   description: PAGE_DESCRIPTION,
   alternates: { canonical: CANONICAL_PATH },
   openGraph: {
+    images: [SOCIAL_IMAGE],
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: CANONICAL_PATH,
@@ -55,6 +57,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
+    images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
@@ -181,7 +184,7 @@ export default async function TestimonialsPage({
             What districts say <em>about flowlyst.</em>
           </h1>
           <p className="lead" style={{ fontSize: 22, maxWidth: '54ch', marginBottom: 40 }}>
-            Filterable by service and role. CMS-driven — new testimonials appear without a redeploy.
+            Filter by service or role to find districts like yours.
           </p>
 
           {/* Service filter — chips are links (server-rendered, no client JS). */}

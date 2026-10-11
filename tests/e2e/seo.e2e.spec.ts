@@ -118,3 +118,42 @@ test.describe('SEO surface — legacy 301', () => {
     expect(res.headers()['location'] ?? '', 'redirects to /case-studies').toMatch(/\/case-studies$/)
   })
 })
+
+test.describe('branded 404', () => {
+  test('unmatched path returns 404 with a title and one H1', async ({ page }) => {
+    const res = await page.goto('/this-page-does-not-exist')
+    expect(res?.status()).toBe(404)
+    await expect(page).toHaveTitle(/not found/i)
+    await expect(page.locator('h1')).toHaveCount(1)
+    await expect(page.getByRole('link', { name: 'Request a demo' }).last()).toBeVisible()
+  })
+
+  test('mirrors the layout: skip link targets a focusable main, Organization JSON-LD present', async ({
+    page,
+  }) => {
+    await page.goto('/this-page-does-not-exist')
+    await expect(page.locator('a.skip-link[href="#main-content"]')).toHaveCount(1)
+    await expect(page.locator('main#main-content[tabindex="-1"]')).toHaveCount(1)
+    const ld = await page.locator('script[type="application/ld+json"]').allTextContents()
+    expect(ld.map((t) => JSON.parse(t)['@type'])).toContain('Organization')
+  })
+})
+
+test.describe('default Open Graph image', () => {
+  for (const path of ['/', '/about', '/contact', '/blog']) {
+    test(`${path} carries og:image and twitter:image`, async ({ request }) => {
+      const html = await (await request.get(path)).text()
+      expect(html).toMatch(/<meta property="og:image" content="[^"]*opengraph-image/)
+      expect(html).toMatch(/<meta name="twitter:image" content="[^"]*opengraph-image/)
+    })
+  }
+
+  test('image route serves a PNG', async ({ request }) => {
+    const html = await (await request.get('/about')).text()
+    const src = /<meta property="og:image" content="([^"]+)"/.exec(html)?.[1]
+    expect(src).toBeTruthy()
+    const res = await request.get(new URL(src!).pathname + new URL(src!).search)
+    expect(res.status()).toBe(200)
+    expect(res.headers()['content-type']).toContain('image/png')
+  })
+})

@@ -7,6 +7,7 @@ import { SectionHead } from '@/components/solutions/SectionHead'
 import { SpeakingRequestForm } from '@/components/solutions/SpeakingRequestForm'
 import { getServerURL } from '@/utilities/serverURL'
 import { serializeJsonLd } from '@/utilities/jsonLd'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * Keynotes solution page (`/solutions/keynotes`, PRD §4.4 / §7). Aziz Aghayev's
@@ -34,6 +35,7 @@ export const metadata: Metadata = {
   description: PAGE_DESCRIPTION,
   alternates: { canonical: CANONICAL_PATH },
   openGraph: {
+    images: [SOCIAL_IMAGE],
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: CANONICAL_PATH,
@@ -41,6 +43,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
+    images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
