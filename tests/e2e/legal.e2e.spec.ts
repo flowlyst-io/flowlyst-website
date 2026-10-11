@@ -77,22 +77,22 @@ function typeMatches(node: JsonLdNode, type: string): boolean {
   return Array.isArray(t) ? t.includes(type) : t === type
 }
 
-// Per-doc expectations: path, H1, a distinctive section heading, and a marker that a
-// [FOR TURAL] flag rendered (privacy/terms/cookies all carry at least one).
+// Per-doc expectations: path, H1, a distinctive section heading, and whether a
+// [FOR TURAL] flag block is expected (only cookies still carries one).
 const PAGES = [
   {
     path: '/privacy',
     h1: 'Privacy policy',
     heading: 'Information we collect',
     body: 'Vercel',
-    hasFlag: true,
+    hasFlag: false,
   },
   {
     path: '/terms',
     h1: 'Terms of service',
     heading: 'Intellectual property',
     body: 'as is',
-    hasFlag: true,
+    hasFlag: false,
   },
   {
     path: '/cookies',
@@ -116,15 +116,16 @@ test.describe('Legal pages — server-rendered content (raw HTML, no JS)', () =>
       expect(html, `${p.path} real body copy present`).toContain(p.body)
     })
 
-    test(`${p.path} shows the draft notice and a "Needs Tural's input" gap flag`, async ({
+    test(`${p.path} shows the draft notice and gap flags only where expected`, async ({
       request,
     }) => {
       const html = await fetchHtml(request, p.path)
       expect(html, 'draft notice must be visible on the page').toContain(
-        'Draft — pending legal review',
+        'Draft — pending final review',
       )
-      // Every legal draft has at least one [FOR TURAL] gap flag (see PR body list).
-      expect(html, `${p.path} must render a visible gap flag`).toContain('Needs Tural’s input')
+      const flagBlocks = html.match(/class="legal__flag"/g)?.length ?? 0
+      if (p.hasFlag) expect(flagBlocks, `${p.path} must render a gap flag`).toBeGreaterThan(0)
+      else expect(flagBlocks, `${p.path} must render no gap flag`).toBe(0)
     })
   }
 })

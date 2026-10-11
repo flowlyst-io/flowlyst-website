@@ -33,11 +33,7 @@ export const termsDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'This site is operated by flowlyst LLC. You can reach us at info@flowlyst.io.',
-        },
-        {
-          kind: 'flag',
-          text: 'Confirm the state of formation and business address to name here.',
+          text: 'This site is operated by flowlyst LLC, a Texas limited liability company. You can reach us at info@flowlyst.io.',
         },
       ],
     },
@@ -137,11 +133,7 @@ export const termsDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'These terms are governed by the laws that apply where flowlyst is established, without regard to conflict-of-laws rules.',
-        },
-        {
-          kind: 'flag',
-          text: 'Specify the governing state/jurisdiction and the venue for disputes (and whether arbitration applies). Left general until counsel decides.',
+          text: 'These terms are governed by the laws of the State of Texas, without regard to its conflict-of-laws rules. Any dispute relating to the site will be resolved in the state or federal courts located in Texas, and you and flowlyst consent to their jurisdiction.',
         },
       ],
     },

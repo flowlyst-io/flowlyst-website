@@ -53,9 +53,7 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
             <p className="lead legal__lead">{doc.sub}</p>
 
             <div className="legal__draft" role="note">
-              <strong>Draft — pending legal review.</strong> This copy is a working draft built from
-              flowlyst’s actual data practices. Items marked “Needs Tural’s input” below flag facts
-              that require confirmation or legal counsel before this page is published.
+              <strong>Draft — pending final review.</strong>
             </div>
 
             {doc.sections.map((section) => (
