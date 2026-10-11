@@ -352,6 +352,45 @@ test.describe('Contact form — delivery path (invariant d)', () => {
     }
   })
 
+  test('without reCAPTCHA keys the form loads no Google script and sends no token', async ({
+    page,
+    request,
+  }) => {
+    test.setTimeout(90_000)
+    const email = `e2e-norc-${Date.now()}@district.k12.us`
+    const googleRequests: string[] = []
+    let postHeaders: Record<string, string> | undefined
+    page.on('request', (req) => {
+      if (req.url().includes('recaptcha')) googleRequests.push(req.url())
+      if (req.method() === 'POST' && req.url().includes('/api/contact-messages')) {
+        postHeaders = req.headers()
+      }
+    })
+
+    expect(await fetchHtml(request, PATH)).not.toContain('protected by reCAPTCHA')
+
+    await page.goto(PATH)
+    await page.getByLabel('Name').fill('No Captcha')
+    await page.getByLabel('Work email').fill(email)
+    await page.getByLabel('Message').fill('No reCAPTCHA keys configured.')
+    await page.getByRole('button', { name: /send message/i }).click()
+
+    await expect(page.getByTestId('contact-form-success')).toBeVisible()
+    expect(googleRequests).toHaveLength(0)
+    expect(postHeaders).toBeDefined()
+    expect(postHeaders).not.toHaveProperty('x-recaptcha-token')
+
+    const ctx = await adminContext()
+    try {
+      const body = (await (await ctx.get(whereEmail(email))).json()) as {
+        docs: Array<{ id: number }>
+      }
+      for (const doc of body.docs) await ctx.delete(`/api/contact-messages/${doc.id}`)
+    } finally {
+      await ctx.dispose()
+    }
+  })
+
   test('client validation blocks an empty submit: errors render, focus lands on first invalid, NO API call', async ({
     page,
   }) => {

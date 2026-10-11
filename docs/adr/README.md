@@ -26,6 +26,7 @@ Decisions taken before this record existed live on issue #1 (Architecture decisi
 | #    | Title                                                  | Status   |
 | ---- | ------------------------------------------------------ | -------- |
 | 0001 | [Vercel Web Analytics](./0001-vercel-web-analytics.md) | Accepted |
+| 0002 | [Google reCAPTCHA v3](./0002-google-recaptcha.md)      | Accepted |
 
 ---
 

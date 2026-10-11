@@ -22,6 +22,7 @@ The decisions before this record existed were logged on issue #1 (Architecture d
 | Vitest + Playwright for testing                 | `vitest`, `@playwright/test` | 2026-07-13, #1 table row                                   | Tural, on orchestrator recommendation                               |
 | Vercel Hobby (free) plan for staging            | service, no package          | 2026-07-13, #1 comment                                     | Tural                                                               |
 | Vercel Web Analytics                            | `@vercel/analytics`          | 2026-10-09, [ADR 0001](./adr/0001-vercel-web-analytics.md) | Tural                                                               |
+| Google reCAPTCHA v3                             | service, no package          | 2026-10-11, [ADR 0002](./adr/0002-google-recaptcha.md)     | Tural                                                               |
 
 Configuration within the decided Next.js: `experimental.globalNotFound` (Next 16) is on because the frontend and Payload route groups each own a root layout, so unmatched URLs have no layout to build the branded 404 from; `src/app/global-not-found.tsx` supplies it.
 

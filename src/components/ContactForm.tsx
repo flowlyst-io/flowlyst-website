@@ -2,6 +2,10 @@
 
 import React, { useId, useState } from 'react'
 
+import { RecaptchaNotice } from '@/components/RecaptchaNotice'
+import { getRecaptchaToken, loadRecaptcha } from '@/utilities/recaptchaClient'
+import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
+
 /**
  * Contact form — the ONLY client island on the /contact page
  * (design/site/pages.jsx `ContactPage` form). The page heading, lead, and
@@ -17,7 +21,8 @@ import React, { useId, useState } from 'react'
  * the `reason` enum, and the `botField` honeypot) so the boundary holds even if the
  * client is bypassed. The collection's `afterChange` notifier emails info@ on
  * create but no-ops without mail keys configured; persistence is the delivery
- * (PRD §8.2 — the design's reCAPTCHA is realized as the hidden honeypot).
+ * (PRD §8.2). Spam is screened by the hidden honeypot and an invisible reCAPTCHA v3
+ * token sent in a header on submit (ADR 0002).
  *
  * Mirrors src/components/solutions/SpeakingRequestForm.tsx (honeypot,
  * focus-first-invalid, success/error states, aria wiring).
@@ -117,10 +122,15 @@ export function ContactForm() {
     }
     if (values.reason) payload.reason = values.reason
 
+    const token = await getRecaptchaToken('contact')
+
     try {
       const res = await fetch('/api/contact-messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { [RECAPTCHA_HEADER]: token } : {}),
+        },
         body: JSON.stringify(payload),
       })
       if (res.ok) {
@@ -179,6 +189,8 @@ export function ContactForm() {
       className="card"
       style={{ padding: 40 }}
       onSubmit={handleSubmit}
+      onFocus={() => void loadRecaptcha().catch(() => {})}
+      onPointerDown={() => void loadRecaptcha().catch(() => {})}
       noValidate
       data-testid="contact-form"
     >
@@ -315,6 +327,8 @@ export function ContactForm() {
           info@flowlyst.io.
         </p>
       )}
+
+      <RecaptchaNotice style={{ marginBottom: 16 }} />
 
       <button
         type="submit"

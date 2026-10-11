@@ -78,7 +78,7 @@ function typeMatches(node: JsonLdNode, type: string): boolean {
 }
 
 // Per-doc expectations: path, H1, a distinctive section heading, and whether a
-// [FOR TURAL] flag block is expected (only cookies still carries one).
+// [FOR TURAL] flag block is expected (no legal page carries one now).
 const PAGES = [
   {
     path: '/privacy',
@@ -99,7 +99,7 @@ const PAGES = [
     h1: 'Cookie policy',
     heading: 'Cookies we use',
     body: 'fl_cookie_consent',
-    hasFlag: true,
+    hasFlag: false,
   },
 ] as const
 

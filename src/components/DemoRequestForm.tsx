@@ -2,6 +2,10 @@
 
 import React, { useId, useState } from 'react'
 
+import { RecaptchaNotice } from '@/components/RecaptchaNotice'
+import { getRecaptchaToken, loadRecaptcha } from '@/utilities/recaptchaClient'
+import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
+
 /**
  * Demo-request form — the client island on `/request-demo`, the highest-intent
  * lead path (review invariant d). Built against design/site/pages.jsx
@@ -20,8 +24,9 @@ import React, { useId, useState } from 'react'
  * asterisks; the server's hard-required subset is fullName / workEmail / consent.
  * The comp's single "Anything else?" textarea maps to the collection's
  * `anythingElse` (the collection's `message` field is not rendered by the comp).
- * The comp's reCAPTCHA placeholder is omitted (reCAPTCHA is parked; the honeypot
- * is the spam measure).
+ * The comp's reCAPTCHA placeholder is realized as `RecaptchaNotice` plus an
+ * invisible v3 token sent in a header on submit (ADR 0002), alongside the
+ * honeypot.
  */
 
 const INTEREST_OPTIONS = [
@@ -178,10 +183,15 @@ export function DemoRequestForm() {
       ...(heardAboutUs ? { heardAboutUs } : {}),
     }
 
+    const token = await getRecaptchaToken('demo_request')
+
     try {
       const res = await fetch('/api/demo-requests', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { [RECAPTCHA_HEADER]: token } : {}),
+        },
         body: JSON.stringify(body),
       })
       if (res.ok) {
@@ -241,6 +251,8 @@ export function DemoRequestForm() {
       className="card"
       style={{ padding: 40 }}
       onSubmit={handleSubmit}
+      onFocus={() => void loadRecaptcha().catch(() => {})}
+      onPointerDown={() => void loadRecaptcha().catch(() => {})}
       noValidate
       data-testid="demo-form"
     >
@@ -471,6 +483,8 @@ export function DemoRequestForm() {
           Something went wrong sending your request. Please try again, or email us directly.
         </p>
       )}
+
+      <RecaptchaNotice style={{ marginBottom: 16 }} />
 
       <button
         type="submit"

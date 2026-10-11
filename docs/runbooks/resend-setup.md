@@ -49,12 +49,6 @@ After a deploy with the vars set:
 5. In the **Resend dashboard → Emails**, confirm each send shows **Delivered** (not bounced). A bounce on `EMAIL_FROM` usually means the domain/DKIM isn't fully verified.
 6. Server logs: a successful send logs `[email] sent: <purpose> → <to>`; a failure logs `[email] send FAILED (…) — persistence unaffected`. You should see no `skipped` lines once `RESEND_API_KEY` is set.
 
-## Parked: reCAPTCHA (do not do yet)
+## reCAPTCHA
 
-reCAPTCHA on the demo/contact forms (PRD §10.4) is **parked** (adjudicated). The forms currently use a server-validated honeypot for spam resistance. When reCAPTCHA is picked up:
-
-- Obtain a reCAPTCHA (v3 or Enterprise) site + secret key pair.
-- Add `RECAPTCHA_SITE_KEY` (public, used by the client form widgets) and `RECAPTCHA_SECRET_KEY` (server-only, used to verify the token) to Vercel env.
-- Verification plugs in at the form submission path (a token check before `payload.create`) — server-side, alongside the existing honeypot.
-
-No code for this ships in the Phase 3 foundation; this note only reserves the env-var names and integration point.
+reCAPTCHA v3 is decided in [ADR 0002](../adr/0002-google-recaptcha.md). Creating the keys and setting the env vars is in the [cutover runbook](./cutover.md).

@@ -2,6 +2,10 @@
 
 import React, { useId, useState } from 'react'
 
+import { RecaptchaNotice } from '@/components/RecaptchaNotice'
+import { getRecaptchaToken, loadRecaptcha } from '@/utilities/recaptchaClient'
+import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
+
 /**
  * Speaking-request form — the ONLY client island on the Keynotes page
  * (design/site/solutions.jsx `KeynotesPage` request form). The section's heading
@@ -14,6 +18,8 @@ import React, { useId, useState } from 'react'
  * two-layered — this island blocks obviously-bad input before the request, and
  * the collection re-validates server-side (required fields, email format, and the
  * `botField` honeypot) so the boundary holds even if the client is bypassed.
+ * An invisible reCAPTCHA v3 token travels in a header (ADR 0002); the script loads
+ * only once a visitor first touches the form, so the page's load cost is unchanged.
  * Email notification is out of scope tonight (#14); persistence is the delivery.
  *
  * Fields mirror the design comp, plus contact name / email / organization (the
@@ -117,10 +123,15 @@ export function SpeakingRequestForm() {
     setState('submitting')
     setErrors({})
 
+    const token = await getRecaptchaToken('speaking_request')
+
     try {
       const res = await fetch('/api/speaking-requests', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { [RECAPTCHA_HEADER]: token } : {}),
+        },
         body: JSON.stringify({ ...values, botField: honeypot }),
       })
       if (res.ok) {
@@ -179,6 +190,8 @@ export function SpeakingRequestForm() {
       className="card"
       style={{ padding: 40 }}
       onSubmit={handleSubmit}
+      onFocus={() => void loadRecaptcha().catch(() => {})}
+      onPointerDown={() => void loadRecaptcha().catch(() => {})}
       noValidate
       data-testid="keynotes-form"
     >
@@ -331,6 +344,8 @@ export function SpeakingRequestForm() {
           Something went wrong sending your request. Please try again, or email us directly.
         </p>
       )}
+
+      <RecaptchaNotice style={{ marginBottom: 16 }} />
 
       <button
         type="submit"
