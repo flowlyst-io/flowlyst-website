@@ -116,13 +116,12 @@ test.describe('Legal pages — server-rendered content (raw HTML, no JS)', () =>
       expect(html, `${p.path} real body copy present`).toContain(p.body)
     })
 
-    test(`${p.path} shows the draft notice and gap flags only where expected`, async ({
+    test(`${p.path} shows no draft notice and gap flags only where expected`, async ({
       request,
     }) => {
       const html = await fetchHtml(request, p.path)
-      expect(html, 'draft notice must be visible on the page').toContain(
-        'Draft — pending final review',
-      )
+      expect(html, 'draft markers must be gone after sign-off').not.toContain('Draft —')
+      expect(html).not.toContain('legal__draft')
       const flagBlocks = html.match(/class="legal__flag"/g)?.length ?? 0
       if (p.hasFlag) expect(flagBlocks, `${p.path} must render a gap flag`).toBeGreaterThan(0)
       else expect(flagBlocks, `${p.path} must render no gap flag`).toBe(0)

@@ -52,10 +52,6 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
             <h1 className="h1 legal__title">{doc.title}</h1>
             <p className="lead legal__lead">{doc.sub}</p>
 
-            <div className="legal__draft" role="note">
-              <strong>Draft — pending final review.</strong>
-            </div>
-
             {doc.sections.map((section) => (
               <section key={section.id} id={section.id} className="legal__section">
                 {/* Semantic h2 (visual h3) keeps the page order h1 → h2 → h3 with no
