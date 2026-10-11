@@ -8,9 +8,7 @@
  * the consent it records (documented on /cookies).
  *
  * There are NO non-essential scripts on the site today: analytics is cookieless
- * (Vercel Web Analytics), so it needs no consent gate, and the
- * Corpowid accessibility widget loads pre-consent as an accessibility-essential service
- * (see the layout). This module is the forward mechanism — any non-essential script
+ * (Vercel Web Analytics), so it needs no consent gate. This module is the forward mechanism — any non-essential script
  * added later must gate on `hasConsent()` before it runs.
  */
 

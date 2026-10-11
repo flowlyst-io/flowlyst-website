@@ -3,9 +3,8 @@ import type { LegalDoc } from './types'
 /**
  * Cookie policy — DRAFT (issue #22). Documents the cookies/storage the site ACTUALLY
  * uses today: the strictly-necessary consent cookie (`fl_cookie_consent`), the Payload
- * staff-session cookie on /admin, and the Corpowid accessibility widget's storage. The
- * site runs cookieless Vercel Web Analytics only; reCAPTCHA is planned (PRD §10.4), not live. Unknowns —
- * chiefly Corpowid's exact cookie behavior — are `flag` blocks. Sign-off is Tural's.
+ * staff-session cookie. The site runs cookieless Vercel Web Analytics only; reCAPTCHA
+ * is planned (PRD §10.4), not live. Unknowns are `flag` blocks. Sign-off is Tural's.
  */
 export const cookiesDoc: LegalDoc = {
   doc: 'cookies',
@@ -29,7 +28,7 @@ export const cookiesDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'We keep the site light on cookies. Strictly necessary and accessibility features work by default because the site cannot function properly without them. Any non-essential cookie runs only after you accept it in the cookie banner; our analytics is cookieless (see Analytics below). You can decline, and you can change your mind later by clearing your cookies for this site, which brings the banner back.',
+          text: 'We keep the site light on cookies. Strictly necessary features work by default because the site cannot function properly without them. Any non-essential cookie runs only after you accept it in the cookie banner; our analytics is cookieless (see Analytics below). You can decline, and you can change your mind later by clearing your cookies for this site, which brings the banner back.',
         },
         {
           kind: 'p',
@@ -49,20 +48,8 @@ export const cookiesDoc: LegalDoc = {
           kind: 'list',
           items: [
             'fl_cookie_consent — first-party — remembers whether you accepted or declined optional cookies — kept about 6 months.',
-            'Staff login session — first-party — set only if you log in to the content admin at /admin; it keeps you signed in and is not set for ordinary visitors.',
+            'Staff sign-in session — first-party — set only when flowlyst staff sign in to manage site content; never set for visitors.',
           ],
-        },
-        {
-          kind: 'subheading',
-          text: 'Accessibility (essential)',
-        },
-        {
-          kind: 'p',
-          text: 'The site includes the Corpowid accessibility toolbar, which lets visitors adjust the experience (for example, text size or contrast). Because it is an accessibility accommodation, it loads before the consent banner under our legitimate interest in keeping the site accessible to everyone who needs it — gating it behind consent would withhold accessibility features from the people who rely on them. It may store your accessibility preferences on your device so your settings persist between visits.',
-        },
-        {
-          kind: 'flag',
-          text: 'Confirm the Corpowid account (0dad393b-e1f0-4586-aa19-31eedcf20a06, carried from the legacy site) is still active, and confirm the widget sets ONLY accessibility-preference storage and no tracking/analytics cookies. If it does track, it must move behind the consent banner and this section must change.',
         },
         {
           kind: 'subheading',
@@ -71,10 +58,6 @@ export const cookiesDoc: LegalDoc = {
         {
           kind: 'p',
           text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking). The site uses no advertising cookies. If we add any cookie-based analytics later, we will list it here and it will run only after you accept.',
-        },
-        {
-          kind: 'flag',
-          text: "Vercel Web Analytics was added 2026-10-09. Confirm this description matches Vercel's current documentation.",
         },
         {
           kind: 'subheading',
