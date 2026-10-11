@@ -27,6 +27,13 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: `recaptchaShared.ts` exports `RECAPTCHA_HEADER` and imports nothing; `recaptcha.ts` and `recaptchaClient.ts` both import from it; `ContactForm.tsx` imports from `recaptchaShared` and `recaptchaClient`, never `recaptcha`.
 4. **Gotcha**: the shared file must stay import-free. A type-only import from the server module is safe; a value import is not.
 
+### Change one style on a Payload default rich-text converter by wrapping it
+
+1. **Rule**: to adjust a default Lexical converter (spacing, a class), call Payload's default and merge props onto its element with `React.cloneElement`; don't rewrite the converter. Values the blog and case-study readers share live in `src/utilities/richTextLists.ts`.
+2. **Why**: the default handles node shapes a rewrite drops, such as `list-style-type: none` on the wrapper item that holds a sub-list and the checklist item attributes. Shared values stop the two readers drifting apart (#79).
+3. **Minimal example**: `listitem: (args) => { const item = defaultConverters.listitem(args); return isValidElement(item) ? cloneElement(item, { style: { ...item.props.style, margin: LIST_ITEM_MARGIN } }) : item }`
+4. **Gotcha**: spread the existing `style`. Passing `style` alone replaces it, which brings back a stray bullet on sub-list wrappers and breaks checklist styling.
+
 ## The contract for this file
 
 **Every entry has four parts, in this order:**
