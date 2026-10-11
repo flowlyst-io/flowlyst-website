@@ -3,6 +3,7 @@ import { getPayload, type Payload } from 'payload'
 import sharp from 'sharp'
 import config from '../../src/payload.config.js'
 import { E2E_BASE_URL } from '../helpers/serverURL'
+import { deriveFixtureEmail } from '../helpers/seedUser'
 
 /**
  * Regression guard for #69 (PR #72 fix pass). The blog featured image, blog index
@@ -22,7 +23,7 @@ import { E2E_BASE_URL } from '../helpers/serverURL'
 const stamp = Date.now()
 
 const ADMIN = {
-  email: `media-e2e-admin-${stamp}@flowlyst.test`,
+  email: deriveFixtureEmail({ prefix: 'media-e2e-admin' }),
   password: 'media-e2e-password-123',
   name: 'Media E2E Admin',
   role: 'admin' as const,

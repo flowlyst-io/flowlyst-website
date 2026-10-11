@@ -12,6 +12,7 @@ import {
   typeMatches,
 } from '../helpers/rawHtml'
 import { E2E_BASE_URL } from '../helpers/serverURL'
+import { deriveFixtureEmail } from '../helpers/seedUser'
 
 /**
  * Blog index (`/blog`) + article reader (`/blog/[slug]`) — issue #17, mounting the
@@ -103,7 +104,7 @@ function buildBody(intro: string, h2: string, h3: string): BlogPost['body'] {
 }
 
 const BLOG_ADMIN = {
-  email: `blog-e2e-admin-${stamp}@flowlyst.test`,
+  email: deriveFixtureEmail({ prefix: 'blog-e2e-admin' }),
   password: 'blog-e2e-password-123',
   name: 'Blog E2E Admin',
   role: 'admin' as const,
