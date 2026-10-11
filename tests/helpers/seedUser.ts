@@ -19,15 +19,18 @@ import config from '../../src/payload.config.js'
  *     recreates it), rather than stranding a fresh row every run the way a `Date.now()`
  *     stamp would.
  *
+ * `prefix` gives each spec file its own row under the same derivation.
+ *
  * Pure and parameterized so the uniqueness/idempotence property is unit-testable
  * without spawning subprocesses.
  */
 export function deriveFixtureEmail({
   cwd = process.cwd(),
   port = process.env.PLAYWRIGHT_PORT ?? '',
-}: { cwd?: string; port?: string | number } = {}): string {
+  prefix = 'dev-e2e',
+}: { cwd?: string; port?: string | number; prefix?: string } = {}): string {
   const suffix = createHash('sha256').update(`${cwd}::${port}`).digest('hex').slice(0, 12)
-  return `dev-e2e-${suffix}@payloadcms.com`
+  return `${prefix}-${suffix}@payloadcms.com`
 }
 
 export const testUser = {
