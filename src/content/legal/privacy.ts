@@ -4,8 +4,8 @@ import type { LegalDoc } from './types'
  * Privacy policy — DRAFT (issue #22). Grounded in what this codebase ACTUALLY collects
  * and the processors it uses (verified against the form components, the Payload
  * collections, and the deploy stack): the demo, contact, newsletter, and speaking
- * forms; Vercel hosting; Neon Postgres; Resend email; the Corpowid accessibility
- * widget. Unknowns that only Tural/counsel can settle are `flag` blocks, not guesses.
+ * forms; Vercel hosting; Neon Postgres; Resend email; Zoho Bigin CRM. Unknowns that only
+ * Tural/counsel can settle are `flag` blocks, not guesses.
  * Final legal sign-off is Tural's (issue #70).
  */
 export const privacyDoc: LegalDoc = {
@@ -61,10 +61,6 @@ export const privacyDoc: LegalDoc = {
           kind: 'p',
           text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking). The site does not use advertising trackers. If we add cookie-based analytics or advertising trackers, any non-essential cookie will run only after you accept it in the cookie banner, and this policy and the cookie policy will be updated first.',
         },
-        {
-          kind: 'flag',
-          text: "Vercel Web Analytics was added 2026-10-09. Confirm this description matches Vercel's current documentation and add Vercel Web Analytics to the processor list below if counsel wants it named separately.",
-        },
       ],
     },
     {
@@ -104,16 +100,12 @@ export const privacyDoc: LegalDoc = {
             'Vercel — website hosting, content delivery, and cookieless web analytics (United States).',
             'Neon — the database that stores your form submissions.',
             'Resend — sends the email notifications that tell our team about your request.',
-            'Corpowid — provides the accessibility toolbar available on the site.',
+            'Zoho Bigin — our customer relationship management (CRM) system, where demo requests are recorded so our team can follow up.',
           ],
         },
         {
           kind: 'p',
           text: 'We may also disclose information if required by law, to enforce our terms, or to protect the rights, safety, and security of flowlyst, our users, or the public.',
-        },
-        {
-          kind: 'flag',
-          text: 'Confirm "we do not sell your personal information" is accurate for CCPA/CPRA. Confirm this processor list is complete — add any CRM, scheduling, analytics, or email-marketing tool in actual use, and note Google reCAPTCHA here once it is enabled (PRD §10.4). Each processor should have a data processing agreement on file.',
         },
       ],
     },
@@ -123,11 +115,7 @@ export const privacyDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'We keep the information you submit for as long as needed to respond to you and for the purpose it was collected, and then delete or de-identify it, unless a longer period is required by law.',
-        },
-        {
-          kind: 'flag',
-          text: 'Set concrete retention periods for each form type (e.g., how long demo/contact submissions and newsletter records are kept). This paragraph is a placeholder until those are decided.',
+          text: 'We keep the information you submit for as long as we have an ongoing or potential business relationship with you, or another legitimate business need such as following up on your request or keeping a record of our correspondence. You can ask us to delete your information at any time by emailing info@flowlyst.io, and we will do so unless the law requires us to keep it.',
         },
       ],
     },
@@ -147,10 +135,6 @@ export const privacyDoc: LegalDoc = {
           kind: 'p',
           text: 'To exercise any of these rights, email us at info@flowlyst.io. We will verify your request and respond as required by applicable law.',
         },
-        {
-          kind: 'flag',
-          text: 'Confirm which privacy laws apply (GDPR/UK GDPR, CCPA/CPRA, others) and whether a dedicated privacy contact or Data Protection Officer should be named instead of info@flowlyst.io. Confirm whether the site actually serves EU/UK visitors, which drives the GDPR obligations above.',
-        },
       ],
     },
     {
@@ -160,10 +144,6 @@ export const privacyDoc: LegalDoc = {
         {
           kind: 'p',
           text: 'flowlyst is based in the United States and the site is hosted in the United States. If you access the site from outside the US, your information will be transferred to and processed in the US, which may have different data-protection rules than your country.',
-        },
-        {
-          kind: 'flag',
-          text: 'If the site serves EU/UK users, state the transfer mechanism (e.g., Standard Contractual Clauses) and confirm the hosting/processing regions with counsel.',
         },
       ],
     },
@@ -204,10 +184,6 @@ export const privacyDoc: LegalDoc = {
         {
           kind: 'p',
           text: 'Questions about this policy or your information? Email us at info@flowlyst.io.',
-        },
-        {
-          kind: 'flag',
-          text: 'Add a postal mailing address for the entity if one is required by the applicable privacy laws (the legacy site had only a placeholder address).',
         },
       ],
     },
