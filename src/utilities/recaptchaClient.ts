@@ -7,6 +7,7 @@ type Grecaptcha = {
 
 const TOKEN_TIMEOUT_MS = 5000
 
+// Never reset on failure: a blocked script is requested once per page lifetime.
 let loading: Promise<void> | null = null
 
 // The literal property access is what lets Next inline the value at build time.
@@ -26,7 +27,6 @@ export function loadRecaptcha(): Promise<void> {
     script.onload = () => resolve()
     script.onerror = () => {
       script.remove()
-      loading = null
       reject(new Error('reCAPTCHA script failed to load'))
     }
     document.head.appendChild(script)

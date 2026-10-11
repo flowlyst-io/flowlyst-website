@@ -57,6 +57,16 @@ describe('recaptchaClient', () => {
     expect(await pending).toBeNull()
   })
 
+  it('does not inject a second script after a load error', async () => {
+    const { loadRecaptcha } = await freshClient()
+    const first = loadRecaptcha()
+    first.catch(() => {})
+    scripts()[0].dispatchEvent(new Event('error'))
+    await expect(first).rejects.toThrow()
+    await expect(loadRecaptcha()).rejects.toThrow()
+    expect(scripts()).toHaveLength(0)
+  })
+
   it('resolves null after 5 seconds when execute hangs', async () => {
     vi.useFakeTimers()
     ;(window as unknown as { grecaptcha: unknown }).grecaptcha = {

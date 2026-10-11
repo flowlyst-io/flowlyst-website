@@ -9,8 +9,8 @@ import { recaptchaGuard, recaptchaOutcomeOf } from '@/utilities/recaptcha'
  * Demo requests inbox (PRD §8.1, §9). The highest-intent lead.
  *
  * Access: `create` is public so the demo form can POST anonymously (abuse is
- * screened by the honeypot field and `recaptchaGuard`, ADR 0002). Everything else is **Admin-only** — lead data is PII
- * and PRD §9 scopes Editors to content only, not the lead inboxes.
+ * screened by the honeypot field and `recaptchaGuard`, ADR 0002). Everything
+ * else is **Admin-only** — lead data is PII and PRD §9 scopes Editors to content only, not the lead inboxes.
  *
  * Triage: a status workflow (pending → scheduled → completed/canceled) plus an
  * internal-notes field, with list columns/filters chosen so the inbox is usable

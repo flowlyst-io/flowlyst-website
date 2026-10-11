@@ -20,6 +20,13 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: `openGraph: { images: [SOCIAL_IMAGE], title, … }`
 4. **Gotcha**: the URL suffix (`-4usi79`) is derived from the route-group path; moving or renaming `(frontend)/opengraph-image.tsx` changes it, and an e2e guards this.
 
+### Client islands never import server modules; shared values live in `*Shared.ts`
+
+1. **Rule**: a module that imports `payload` or anything else server-only is never imported by a `'use client'` island. Values shared between island and server (header names, action unions) live in a dependency-free `*Shared.ts`; browser-only code lives in `*Client.ts`.
+2. **Why**: a value import from the server module pulls Payload and secret-reading code into the client bundle.
+3. **Minimal example**: `recaptchaShared.ts` exports `RECAPTCHA_HEADER` and imports nothing; `recaptcha.ts` and `recaptchaClient.ts` both import from it; `ContactForm.tsx` imports from `recaptchaShared` and `recaptchaClient`, never `recaptcha`.
+4. **Gotcha**: the shared file must stay import-free. A type-only import from the server module is safe; a value import is not.
+
 ## The contract for this file
 
 **Every entry has four parts, in this order:**

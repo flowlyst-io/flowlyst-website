@@ -17,9 +17,11 @@ export type RecaptchaOutcome = 'skipped' | 'missing' | 'pass' | 'fail' | 'error'
 export type RecaptchaResult = { outcome: RecaptchaOutcome; score?: number; codes?: string[] }
 
 const SITEVERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
-const DEFAULT_MIN_SCORE = 0.5
-const SECRET_SIDE_CODES = ['missing-input-secret', 'invalid-input-secret']
-const TOKEN_SIDE_CODES = ['invalid-input-response', 'timeout-or-duplicate', 'bad-request']
+const DEFAULT_MIN_SCORE = 0.3
+// `invalid-input-response` is also what Google returns when site and secret keys
+// are crossed, so it counts as a misconfiguration, not proof of a bad token.
+const SECRET_SIDE_CODES = ['missing-input-secret', 'invalid-input-secret', 'invalid-input-response']
+const TOKEN_SIDE_CODES = ['timeout-or-duplicate', 'bad-request']
 
 type SiteverifyResponse = {
   success?: boolean

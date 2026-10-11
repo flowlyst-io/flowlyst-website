@@ -75,6 +75,8 @@ describe('verifyRecaptcha', () => {
     expect((await verifyRecaptcha('tok', 'contact')).outcome).toBe('fail')
     siteverify({ success: false, 'error-codes': ['invalid-input-secret'] })
     expect((await verifyRecaptcha('tok', 'contact')).outcome).toBe('error')
+    siteverify({ success: false, 'error-codes': ['invalid-input-response'] })
+    expect((await verifyRecaptcha('tok', 'contact')).outcome).toBe('error')
   })
 
   it('is error when fetch rejects or times out', async () => {
@@ -89,14 +91,14 @@ describe('verifyRecaptcha', () => {
     expect((await verifyRecaptcha('tok', 'contact')).outcome).toBe('error')
   })
 
-  it('honours RECAPTCHA_MIN_SCORE and falls back to 0.5 on garbage', async () => {
+  it('honours RECAPTCHA_MIN_SCORE and falls back to 0.3 on garbage', async () => {
     vi.stubEnv('RECAPTCHA_MIN_SCORE', '0.95')
     siteverify({ success: true, score: 0.9, action: 'contact' })
     expect((await verifyRecaptcha('tok', 'contact')).outcome).toBe('fail')
     vi.stubEnv('RECAPTCHA_MIN_SCORE', 'banana')
-    siteverify({ success: true, score: 0.6, action: 'contact' })
-    expect((await verifyRecaptcha('tok', 'contact')).outcome).toBe('pass')
     siteverify({ success: true, score: 0.4, action: 'contact' })
+    expect((await verifyRecaptcha('tok', 'contact')).outcome).toBe('pass')
+    siteverify({ success: true, score: 0.2, action: 'contact' })
     expect((await verifyRecaptcha('tok', 'contact')).outcome).toBe('fail')
   })
 })

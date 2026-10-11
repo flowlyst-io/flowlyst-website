@@ -12,7 +12,7 @@ PRD §10.4 names Google reCAPTCHA for the demo and contact forms, and the forms 
 We screen the demo, contact, speaking and newsletter submissions with reCAPTCHA v3 (score-based, invisible), verified server-side against Google's `siteverify` endpoint with `fetch`. No package is added.
 
 - The token travels in the `x-recaptcha-token` request header, so no collection schema changes and no migration are needed.
-- The server maps every verification to one of five outcomes. `skipped` (either key unset) proceeds untouched. `pass` proceeds. `fail` (a rejected token, an action mismatch or a score below `RECAPTCHA_MIN_SCORE`, default 0.5) is rejected with a visible 400; on `/subscribe` it returns the usual uniform ok and persists nothing. `missing` (no token) and `error` (Google unreachable, or a secret-side error) are accepted, logged, and the sales notification subject is prefixed `[Unverified] `.
+- The server maps every verification to one of five outcomes. `skipped` (either key unset) proceeds untouched. `pass` proceeds. `fail` (a rejected token, an action mismatch or a score below `RECAPTCHA_MIN_SCORE`, default 0.3, lowered from the 0.5 Google suggests because district web filters depress v3 scores) is rejected with a visible 400; on `/subscribe` it returns the usual uniform ok and persists nothing. `missing` (no token) and `error` (Google unreachable, or a secret-side error, including `invalid-input-response`, which Google also returns for crossed site and secret keys) are accepted, logged, and the sales notification subject is prefixed `[Unverified] `.
 - The honeypot stays in place.
 - The script loads only on form pages, only once a visitor first focuses or presses inside a form, and a fresh token is fetched on every submit.
 - The badge is hidden and Google's attribution sentence is shown above each submit button, as Google requires.
@@ -23,7 +23,7 @@ We screen the demo, contact, speaking and newsletter submissions with reCAPTCHA 
 - Google becomes a processor of IP address, browser and device information, and page-interaction signals on form pages. The cookie and privacy policies are updated.
 - The keys are Tural's to create and set in Vercel (see the cutover runbook). With either key absent, reCAPTCHA is off: no script, no attribution, no verification. Local, CI and e2e behave as before.
 - Trade-off: a scripted POST that omits the token is accepted and marked `[Unverified]`, not blocked. Rejecting it would also drop leads from visitors whose ad-blocker or district filter blocks Google's script. The honeypot still catches naive bots, and rejecting `missing` is a one-line change if spam volume demands it.
-- A mistyped secret is an `error`, never a `fail`, so a misconfiguration cannot reject every lead.
+- A mistyped or crossed secret, or a token Google cannot read, is an `error` and lands as `[Unverified]`, never a reject, so a misconfiguration cannot reject every lead.
 - District web filters may depress v3 scores; `RECAPTCHA_MIN_SCORE` is the lever and every reject logs its score.
 
 ## Alternatives considered
