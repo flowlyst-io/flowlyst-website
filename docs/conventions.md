@@ -13,6 +13,13 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: `.btn--x { color: #fff } .btn--x:hover { color: #fff; background: … }`
 4. **Gotcha**: a hover rule that only sets `background` looks fine on `<button>` but breaks on `<Link>`/`<a>`.
 
+### Pages that set `openGraph` or `twitter` name the social image themselves
+
+1. **Rule**: any page that sets `openGraph` or `twitter` metadata includes `images: [SOCIAL_IMAGE]` (`[SOCIAL_IMAGE.url]` for `twitter`) from `src/utilities/socialImage.ts`.
+2. **Why**: Next replaces the parent's `openGraph`/`twitter` objects wholesale, so a page that declares its own silently drops the root `opengraph-image`.
+3. **Minimal example**: `openGraph: { images: [SOCIAL_IMAGE], title, … }`
+4. **Gotcha**: the URL suffix (`-4usi79`) is derived from the route-group path; moving or renaming `(frontend)/opengraph-image.tsx` changes it, and an e2e guards this.
+
 ## The contract for this file
 
 **Every entry has four parts, in this order:**

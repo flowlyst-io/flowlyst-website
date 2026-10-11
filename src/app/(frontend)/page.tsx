@@ -1,5 +1,6 @@
 import React from 'react'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -717,25 +718,21 @@ function ProductMock() {
 
 function FounderAvatar({ size = 64 }: { size?: number }) {
   return (
-    <div
-      aria-hidden="true"
+    <Image
+      src="/images/aziz-aghayev.jpg"
+      alt=""
+      width={size}
+      height={size}
+      sizes={`${size}px`}
       style={{
         width: size,
         height: size,
         borderRadius: 999,
-        background: 'linear-gradient(135deg, #3a4a40, #1a2520)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'var(--c-cream)',
-        fontSize: Math.round(size * 0.36),
-        fontWeight: 800,
-        letterSpacing: '-0.02em',
+        objectFit: 'cover',
+        objectPosition: '50% 12%',
         flexShrink: 0,
       }}
-    >
-      AA
-    </div>
+    />
   )
 }
 

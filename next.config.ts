@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
       {
         pathname: '/api/media/file/**',
       },
+      {
+        pathname: '/images/**',
+      },
     ],
     // Vercel Blob is the production media store (see the vercelBlobStorage plugin in
     // src/payload.config.ts), where uploaded media resolves to a public Blob URL. The

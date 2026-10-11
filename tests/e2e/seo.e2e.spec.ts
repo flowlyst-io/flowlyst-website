@@ -127,6 +127,16 @@ test.describe('branded 404', () => {
     await expect(page.locator('h1')).toHaveCount(1)
     await expect(page.getByRole('link', { name: 'Request a demo' }).last()).toBeVisible()
   })
+
+  test('mirrors the layout: skip link targets a focusable main, Organization JSON-LD present', async ({
+    page,
+  }) => {
+    await page.goto('/this-page-does-not-exist')
+    await expect(page.locator('a.skip-link[href="#main-content"]')).toHaveCount(1)
+    await expect(page.locator('main#main-content[tabindex="-1"]')).toHaveCount(1)
+    const ld = await page.locator('script[type="application/ld+json"]').allTextContents()
+    expect(ld.map((t) => JSON.parse(t)['@type'])).toContain('Organization')
+  })
 })
 
 test.describe('default Open Graph image', () => {

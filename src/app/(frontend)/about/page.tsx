@@ -1,5 +1,6 @@
 import React from 'react'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 
 import { Mark } from '@/components/Mark'
@@ -51,14 +52,14 @@ export const metadata: Metadata = {
 
 /**
  * schema.org Person for Aziz Aghayev (PRD §6; review invariant a — Person on About).
- * Emitted alongside the layout's site-wide Organization node. `image` and `sameAs`
- * are omitted intentionally — no public headshot (#42) or founder social URL exists
- * yet, and the node is valid without them.
+ * Emitted alongside the layout's site-wide Organization node. `sameAs` is omitted
+ * intentionally — no founder social URL exists yet, and the node is valid without it.
  */
 const personSchema = {
   '@context': 'https://schema.org',
   '@type': 'Person',
   name: 'Aziz Aghayev',
+  image: `${serverURL}/images/aziz-aghayev.jpg`,
   jobTitle: 'Founder & Lead Consultant',
   url: `${serverURL}/about`,
   worksFor: {
@@ -368,30 +369,23 @@ function MeetAzizLink({ href, children }: { href: string; children: React.ReactN
   )
 }
 
-// Founder portrait stand-in (design/site/pages.jsx `FounderPortrait`) until the real
-// headshot lands in #42: the comp's forest gradient carrying an "AA" monogram instead
-// of the comp's visible "Portrait placeholder" caption.
 function FounderPortrait() {
   return (
     <div
-      role="img"
-      aria-label="Aziz Aghayev, founder of flowlyst"
       style={{
         aspectRatio: '4/5',
         borderRadius: 4,
         overflow: 'hidden',
         position: 'relative',
-        background: 'linear-gradient(160deg, #3a4a40 0%, #1a2520 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'var(--c-cream)',
-        fontSize: 120,
-        fontWeight: 800,
-        letterSpacing: '-0.04em',
       }}
     >
-      <span aria-hidden="true">AA</span>
+      <Image
+        src="/images/aziz-aghayev.jpg"
+        alt="Aziz Aghayev, founder of flowlyst"
+        fill
+        sizes="(max-width: 900px) 100vw, 40vw"
+        style={{ objectFit: 'cover', objectPosition: '50% 20%' }}
+      />
     </div>
   )
 }
