@@ -71,10 +71,9 @@ export async function verifyRecaptcha(
     }
     return { outcome: 'error', codes }
   }
+  if (body.action !== action) return { outcome: 'fail', score: body.score }
   if (typeof body.score !== 'number') return { outcome: 'error' }
-  if (body.action !== action || body.score < minScore()) {
-    return { outcome: 'fail', score: body.score }
-  }
+  if (body.score < minScore()) return { outcome: 'fail', score: body.score }
   return { outcome: 'pass', score: body.score }
 }
 

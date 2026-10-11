@@ -65,6 +65,11 @@ describe('verifyRecaptcha', () => {
     expect((await verifyRecaptcha('tok', 'contact')).outcome).toBe('fail')
   })
 
+  it('fails Google’s public test-secret shape (success with no action or score)', async () => {
+    siteverify({ success: true, hostname: 'testkey.google.com' })
+    expect((await verifyRecaptcha('tok', 'contact')).outcome).toBe('fail')
+  })
+
   it('fails a token-side error code but treats a secret-side code as error', async () => {
     siteverify({ success: false, 'error-codes': ['timeout-or-duplicate'] })
     expect((await verifyRecaptcha('tok', 'contact')).outcome).toBe('fail')
