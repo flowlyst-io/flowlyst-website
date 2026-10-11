@@ -3,12 +3,13 @@ import type { CollectionConfig } from 'payload'
 import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
 import { notifyDemoRequest } from '@/email/leadNotifications'
 import type { DemoRequest } from '@/payload-types'
+import { recaptchaGuard, recaptchaOutcomeOf } from '@/utilities/recaptcha'
 
 /**
  * Demo requests inbox (PRD §8.1, §9). The highest-intent lead.
  *
- * Access: `create` is public so the demo form can POST anonymously (anti-abuse
- * lands with that form). Everything else is **Admin-only** — lead data is PII
+ * Access: `create` is public so the demo form can POST anonymously (abuse is
+ * screened by the honeypot field and `recaptchaGuard`, ADR 0002). Everything else is **Admin-only** — lead data is PII
  * and PRD §9 scopes Editors to content only, not the lead inboxes.
  *
  * Triage: a status workflow (pending → scheduled → completed/canceled) plus an
@@ -35,12 +36,14 @@ export const DemoRequests: CollectionConfig = {
     delete: isAdmin,
   },
   hooks: {
+    beforeChange: [recaptchaGuard('demo_request')],
     // Notify sales when a demo request is created (PRD §8.1). Runs after the
     // write, and the helper never throws / skips when email is unconfigured, so
     // a mail problem can never fail persistence (review invariant d).
     afterChange: [
       ({ doc, operation, req }) => {
-        if (operation === 'create') void notifyDemoRequest(req.payload, doc as DemoRequest)
+        if (operation === 'create')
+          void notifyDemoRequest(req.payload, doc as DemoRequest, recaptchaOutcomeOf(req.context))
       },
     ],
   },

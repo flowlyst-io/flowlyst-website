@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
 import { notifySpeakingRequest } from '@/email/leadNotifications'
 import type { SpeakingRequest } from '@/payload-types'
+import { recaptchaGuard, recaptchaOutcomeOf } from '@/utilities/recaptcha'
 
 /**
  * Speaking requests inbox (PRD §4.4, §8, §9). Event organizers ask Aziz to keynote
@@ -41,13 +42,19 @@ export const SpeakingRequests: CollectionConfig = {
     delete: isAdmin,
   },
   hooks: {
+    beforeChange: [recaptchaGuard('speaking_request')],
     // Notify on a new speaking request (Phase 3 foundation wired this collection
     // into the shared notifier — the "#14 wires the notifier" note above). After-
     // write, non-throwing, skips when email is unconfigured — never fails
     // persistence (invariant d).
     afterChange: [
       ({ doc, operation, req }) => {
-        if (operation === 'create') void notifySpeakingRequest(req.payload, doc as SpeakingRequest)
+        if (operation === 'create')
+          void notifySpeakingRequest(
+            req.payload,
+            doc as SpeakingRequest,
+            recaptchaOutcomeOf(req.context),
+          )
       },
     ],
   },

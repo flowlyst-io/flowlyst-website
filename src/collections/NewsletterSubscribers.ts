@@ -3,6 +3,8 @@ import { addDataAndFileToRequest } from 'payload'
 
 import { isAdmin, isAdminFieldLevel } from '@/access'
 import { sendNewsletterConfirmation } from '@/email/leadNotifications'
+import { verifyRecaptcha } from '@/utilities/recaptcha'
+import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
 
 /**
  * Newsletter subscribers (PRD §8.3, §9). Email list with subscribe/unsubscribe
@@ -73,6 +75,16 @@ export const NewsletterSubscribers: CollectionConfig = {
         // stored for these; a real form validates the address client-side first.
         const email = (data.email ?? '').trim().toLowerCase()
         if (data.botField || !EMAIL_RE.test(email)) return ok()
+
+        const check = await verifyRecaptcha(req.headers.get(RECAPTCHA_HEADER), 'newsletter')
+        const detail = `action=newsletter outcome=${check.outcome} score=${check.score ?? 'n/a'}`
+        if (check.outcome === 'fail') {
+          req.payload.logger.warn(`[recaptcha] rejected: ${detail}`)
+          return ok()
+        }
+        if (check.outcome === 'missing' || check.outcome === 'error') {
+          req.payload.logger.warn(`[recaptcha] accepted unverified: ${detail}`)
+        }
 
         const source = typeof data.source === 'string' ? data.source : undefined
 

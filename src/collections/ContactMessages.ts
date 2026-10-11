@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
 import { notifyContactMessage } from '@/email/leadNotifications'
 import type { ContactMessage } from '@/payload-types'
+import { recaptchaGuard, recaptchaOutcomeOf } from '@/utilities/recaptcha'
 
 /**
  * Contact messages (PRD §8.2). Non-demo inquiries — press, partnerships,
@@ -25,11 +26,17 @@ export const ContactMessages: CollectionConfig = {
     delete: isAdmin,
   },
   hooks: {
+    beforeChange: [recaptchaGuard('contact')],
     // Notify info@ when a contact message is created (PRD §8.2). After-write,
     // non-throwing, skips when email is unconfigured — never fails persistence.
     afterChange: [
       ({ doc, operation, req }) => {
-        if (operation === 'create') void notifyContactMessage(req.payload, doc as ContactMessage)
+        if (operation === 'create')
+          void notifyContactMessage(
+            req.payload,
+            doc as ContactMessage,
+            recaptchaOutcomeOf(req.context),
+          )
       },
     ],
   },

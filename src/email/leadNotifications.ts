@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 
 import type { ContactMessage, DemoRequest, SpeakingRequest } from '@/payload-types'
+import type { RecaptchaOutcome } from '@/utilities/recaptcha'
 
 /**
  * Lead-capture email notifications (PRD §8). One place that owns the "a lead
@@ -55,11 +56,28 @@ async function trySend(
   }
 }
 
+const UNVERIFIED_LINE =
+  'reCAPTCHA could not verify this submission (no token / check unavailable). Review before replying.'
+
+/** Prefixes the subject and adds a body line when the guard accepted the lead unverified. */
+function markUnverified(
+  outcome: RecaptchaOutcome | undefined,
+  subject: string,
+  lines: string[],
+): { subject: string; text: string } {
+  if (outcome !== 'missing' && outcome !== 'error') return { subject, text: lines.join('\n') }
+  return { subject: `[Unverified] ${subject}`, text: [UNVERIFIED_LINE, '', ...lines].join('\n') }
+}
+
 /** Sales notification when a demo request is created (PRD §8.1). */
-export async function notifyDemoRequest(payload: Payload, doc: DemoRequest): Promise<void> {
+export async function notifyDemoRequest(
+  payload: Payload,
+  doc: DemoRequest,
+  outcome?: RecaptchaOutcome,
+): Promise<void> {
   const to = process.env.SALES_NOTIFY_TO || DEFAULT_INTERNAL_TO
   const interests = Array.isArray(doc.interests) ? doc.interests.join(', ') : ''
-  const text = [
+  const lines = [
     `New demo request from ${doc.fullName}${doc.title ? `, ${doc.title}` : ''}.`,
     '',
     `District/org: ${doc.district || '—'}`,
@@ -72,37 +90,47 @@ export async function notifyDemoRequest(payload: Payload, doc: DemoRequest): Pro
     '',
     `Message: ${doc.message || '—'}`,
     `Anything else: ${doc.anythingElse || '—'}`,
-  ].join('\n')
+  ]
+  const { subject, text } = markUnverified(outcome, `New demo request — ${doc.fullName}`, lines)
   await trySend(payload, {
     to,
-    subject: `New demo request — ${doc.fullName}`,
+    subject,
     text,
     purpose: 'demo-notification',
   })
 }
 
 /** Internal notification when a contact message is created (PRD §8.2). */
-export async function notifyContactMessage(payload: Payload, doc: ContactMessage): Promise<void> {
+export async function notifyContactMessage(
+  payload: Payload,
+  doc: ContactMessage,
+  outcome?: RecaptchaOutcome,
+): Promise<void> {
   const to = process.env.CONTACT_NOTIFY_TO || DEFAULT_INTERNAL_TO
-  const text = [
+  const lines = [
     `New contact message from ${doc.name} (${doc.email}).`,
     `Reason: ${doc.reason || '—'}`,
     '',
     `Message:`,
     doc.message,
-  ].join('\n')
+  ]
+  const { subject, text } = markUnverified(outcome, `New contact message — ${doc.name}`, lines)
   await trySend(payload, {
     to,
-    subject: `New contact message — ${doc.name}`,
+    subject,
     text,
     purpose: 'contact-notification',
   })
 }
 
 /** Notification when a speaking request is created (PRD §4.4). */
-export async function notifySpeakingRequest(payload: Payload, doc: SpeakingRequest): Promise<void> {
+export async function notifySpeakingRequest(
+  payload: Payload,
+  doc: SpeakingRequest,
+  outcome?: RecaptchaOutcome,
+): Promise<void> {
   const to = process.env.SPEAKING_NOTIFY_TO || process.env.SALES_NOTIFY_TO || DEFAULT_INTERNAL_TO
-  const text = [
+  const lines = [
     `New speaking request for "${doc.eventName}" (${doc.eventDate}).`,
     '',
     `Contact:      ${doc.contactName} (${doc.email})`,
@@ -112,10 +140,15 @@ export async function notifySpeakingRequest(payload: Payload, doc: SpeakingReque
     `Topic:        ${doc.topicInterest || '—'}`,
     '',
     `Message: ${doc.message || '—'}`,
-  ].join('\n')
+  ]
+  const { subject, text } = markUnverified(
+    outcome,
+    `New speaking request — ${doc.eventName}`,
+    lines,
+  )
   await trySend(payload, {
     to,
-    subject: `New speaking request — ${doc.eventName}`,
+    subject,
     text,
     purpose: 'speaking-notification',
   })
