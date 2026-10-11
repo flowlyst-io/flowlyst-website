@@ -1,17 +1,17 @@
 import type { LegalDoc } from './types'
 
 /**
- * Cookie policy — DRAFT (issue #22). Documents the cookies/storage the site ACTUALLY
+ * Cookie policy (issue #22). Documents the cookies/storage the site ACTUALLY
  * uses today: the strictly-necessary consent cookie (`fl_cookie_consent`), the Payload
  * staff-session cookie. The site runs cookieless Vercel Web Analytics; Google reCAPTCHA v3
  * protects the forms and is treated as strictly necessary (ADR 0002). Unknowns are `flag`
- * blocks. Sign-off is Tural's.
+ * blocks. Signed off by Tural 2026-10-11.
  */
 export const cookiesDoc: LegalDoc = {
   doc: 'cookies',
   title: 'Cookie policy',
   sub: 'How we use cookies and similar technologies.',
-  lastUpdated: 'Draft — pending review',
+  lastUpdated: 'October 11, 2026',
   sections: [
     {
       id: 'overview',

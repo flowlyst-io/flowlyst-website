@@ -1,17 +1,17 @@
 import type { LegalDoc } from './types'
 
 /**
- * Terms of service — DRAFT (issue #22). Governs use of the marketing website only.
+ * Terms of service (issue #22). Governs use of the marketing website only.
  * Standard, conservative, plain-English sections; every place that needs a real legal
  * decision (entity, governing law, liability terms) is a `flag`, not an invented claim.
- * The design itself notes "long-form copy owned by legal counsel" — this is the draft
- * counsel reviews, and final sign-off is Tural's (issue #70).
+ * The design itself notes "long-form copy owned by legal counsel" — this is the text
+ * counsel reviewed; Tural signed it off 2026-10-11 (issue #70).
  */
 export const termsDoc: LegalDoc = {
   doc: 'terms',
   title: 'Terms of service',
   sub: 'The rules that govern your use of flowlyst.',
-  lastUpdated: 'Draft — pending review',
+  lastUpdated: 'October 11, 2026',
   sections: [
     {
       id: 'overview',

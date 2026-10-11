@@ -1,19 +1,19 @@
 import type { LegalDoc } from './types'
 
 /**
- * Privacy policy — DRAFT (issue #22). Grounded in what this codebase ACTUALLY collects
+ * Privacy policy (issue #22). Grounded in what this codebase ACTUALLY collects
  * and the processors it uses (verified against the form components, the Payload
  * collections, and the deploy stack): the demo, contact, newsletter, and speaking
  * forms; Vercel hosting; Neon Postgres; Resend email; Zoho Bigin CRM; Google
  * reCAPTCHA. Unknowns that only Tural/counsel can settle are `flag` blocks, not
  * guesses.
- * Final legal sign-off is Tural's (issue #70).
+ * Signed off by Tural 2026-10-11 (issue #70).
  */
 export const privacyDoc: LegalDoc = {
   doc: 'privacy',
   title: 'Privacy policy',
   sub: "How we collect, use, and protect data from people who use flowlyst's site and services.",
-  lastUpdated: 'Draft — pending review',
+  lastUpdated: 'October 11, 2026',
   sections: [
     {
       id: 'overview',
