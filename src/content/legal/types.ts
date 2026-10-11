@@ -10,7 +10,7 @@
  * needs a fact only Tural/counsel can supply (retention periods, entity/address,
  * governing law, DPO). They render VISIBLY and distinctly so the gaps are unmistakable
  * when Tural reviews the staging site, and every one is mirrored in the PR body. This
- * is a faithful DRAFT with flagged gaps — never an invented legal claim.
+ * is a faithful rendering with flagged gaps — never an invented legal claim.
  */
 
 export type LegalBlock =
@@ -34,7 +34,7 @@ export type LegalDoc = {
   title: string
   /** Lead paragraph under the H1. */
   sub: string
-  /** Human-readable effective date shown in the sidebar (flagged pending sign-off). */
+  /** Human-readable effective date shown in the sidebar (signed off 2026-10-11). */
   lastUpdated: string
   sections: LegalSection[]
 }
