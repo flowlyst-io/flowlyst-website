@@ -13,6 +13,7 @@ import { ArticleBody } from '@/components/blog/ArticleBody'
 import { categoryLabel, formatPostDate } from '@/components/blog/format'
 import { getServerURL } from '@/utilities/serverURL'
 import { serializeJsonLd } from '@/utilities/jsonLd'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * Blog article reader (`/blog/[slug]`, PRD §7 / §9 / §11), built against the settled
@@ -99,13 +100,13 @@ export async function generateMetadata({
       type: 'article',
       publishedTime: post.publishedAt ?? undefined,
       modifiedTime: post.updatedAt,
-      images: ogImage ? [ogImage] : undefined,
+      images: ogImage ? [ogImage] : [SOCIAL_IMAGE],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: ogImage ? [ogImage] : undefined,
+      images: ogImage ? [ogImage] : [SOCIAL_IMAGE.url],
     },
   }
 }

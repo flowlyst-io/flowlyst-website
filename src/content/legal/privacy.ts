@@ -26,10 +26,6 @@ export const privacyDoc: LegalDoc = {
           kind: 'p',
           text: 'It does not cover the data districts process inside the flowlyst budgeting product or through a consulting or training engagement. That data — including any student records governed by FERPA — is handled under the separate agreement (and data processing terms) for that service, not this website.',
         },
-        {
-          kind: 'flag',
-          text: 'Confirm whether this policy should reference any parent or affiliate entity.',
-        },
       ],
     },
     {

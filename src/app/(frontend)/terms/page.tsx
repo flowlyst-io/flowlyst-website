@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 
 import { LegalPage } from '@/components/legal/LegalPage'
 import { termsDoc } from '@/content/legal/terms'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * Terms of service (`/terms`) — issue #22, PRD §11. Fully server-rendered, fully static
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
     'The terms that govern your use of the flowlyst website, including acceptable use, intellectual property, disclaimers, and how these terms change.',
   alternates: { canonical: '/terms' },
   openGraph: {
+    images: [SOCIAL_IMAGE],
     title: 'Terms of service — flowlyst',
     description:
       'The terms that govern your use of the flowlyst website — acceptable use, intellectual property, disclaimers, and more.',
@@ -23,6 +25,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
+    images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
     title: 'Terms of service — flowlyst',
     description:

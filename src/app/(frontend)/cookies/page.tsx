@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 
 import { LegalPage } from '@/components/legal/LegalPage'
 import { cookiesDoc } from '@/content/legal/cookies'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * Cookie policy (`/cookies`) — issue #22, PRD §10.4 / §11. Fully server-rendered, fully
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
     'The cookies and similar technologies the flowlyst website uses, why they run, and how you control your choices in the cookie banner.',
   alternates: { canonical: '/cookies' },
   openGraph: {
+    images: [SOCIAL_IMAGE],
     title: 'Cookie policy — flowlyst',
     description:
       'The cookies and similar technologies the flowlyst website uses, why they run, and how you control your choices.',
@@ -24,6 +26,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
+    images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
     title: 'Cookie policy — flowlyst',
     description:

@@ -724,18 +724,17 @@ function FounderAvatar({ size = 64 }: { size?: number }) {
         height: size,
         borderRadius: 999,
         background: 'linear-gradient(135deg, #3a4a40, #1a2520)',
-        position: 'relative',
-        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'var(--c-cream)',
+        fontSize: Math.round(size * 0.36),
+        fontWeight: 800,
+        letterSpacing: '-0.02em',
         flexShrink: 0,
       }}
     >
-      <svg
-        viewBox="0 0 64 64"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-      >
-        <circle cx="32" cy="26" r="11" fill="rgba(255,210,170,0.4)" />
-        <path d="M 10 64 Q 10 44 32 42 Q 54 44 54 64 Z" fill="rgba(20,30,25,0.7)" />
-      </svg>
+      AA
     </div>
   )
 }

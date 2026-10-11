@@ -12,6 +12,7 @@ import { getServerURL } from '@/utilities/serverURL'
 import { serializeJsonLd } from '@/utilities/jsonLd'
 import { mediaSrc } from '@/utilities/mediaSrc'
 import { RichTextBody } from './RichTextBody'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * Case study detail (`/case-studies/[slug]`, PRD §7 / §9). No hi-fi detail design
@@ -117,6 +118,7 @@ export async function generateMetadata({
     description,
     alternates: { canonical: canonicalPath },
     openGraph: {
+      images: [SOCIAL_IMAGE],
       title,
       description,
       url: canonicalPath,
@@ -125,6 +127,7 @@ export async function generateMetadata({
       ...(ogImage?.url ? { images: [{ url: ogImage.url, alt: ogImage.alt }] } : {}),
     },
     twitter: {
+      images: [SOCIAL_IMAGE.url],
       card: 'summary_large_image',
       title,
       description,

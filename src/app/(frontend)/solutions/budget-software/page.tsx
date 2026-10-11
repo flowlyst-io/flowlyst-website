@@ -10,6 +10,7 @@ import { SectionHead } from '@/components/solutions/SectionHead'
 import { ProductMock } from '@/components/solutions/ProductMock'
 import { getServerURL } from '@/utilities/serverURL'
 import { serializeJsonLd } from '@/utilities/jsonLd'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * Budget Software solution page (`/solutions/budget-software`, PRD §4.1 / §7 / §11)
@@ -36,6 +37,7 @@ export const metadata: Metadata = {
   description: PAGE_DESCRIPTION,
   alternates: { canonical: CANONICAL_PATH },
   openGraph: {
+    images: [SOCIAL_IMAGE],
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: CANONICAL_PATH,
@@ -43,6 +45,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
+    images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,

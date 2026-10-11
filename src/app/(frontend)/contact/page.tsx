@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 import { ContactForm } from '@/components/ContactForm'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * Contact page (`/contact`, PRD §8.2 / §11), built against the settled design
@@ -30,6 +31,7 @@ export const metadata: Metadata = {
   description: PAGE_DESCRIPTION,
   alternates: { canonical: CANONICAL_PATH },
   openGraph: {
+    images: [SOCIAL_IMAGE],
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: CANONICAL_PATH,
@@ -37,6 +39,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
+    images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,

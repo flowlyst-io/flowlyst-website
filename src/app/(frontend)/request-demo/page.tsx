@@ -2,6 +2,7 @@ import React from 'react'
 import type { Metadata } from 'next'
 
 import { DemoRequestForm } from '@/components/DemoRequestForm'
+import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
  * Request-a-demo page (`/request-demo`, PRD §8.1 / §7 / §11 — a preserved URL).
@@ -26,6 +27,7 @@ export const metadata: Metadata = {
   description: PAGE_DESCRIPTION,
   alternates: { canonical: CANONICAL_PATH },
   openGraph: {
+    images: [SOCIAL_IMAGE],
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: CANONICAL_PATH,
@@ -33,6 +35,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
+    images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,

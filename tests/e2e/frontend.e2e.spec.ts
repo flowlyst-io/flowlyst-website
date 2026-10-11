@@ -70,3 +70,24 @@ test.describe('Frontend', () => {
     await expect(reopenBtn).toBeFocused()
   })
 })
+
+test.describe('mobile menu panel', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('open drawer is fully opaque and Contact matches the other items', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Open menu' }).click()
+    const drawer = page.locator('#site-nav-drawer')
+    await expect(drawer).toBeVisible()
+    const bg = await drawer.evaluate((el) => getComputedStyle(el).backgroundColor)
+    expect(bg).not.toMatch(/rgba\(.*,\s*0?\.\d+\)/)
+    const link = await drawer
+      .locator('.nav__links a')
+      .first()
+      .evaluate((el) => getComputedStyle(el).fontSize)
+    const contact = await drawer
+      .locator('.nav__signin')
+      .evaluate((el) => getComputedStyle(el).fontSize)
+    expect(contact).toBe(link)
+  })
+})
