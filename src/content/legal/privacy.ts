@@ -4,7 +4,7 @@ import type { LegalDoc } from './types'
  * Privacy policy — DRAFT (issue #22). Grounded in what this codebase ACTUALLY collects
  * and the processors it uses (verified against the form components, the Payload
  * collections, and the deploy stack): the demo, contact, newsletter, and speaking
- * forms; Vercel hosting; Neon Postgres; Resend email; Zoho Bigin CRM. Unknowns that only
+ * forms; Vercel hosting; Neon Postgres; Resend email; Zoho Bigin CRM; Google reCAPTCHA. Unknowns that only
  * Tural/counsel can settle are `flag` blocks, not guesses.
  * Final legal sign-off is Tural's (issue #70).
  */
@@ -55,7 +55,7 @@ export const privacyDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'When you visit the site, our hosting provider records standard server and request information — such as your IP address, browser and device type, the pages you request, and the date and time — for security, diagnostics, and reliable operation. We also use a small number of cookies and similar technologies, described in our cookie policy.',
+          text: 'When you visit the site, our hosting provider records standard server and request information — such as your IP address, browser and device type, the pages you request, and the date and time — for security, diagnostics, and reliable operation. We also use a small number of cookies and similar technologies, described in our cookie policy. When you use one of our forms, Google reCAPTCHA sends device and interaction signals to Google to tell people from automated software.',
         },
         {
           kind: 'p',
@@ -101,6 +101,7 @@ export const privacyDoc: LegalDoc = {
             'Neon — the database that stores your form submissions.',
             'Resend — sends the email notifications that tell our team about your request.',
             'Zoho Bigin — our customer relationship management (CRM) system, where demo requests are recorded so our team can follow up.',
+            'Google — reCAPTCHA spam protection on our forms (receives your IP address, browser and device information, and page-interaction signals).',
           ],
         },
         {

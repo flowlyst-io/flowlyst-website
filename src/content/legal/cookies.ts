@@ -3,8 +3,9 @@ import type { LegalDoc } from './types'
 /**
  * Cookie policy — DRAFT (issue #22). Documents the cookies/storage the site ACTUALLY
  * uses today: the strictly-necessary consent cookie (`fl_cookie_consent`), the Payload
- * staff-session cookie. The site runs cookieless Vercel Web Analytics only; reCAPTCHA
- * is planned (PRD §10.4), not live. Unknowns are `flag` blocks. Sign-off is Tural's.
+ * staff-session cookie. The site runs cookieless Vercel Web Analytics; Google reCAPTCHA v3
+ * protects the forms and is treated as strictly necessary (ADR 0002). Unknowns are `flag`
+ * blocks. Sign-off is Tural's.
  */
 export const cookiesDoc: LegalDoc = {
   doc: 'cookies',
@@ -65,11 +66,7 @@ export const cookiesDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'Our forms currently use a hidden field to catch automated spam, which does not set a cookie. We plan to add Google reCAPTCHA to the demo and contact forms; when we do, it may set cookies, and we will document them here first.',
-        },
-        {
-          kind: 'flag',
-          text: 'When reCAPTCHA is enabled, add its cookies to this list and reflect Google as a processor in the privacy policy.',
+          text: 'Our forms use Google reCAPTCHA v3, together with a hidden field, to block automated spam. reCAPTCHA is a security service that we treat as strictly necessary: it loads only when you start filling in a form, and it runs whether or not you accept optional cookies, because without it the forms could not be protected from abuse. Google acts as our service provider for this check; it may set or read cookies and receives your IP address, browser and device information, and how you interact with the page. Google’s use of this information is governed by the Google Privacy Policy (https://policies.google.com/privacy) and Terms of Service (https://policies.google.com/terms).',
         },
       ],
     },
