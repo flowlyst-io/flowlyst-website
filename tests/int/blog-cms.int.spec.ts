@@ -236,6 +236,30 @@ describe('Blog rich text — list markers (ui-verifier #66 fix)', () => {
     expect(html).toContain(`first ${stamp}`)
     expect(html).toContain(`second ${stamp}`)
   })
+
+  it('keeps no bullet on a wrapper item that holds only a sub-list (#108)', () => {
+    const data = lexicalWithList([`parent ${stamp}`])
+    const list = data.root.children[0] as { children: unknown[] }
+    list.children.push({
+      type: 'listitem',
+      value: 2,
+      format: '',
+      indent: 0,
+      version: 1,
+      direction: 'ltr',
+      children: [lexicalWithList([`child ${stamp}`]).root.children[0]],
+    })
+    const html = renderBody(data)
+    expect(html, 'wrapper has no marker').toMatch(/<li[^>]*list-style-type:none[^>]*>\s*<ul/)
+    expect(html, 'wrapper is still spaced').toContain('list-style-type:none;margin:0 0 8px')
+    expect(html, 'plain item keeps its marker and spacing').toMatch(
+      new RegExp(`<li(?![^>]*list-style-type:none)[^>]*margin:0 0 8px[^>]*>parent ${stamp}</li>`),
+    )
+    expect(html, 'nested items keep their marker and spacing').toMatch(
+      new RegExp(`<li(?![^>]*list-style-type:none)[^>]*margin:0 0 8px[^>]*>child ${stamp}</li>`),
+    )
+    expect(html.match(/<li\b[^>]*list-style-type:none/g), 'only the wrapper').toHaveLength(1)
+  })
 })
 
 describe('Blog revalidation hooks — never-throw (review finding 2, mirrored)', () => {
