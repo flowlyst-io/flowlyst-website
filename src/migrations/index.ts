@@ -5,6 +5,7 @@ import * as migration_20260714_040417_speaking_requests from './20260714_040417_
 import * as migration_20260714_104309_lead_capture_foundation from './20260714_104309_lead_capture_foundation';
 import * as migration_20260714_142633_testimonials_keynotes_category from './20260714_142633_testimonials_keynotes_category';
 import * as migration_20260714_162601_content_model_touchup from './20260714_162601_content_model_touchup';
+import * as migration_20261012_023721_security_bump_check from './20261012_023721_security_bump_check';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20260714_162601_content_model_touchup.up,
     down: migration_20260714_162601_content_model_touchup.down,
-    name: '20260714_162601_content_model_touchup'
+    name: '20260714_162601_content_model_touchup',
+  },
+  {
+    up: migration_20261012_023721_security_bump_check.up,
+    down: migration_20261012_023721_security_bump_check.down,
+    name: '20261012_023721_security_bump_check'
   },
 ];
