@@ -190,7 +190,7 @@ test.describe('Request-demo page — server-rendered content (raw HTML, no JS)',
   }) => {
     const html = await fetchHtml(request, PATH)
     // 'use client' components still SSR their initial markup — labels are crawlable.
-    for (const label of ['Full name', 'Work email', 'multi-select', 'I agree to flowlyst']) {
+    for (const label of ['Full name', 'Work email', 'choose any', 'I agree to flowlyst']) {
       expect(html, `form text "${label}" in server HTML`).toContain(label)
     }
     // Submit label ("Request demo") is distinct from the nav CTA ("Request a demo").
@@ -550,7 +550,7 @@ test.describe('Request-demo page — responsive & accessibility smoke', () => {
     page,
   }) => {
     await page.goto(PATH)
-    // role=group with an accessible name (aria-labelledby → "Interests · multi-select").
+    // role=group with an accessible name (aria-labelledby → "Interests (choose any)").
     const group = page.getByRole('group', { name: /Interests/i })
     await expect(group, 'the interests group has an accessible name').toBeVisible()
     for (const name of ['AI Training', 'Budget Software', 'Consulting', 'Keynotes']) {

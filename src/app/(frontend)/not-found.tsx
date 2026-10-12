@@ -5,7 +5,6 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Page not found — flowlyst',
   description: 'The page you were looking for does not exist.',
-  robots: { index: false },
 }
 
 export default function NotFound() {

@@ -148,7 +148,7 @@ export function DemoRequestForm() {
     if (values.workEmail.trim() && !EMAIL_RE.test(values.workEmail.trim())) {
       next.workEmail = 'Enter a valid email address.'
     }
-    if (!values.consent) next.consent = 'Please agree to be contacted so we can reach you.'
+    if (!values.consent) next.consent = 'Please agree to be contacted about your demo request.'
     return next
   }
 
@@ -328,7 +328,7 @@ export function DemoRequestForm() {
         aria-labelledby={interestsLabelId}
       >
         <span className="field__label" id={interestsLabelId}>
-          Interests · multi-select
+          Interests (choose any)
         </span>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
           {INTEREST_OPTIONS.map((opt) => (
@@ -480,7 +480,8 @@ export function DemoRequestForm() {
           style={{ color: 'var(--danger)', fontSize: 14, marginBottom: 16 }}
           data-testid="demo-form-error"
         >
-          Something went wrong sending your request. Please try again, or email us directly.
+          Something went wrong sending your request. Please try again, or email us at
+          info@flowlyst.io.
         </p>
       )}
 

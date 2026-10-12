@@ -217,8 +217,8 @@ export default function AboutPage() {
                   "What districts say" → /testimonials satisfies issue #7's testimonials CTA,
                   styled identically to the design's inline links. */}
               <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-                <MeetAzizLink href="/solutions/keynotes">Speaking reel</MeetAzizLink>
-                <MeetAzizLink href="/contact">Email Aziz</MeetAzizLink>
+                <MeetAzizLink href="/solutions/keynotes">Keynotes</MeetAzizLink>
+                <MeetAzizLink href="/contact">Contact Aziz</MeetAzizLink>
                 <MeetAzizLink href="/testimonials">What districts say</MeetAzizLink>
               </div>
             </div>

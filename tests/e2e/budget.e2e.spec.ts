@@ -196,7 +196,7 @@ test.describe('Budget page — server-rendered content (raw HTML, no JS)', () =>
     expect(html, 'promise label — implementation').toMatch(/Average implementation/i)
     expect(html, 'promise label — onboarding').toMatch(/Personalized onboarding/i)
     expect(html, 'promise label — finance experts').toMatch(/school finance experts/i)
-    expect(html, 'promise label — no hidden fees').toMatch(/No hidden fees/i)
+    expect(html, 'promise label — no hidden fees').toMatch(/Hidden fees\. No IT staff required/i)
   })
 
   test('the server HTML has exactly one <h1>', async ({ request }) => {

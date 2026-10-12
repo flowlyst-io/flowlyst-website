@@ -241,7 +241,7 @@ export default async function HomePage() {
                   Request a demo <ArrowRight />
                 </Link>
                 <Link href="/about" className="btn btn--ghost btn--lg">
-                  Read the manifesto
+                  Read our story
                 </Link>
               </div>
             </div>
@@ -348,7 +348,7 @@ export default async function HomePage() {
               What we offer
             </div>
             <h2 className="h2" style={{ maxWidth: '22ch' }}>
-              One vendor. <em>Four ways</em> to work with us.
+              One partner. <em>Four ways</em> to work with us.
             </h2>
           </div>
 
@@ -378,7 +378,7 @@ export default async function HomePage() {
       >
         <div className="container" style={{ maxWidth: 1100 }}>
           <div className="eyebrow" style={{ marginBottom: 48 }}>
-            Aziz Aghayev · Founder
+            Aziz Aghayev · Founder & Lead Consultant
           </div>
           <blockquote className="pull" style={{ color: 'var(--c-ink)', margin: 0 }}>
             “I sat in <em>your seat</em> for fifteen years. flowlyst is the partner I wished I’d had
@@ -626,7 +626,7 @@ function ProductMock() {
               color: 'var(--c-ink-3)',
             }}
           >
-            flowlyst · FY26 budget
+            flowlyst · FY27 budget
           </span>
         </div>
         <div style={{ padding: 24, flex: 1, color: 'var(--c-ink)' }}>
@@ -645,7 +645,7 @@ function ProductMock() {
               fontWeight: 800,
             }}
           >
-            Total district budget · FY 2025–26
+            Total district budget · FY 2026–27
           </div>
           <div
             style={{

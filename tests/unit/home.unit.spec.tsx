@@ -35,6 +35,6 @@ describe('FinalCTA (homepage closing band)', () => {
       'href',
       '/request-demo',
     )
-    expect(screen.getByRole('link', { name: /talk to aziz/i })).toHaveAttribute('href', '/about')
+    expect(screen.getByRole('link', { name: /meet aziz/i })).toHaveAttribute('href', '/about')
   })
 })

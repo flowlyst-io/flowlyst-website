@@ -119,7 +119,7 @@ const PROCESS_STEPS: ProcessStep[] = [
   { title: 'Assess', copy: '30-min free intro call. We listen, you sketch the pain.' },
   { title: 'Map', copy: 'We sit with your team. Document the current workflow.' },
   { title: 'Build', copy: 'Design and implement the automation. Iterate weekly.' },
-  { title: 'Embed', copy: 'Hand-off (Mode 1) or embedded engineer (Mode 2).' },
+  { title: 'Hand off or embed', copy: 'Hand-off (Mode 1) or embedded engineer (Mode 2).' },
 ]
 
 export default function ConsultingPage() {

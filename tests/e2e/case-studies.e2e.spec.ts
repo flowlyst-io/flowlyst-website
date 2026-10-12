@@ -104,8 +104,8 @@ test.describe('Case studies — server-rendered content (raw HTML, no JS)', () =
   test('the hero copy is present in the server HTML', async ({ request }) => {
     const html = await fetchCaseStudiesHtml(request)
     expect(html).toMatch(/Long-form district stories/i)
-    expect(html).toMatch(/How districts ship/i)
-    expect(html).toMatch(/with the metrics and the names/i)
+    expect(html).toMatch(/How districts work/i)
+    expect(html).toMatch(/with the metrics and the people/i)
   })
 
   test('the empty state renders when no case studies are published', async ({ request }) => {
