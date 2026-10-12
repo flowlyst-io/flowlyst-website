@@ -341,7 +341,7 @@ export function SpeakingRequestForm() {
           style={{ color: 'var(--danger)', fontSize: 14, marginBottom: 16 }}
           data-testid="keynotes-form-error"
         >
-          Something went wrong sending your request. Please try again, or email us directly.
+          Something went wrong sending your request. Please try again, or email us at info@flowlyst.io.
         </p>
       )}
 

@@ -107,7 +107,7 @@ test.describe('Homepage — server-rendered content (raw HTML, no JS)', () => {
     for (const offering of ['Budget Software', 'AI Training', 'Consulting', 'Keynotes']) {
       expect(html, `offering "${offering}" must be server-rendered`).toContain(offering)
     }
-    // The offerings framing copy ("One vendor. Four ways to work with us.").
+    // The offerings framing copy ("One partner. Four ways to work with us.").
     expect(html).toMatch(/Four ways/i)
   })
 

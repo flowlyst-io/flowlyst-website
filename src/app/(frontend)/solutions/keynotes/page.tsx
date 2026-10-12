@@ -132,7 +132,7 @@ export default function KeynotesPage() {
         primaryHref="#request"
         secondaryCta="Meet Aziz"
         secondaryHref="/about"
-        badges={['ASBO International', 'NJASBO · CPS', '3-day response']}
+        badges={['ASBO International', 'NJASBO · CPS', '3-business-day response']}
         visual={<KeynoteHeroArt />}
       />
 

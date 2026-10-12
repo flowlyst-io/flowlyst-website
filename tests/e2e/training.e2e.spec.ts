@@ -218,7 +218,7 @@ test.describe('AI Training page — server-rendered content (raw HTML, no JS)', 
     // PRD §4.2 fixed list — clean title substrings (tags carry middots).
     for (const format of [
       'Single workshop',
-      'Multi-session paced',
+      'Paced multi-session series',
       'Summer/fall institute',
       'Whatever your district needs',
     ]) {
@@ -251,8 +251,8 @@ test.describe('AI Training page — server-rendered content (raw HTML, no JS)', 
     ]) {
       expect(html, `agenda row "${row}"`).toContain(row)
     }
-    // The section is labelled a *sample* (illustrative, PRD §4.2) — four-hour framing.
-    expect(html, 'agenda "four hours" framing (inside <em>)').toMatch(/four hours/i)
+    // The section is labelled a *sample* (illustrative, PRD §4.2) — half-day framing.
+    expect(html, 'agenda "half-day" framing (inside <em>)').toMatch(/half-day/i)
   })
 
   test('the server HTML has exactly one <h1>', async ({ request }) => {

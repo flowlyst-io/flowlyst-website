@@ -50,7 +50,7 @@ export function ProductMock() {
               color: 'var(--c-ink-3)',
             }}
           >
-            flowlyst · FY26 budget
+            flowlyst · FY27 budget
           </span>
         </div>
         <div style={{ padding: 24, flex: 1, color: 'var(--c-ink)' }}>
@@ -69,7 +69,7 @@ export function ProductMock() {
               fontWeight: 800,
             }}
           >
-            Total district budget · FY 2025–26
+            Total district budget · FY 2026–27
           </div>
           <div
             style={{

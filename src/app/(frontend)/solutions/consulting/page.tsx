@@ -108,7 +108,7 @@ const USE_CASES: UseCase[] = [
   {
     stat: '98%',
     title: 'Rollout satisfaction',
-    copy: 'AI consulting engagements rated across districts and departments.',
+    copy: 'Average rating across AI consulting engagements, districts and departments.',
   },
 ]
 
@@ -119,7 +119,7 @@ const PROCESS_STEPS: ProcessStep[] = [
   { title: 'Assess', copy: '30-min free intro call. We listen, you sketch the pain.' },
   { title: 'Map', copy: 'We sit with your team. Document the current workflow.' },
   { title: 'Build', copy: 'Design and implement the automation. Iterate weekly.' },
-  { title: 'Embed', copy: 'Hand-off (Mode 1) or embedded engineer (Mode 2).' },
+  { title: 'Hand off or embed', copy: 'Hand-off (Mode 1) or embedded engineer (Mode 2).' },
 ]
 
 export default function ConsultingPage() {
@@ -372,7 +372,7 @@ export default function ConsultingPage() {
               clarifier sits at the page's assessment touchpoint — the "Assess"
               step above. Uses the existing `.small` support class; no new styles. */}
           <p className="small" style={{ marginTop: 32, maxWidth: '64ch' }}>
-            The free 30-minute assessment is a one-time, by-exception introduction to the consulting
+            The free 30-minute assessment is a one-time introduction to the consulting
             offering — not a recurring service.
           </p>
         </div>

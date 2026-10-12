@@ -79,7 +79,7 @@ const FORMATS: Format[] = [
   {
     num: '02',
     tag: 'Webinar series',
-    title: 'Multi-session paced',
+    title: 'Paced multi-session series',
     copy: 'Sessions paced over weeks. Better retention; works around district calendars.',
   },
   {
@@ -134,7 +134,7 @@ const AGENDA: AgendaRow[] = [
   {
     time: '10:30 – 10:45',
     title: 'Break',
-    desc: 'Coffee. We tell you the one thing we changed last week.',
+    desc: 'Coffee, and one AI tip from last week’s work.',
   },
   {
     time: '10:45 – 12:00',
@@ -354,7 +354,7 @@ export default function AiTrainingPage() {
             eyebrow="Sample · half-day"
             title={
               <>
-                What <em>four hours</em> looks like.
+                What <em>half-day</em> looks like.
               </>
             }
           />

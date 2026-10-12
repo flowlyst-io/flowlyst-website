@@ -43,7 +43,7 @@ export function FinalCTA() {
             </span>
           </Link>
           <Link href="/about" className="btn btn--ghost-light btn--lg">
-            Talk to Aziz
+            Meet Aziz
           </Link>
         </div>
       </div>

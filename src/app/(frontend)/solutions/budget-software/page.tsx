@@ -110,7 +110,7 @@ const PROMISES: Array<{ stat: string; label: string }> = [
   { stat: '1 wk', label: 'Average implementation. We mean it.' },
   { stat: '1:1', label: 'Personalized onboarding sessions.' },
   { stat: 'CFOs', label: 'Support from school finance experts.' },
-  { stat: '$0', label: 'IT staff required. No hidden fees.' },
+  { stat: '$0', label: 'Hidden fees. No IT staff required.' },
 ]
 
 // Attribution line for the featured testimonial: role · organization (the design's

@@ -111,10 +111,10 @@ export default async function CaseStudiesIndexPage() {
             Long-form district stories
           </div>
           <h1 className="h1" style={{ marginBottom: 32, maxWidth: 1100 }}>
-            How districts ship <em>faster</em> with flowlyst.
+            How districts work <em>faster</em> with flowlyst.
           </h1>
           <p className="lead" style={{ fontSize: 22, maxWidth: '54ch' }}>
-            Challenge → solution → results, with the metrics and the names of the people who lived
+            Challenge → solution → results, with the metrics and the people who lived
             it.
           </p>
         </div>
