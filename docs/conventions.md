@@ -41,6 +41,13 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: `const email = deriveFixtureEmail({ prefix: 'contact-e2e-admin' })`, then delete where email equals it, then create.
 4. **Gotcha**: every spec file needs its own prefix; the default `dev-e2e` belongs to `admin.e2e.spec.ts`. Isolation relies on files running in separate workers: turning on `fullyParallel` would run one file's `beforeAll` in several workers against the same row.
 
+### A dependency upgrade that reshapes stored data rewrites it in the same migration
+
+1. **Rule**: when an upgrade changes the shape of stored data, the data rewrite goes in the same generated migration as the schema change: after the DDL in `up`, and in `down` before its DDL. The rewrite lives in exported helper functions, and an int test calls those helpers against old-shape data, then runs the real consumer.
+2. **Why**: Payload runs each migration in one transaction, so schema and data land or roll back together, and the production migrate gate applies it automatically. Exporting the helpers is the only way to test the data step without replaying the whole migration chain.
+3. **Minimal example**: `export async function wrapPendingJobUsers(db) {…}`; `up` runs the ALTERs, then `await wrapPendingJobUsers(db)`. The test inserts a legacy row, calls `wrapPendingJobUsers(payload.db.drizzle)`, then `payload.jobs.run()`, and asserts the outcome. See `src/migrations/20261012_023721_payload_3_90_upgrade.ts` and `tests/int/cms.int.spec.ts`.
+4. **Gotcha**: Payload's loader reads only `up` and `down`, so extra exports are safe. A migration's name is permanent once applied to a shared database, so rename only before it reaches main. The rewrite cannot cover rows the old deployment writes while the production build is running.
+
 ## The contract for this file
 
 **Every entry has four parts, in this order:**

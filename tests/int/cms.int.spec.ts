@@ -6,7 +6,12 @@ import { getPayload, type Payload, type PayloadRequest } from 'payload'
 import config from '@/payload.config'
 import type { BlogPost } from '@/payload-types'
 
+import { sql } from '@payloadcms/db-postgres'
 import { beforeAll, describe, expect, it } from 'vitest'
+import {
+  unwrapPendingJobUsers,
+  wrapPendingJobUsers,
+} from '@/migrations/20261012_023721_payload_3_90_upgrade'
 
 /**
  * CMS content-model integration tests.
@@ -277,7 +282,11 @@ describe('Scheduled publishing', () => {
     // action does — then run the queue (what the production Vercel Cron triggers).
     await payload.jobs.queue({
       task: 'schedulePublish',
-      input: { type: 'publish', doc: { relationTo: 'blog-posts', value: post.id }, user: admin.id },
+      input: {
+        type: 'publish',
+        doc: { relationTo: 'blog-posts', value: post.id },
+        user: { relationTo: 'users', value: admin.id },
+      },
       waitUntil: new Date(Date.now() - 60_000),
     })
     await payload.jobs.run()
@@ -289,6 +298,57 @@ describe('Scheduled publishing', () => {
     })
     expect(after.totalDocs).toBe(1) // now visible to the public
     expect(after.docs[0]._status).toBe('published')
+  })
+
+  it('publishes a job queued in the pre-3.90 shape once the upgrade migration rewrites it', async () => {
+    const slug = `legacy-scheduled-${stamp}`
+    const post = await payload.create({
+      collection: 'blog-posts',
+      data: {
+        title: 'Legacy scheduled',
+        slug,
+        body: lexicalBody,
+        serviceCategory: 'general',
+        _status: 'draft',
+      },
+    })
+
+    // Pre-3.90 admin stored input.user as a bare id.
+    const input = JSON.stringify({
+      type: 'publish',
+      doc: { relationTo: 'blog-posts', value: post.id },
+      user: admin.id,
+    })
+    const db = payload.db.drizzle
+    const inserted = await db.execute(sql`
+      INSERT INTO "payload_jobs" ("input", "task_slug", "queue", "wait_until", "processing", "total_tried", "has_error", "updated_at", "created_at")
+      VALUES (${input}::jsonb, 'schedulePublish', 'default', now() - interval '1 minute', false, 0, false, now(), now())
+      RETURNING "id"`)
+    const jobId = inserted.rows[0].id as number
+
+    await wrapPendingJobUsers(db)
+    const rewritten = await db.execute(
+      sql`SELECT "input"->'user' AS u FROM "payload_jobs" WHERE "id" = ${jobId}`,
+    )
+    expect(rewritten.rows[0].u).toEqual({ relationTo: 'users', value: admin.id })
+
+    await payload.jobs.run()
+    const after = await payload.findByID({ collection: 'blog-posts', id: post.id })
+    expect(after._status).toBe('published')
+
+    // Reverse path on a job that is still pending.
+    const pending = await db.execute(sql`
+      INSERT INTO "payload_jobs" ("input", "task_slug", "queue", "wait_until", "processing", "total_tried", "has_error", "updated_at", "created_at")
+      VALUES (${input}::jsonb, 'schedulePublish', 'other', now() + interval '1 day', false, 0, false, now(), now())
+      RETURNING "id"`)
+    const pendingId = pending.rows[0].id as number
+    await wrapPendingJobUsers(db)
+    await unwrapPendingJobUsers(db)
+    const restored = await db.execute(
+      sql`SELECT "input"->'user' AS u FROM "payload_jobs" WHERE "id" = ${pendingId}`,
+    )
+    expect(restored.rows[0].u).toBe(admin.id)
+    await db.execute(sql`DELETE FROM "payload_jobs" WHERE "id" = ${pendingId}`)
   })
 })
 
