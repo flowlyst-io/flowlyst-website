@@ -1467,16 +1467,6 @@ code,
 .legal__lead {
   margin-bottom: 40px;
 }
-.legal__draft {
-  padding: 16px 20px;
-  margin-bottom: 40px;
-  background: var(--danger-soft);
-  border: 1px solid var(--danger);
-  border-radius: var(--radius-xs);
-  font-size: var(--fs-small);
-  line-height: var(--lh-normal);
-  color: var(--c-ink);
-}
 .legal__section {
   margin-bottom: 40px;
 }

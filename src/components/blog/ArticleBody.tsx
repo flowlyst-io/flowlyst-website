@@ -4,6 +4,7 @@ import type { JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
 
 import type { BlogPost } from '@/payload-types'
 import { SanitizedLink } from '@/utilities/richTextLinks'
+import { LIST_ITEM_MARGIN } from '@/utilities/richTextLists'
 
 /**
  * Renders a blog post's Lexical rich-text body as server HTML (RSC-safe — no client
@@ -83,7 +84,7 @@ const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
     )
   },
   listitem: ({ node, nodesToJSX }) => (
-    <li style={{ margin: '0 0 8px' }}>{nodesToJSX({ nodes: node.children })}</li>
+    <li style={{ margin: LIST_ITEM_MARGIN }}>{nodesToJSX({ nodes: node.children })}</li>
   ),
   // Sanitize link schemes (shared allowlist): an unsafe href (e.g. `javascript:`)
   // renders as plain text with the anchor dropped; a safe one as a normal anchor.

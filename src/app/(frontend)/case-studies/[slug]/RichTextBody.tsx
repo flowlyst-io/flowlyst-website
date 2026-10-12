@@ -4,6 +4,7 @@ import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical
 
 import type { CaseStudy } from '@/payload-types'
 import { SanitizedLink } from '@/utilities/richTextLinks'
+import { LIST_ITEM_MARGIN } from '@/utilities/richTextLists'
 
 /**
  * Renders a Case Study Lexical rich-text field (intro / challenge / solution /
@@ -73,6 +74,16 @@ export function RichTextBody({ data }: { data: CaseStudyRichText }) {
               {children}
             </Tag>
           )
+        },
+        // Delegates to the default so a wrapper item holding only a sub-list keeps its
+        // `list-style-type: none` (no stray empty bullet beside nested lists).
+        listitem: (args) => {
+          const base = defaultConverters.listitem
+          const item = typeof base === 'function' ? base(args) : base
+          if (!React.isValidElement<{ style?: React.CSSProperties }>(item)) return item
+          return React.cloneElement(item, {
+            style: { ...item.props.style, margin: LIST_ITEM_MARGIN },
+          })
         },
         // Sanitize link schemes: an unsafe href (e.g. `javascript:`) renders as plain
         // text (anchor dropped), a safe one as a normal anchor. Covers both node types.

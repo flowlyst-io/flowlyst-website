@@ -17,7 +17,7 @@ Drafted 2026-10-08 from `dig`, `curl` and the code on `main` (b173772).
 ## Go / no-go gates (all must be true before step 1)
 
 - [ ] PR #78 (legal pages, cookie consent) and PR #80 (perf/a11y) are merged and staging has redeployed. Today `https://flowlyst-website.vercel.app/privacy` returns **404**; the legacy footer links to it, so launching without #78 ships dead legal links.
-- [ ] Legal copy on `/privacy`, `/terms`, `/cookies` signed off by you (#70).
+- [x] Legal copy on `/privacy`, `/terms`, `/cookies` signed off by you (#70), 2026-10-11; draft notice removed.
 - [ ] `/ai-chat` decided (#70): redirect target, or leave to 404. If redirect, an agent adds a 301 in `next.config.ts` and it is merged **before** step 9.
 - [ ] Decisions in "Open decisions" at the bottom are answered.
 
