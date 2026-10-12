@@ -291,7 +291,7 @@ both hit as traps in practice — read the warning below before clicking Create.
 > Merely **connecting** a store to the project now uses **OIDC**: it injects only
 > `BLOB_STORE_ID` + `BLOB_WEBHOOK_PUBLIC_KEY` (and a per-deploy `VERCEL_OIDC_TOKEN`)
 > — **not** `BLOB_READ_WRITE_TOKEN`. But our adapter,
-> `@payloadcms/storage-vercel-blob@3.86.0`, requires the **static read-write token**
+> `@payloadcms/storage-vercel-blob`, requires the **static read-write token**
 > and has **no OIDC support** (none upstream either, as of 2026-07). So OIDC alone
 > leaves media broken. You must get `BLOB_READ_WRITE_TOKEN` in via step 4 (or the
 > Quickstart box).
