@@ -480,7 +480,8 @@ export function DemoRequestForm() {
           style={{ color: 'var(--danger)', fontSize: 14, marginBottom: 16 }}
           data-testid="demo-form-error"
         >
-          Something went wrong sending your request. Please try again, or email us at info@flowlyst.io.
+          Something went wrong sending your request. Please try again, or email us at
+          info@flowlyst.io.
         </p>
       )}
 

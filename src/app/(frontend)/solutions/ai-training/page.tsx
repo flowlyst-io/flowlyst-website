@@ -79,7 +79,7 @@ const FORMATS: Format[] = [
   {
     num: '02',
     tag: 'Webinar series',
-    title: 'Paced multi-session series',
+    title: 'Paced multi-session',
     copy: 'Sessions paced over weeks. Better retention; works around district calendars.',
   },
   {
@@ -354,7 +354,7 @@ export default function AiTrainingPage() {
             eyebrow="Sample · half-day"
             title={
               <>
-                What <em>half-day</em> looks like.
+                What <em>a half-day</em> looks like.
               </>
             }
           />

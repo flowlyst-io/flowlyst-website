@@ -270,10 +270,10 @@ test.describe('Consulting page — server-rendered content (raw HTML, no JS)', (
   })
 })
 
-// ------------------- The free-assessment "one-time" line ------
+// ------------------- The free-assessment "one-time / by-exception" line ------
 
 test.describe('Consulting page — assessment framing (PRD §4.3)', () => {
-  test('the one-time clarifier is in the server HTML', async ({ request }) => {
+  test('the one-time / by-exception clarifier is in the server HTML', async ({ request }) => {
     // PRD §4.3: the free 30-min assessment is offered "one-time and by exception" —
     // flowlyst does NOT routinely give free assessments. That qualifier must be
     // server-rendered (crawlable, review invariant a), not just present after
@@ -281,8 +281,8 @@ test.describe('Consulting page — assessment framing (PRD §4.3)', () => {
     // adjudicated copy's glyph-free fragments (the sentence carries an em dash between
     // "offering" and "not", so each side is matched on its own clean fragment).
     const html = await fetchHtml(request, PATH)
-    expect(html, 'the one-time framing of the free assessment').toContain(
-      'The free 30-minute assessment is a one-time introduction',
+    expect(html, 'the by-exception framing of the free assessment').toContain(
+      'The free 30-minute assessment is a one-time, by-exception',
     )
     expect(html, 'the "not recurring" qualifier').toContain('not a recurring service')
   })

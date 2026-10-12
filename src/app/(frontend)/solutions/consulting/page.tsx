@@ -108,7 +108,7 @@ const USE_CASES: UseCase[] = [
   {
     stat: '98%',
     title: 'Rollout satisfaction',
-    copy: 'Average rating across AI consulting engagements, districts and departments.',
+    copy: 'AI consulting engagements rated across districts and departments.',
   },
 ]
 
@@ -372,7 +372,7 @@ export default function ConsultingPage() {
               clarifier sits at the page's assessment touchpoint — the "Assess"
               step above. Uses the existing `.small` support class; no new styles. */}
           <p className="small" style={{ marginTop: 32, maxWidth: '64ch' }}>
-            The free 30-minute assessment is a one-time introduction to the consulting
+            The free 30-minute assessment is a one-time, by-exception introduction to the consulting
             offering — not a recurring service.
           </p>
         </div>

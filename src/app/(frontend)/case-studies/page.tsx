@@ -114,8 +114,7 @@ export default async function CaseStudiesIndexPage() {
             How districts work <em>faster</em> with flowlyst.
           </h1>
           <p className="lead" style={{ fontSize: 22, maxWidth: '54ch' }}>
-            Challenge → solution → results, with the metrics and the people who lived
-            it.
+            Challenge → solution → results, with the metrics and the people who lived it.
           </p>
         </div>
       </section>

@@ -35,7 +35,7 @@ export function Footer() {
             <h3>
               See flowlyst running on <span className="accent">your district’s</span> budget.
             </h3>
-            <p>Questions first? Talk to someone who’s done your job.</p>
+            <p>Meet the person who’s done your job.</p>
           </div>
           <div className="footer__cta-actions">
             <Link href="/request-demo" className="btn btn--primary btn--lg">
