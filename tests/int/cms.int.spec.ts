@@ -277,7 +277,11 @@ describe('Scheduled publishing', () => {
     // action does — then run the queue (what the production Vercel Cron triggers).
     await payload.jobs.queue({
       task: 'schedulePublish',
-      input: { type: 'publish', doc: { relationTo: 'blog-posts', value: post.id }, user: admin.id },
+      input: {
+        type: 'publish',
+        doc: { relationTo: 'blog-posts', value: post.id },
+        user: { relationTo: 'users', value: admin.id },
+      },
       waitUntil: new Date(Date.now() - 60_000),
     })
     await payload.jobs.run()
