@@ -68,7 +68,7 @@ const OFFERINGS: Offering[] = [
     tag: 'Software',
     title: 'Budget Software',
     copy: 'Department entry, real-time tracking, salary projections, board-ready reports — supplementary to your ERP.',
-    cta: 'Learn more',
+    cta: 'Request a demo',
     href: '/solutions/budget-software',
   },
   {
