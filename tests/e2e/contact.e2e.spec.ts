@@ -11,6 +11,7 @@ import {
   typeMatches,
 } from '../helpers/rawHtml'
 import { E2E_BASE_URL } from '../helpers/serverURL'
+import { deriveFixtureEmail } from '../helpers/seedUser'
 
 /**
  * Contact page (issue #15, PRD §8.2 / §10 / §11), modelled on
@@ -40,9 +41,9 @@ const PATH = '/contact'
 
 // Own admin identity for this file — deliberately NOT the shared seedTestUser that
 // admin.e2e.spec.ts seeds/cleans, because Playwright runs spec files in parallel:
-// sharing that record races. A per-run stamped email keeps the files isolated.
+// sharing that record races. A per-file derived email keeps the files isolated.
 const CONTACT_ADMIN = {
-  email: `contact-e2e-admin-${Date.now()}@flowlyst.test`,
+  email: deriveFixtureEmail({ prefix: 'contact-e2e-admin' }),
   password: 'contact-e2e-password-123',
   name: 'Contact E2E Admin',
   role: 'admin' as const,

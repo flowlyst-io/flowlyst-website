@@ -40,6 +40,14 @@ describe('deriveFixtureEmail', () => {
     expect(new Set(emails).size).toBe(keys.length)
   })
 
+  it('differs across prefixes for the same (cwd, port) and honours the prefix', () => {
+    const key = { cwd: '/work/wt-a', port: 3000 }
+    expect(deriveFixtureEmail({ ...key, prefix: 'a' })).not.toBe(
+      deriveFixtureEmail({ ...key, prefix: 'b' }),
+    )
+    expect(deriveFixtureEmail({ ...key, prefix: 'x' })).toMatch(/^x-[0-9a-f]{12}@payloadcms\.com$/)
+  })
+
   it('defaults cwd/port from the environment when called with no args', () => {
     // The zero-arg call used by testUser must still yield a valid fixture address.
     expect(deriveFixtureEmail()).toMatch(/^dev-e2e-[0-9a-f]{12}@payloadcms\.com$/)

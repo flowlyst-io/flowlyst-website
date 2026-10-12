@@ -34,6 +34,13 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: `listitem: (args) => { const item = defaultConverters.listitem(args); return isValidElement(item) ? cloneElement(item, { style: { ...item.props.style, margin: LIST_ITEM_MARGIN } }) : item }`
 4. **Gotcha**: spread the existing `style`. Passing `style` alone replaces it, which brings back a stray bullet on sub-list wrappers and breaks checklist styling.
 
+### E2E specs derive their own Payload user email with `deriveFixtureEmail`
+
+1. **Rule**: an e2e spec that needs its own Payload user derives the email with `deriveFixtureEmail({ prefix: '<spec>-e2e-admin' })`, never `Date.now()`, and seeds it by deleting then creating.
+2. **Why**: the email is stable within one checkout and port, so re-runs and crash recovery reuse the row instead of stranding one; it is distinct per spec, checkout and port, so parallel files and worktrees never delete each other's user (#46, #77).
+3. **Minimal example**: `const email = deriveFixtureEmail({ prefix: 'contact-e2e-admin' })`, then delete where email equals it, then create.
+4. **Gotcha**: every spec file needs its own prefix; the default `dev-e2e` belongs to `admin.e2e.spec.ts`. Isolation relies on files running in separate workers: turning on `fullyParallel` would run one file's `beforeAll` in several workers against the same row.
+
 ## The contract for this file
 
 **Every entry has four parts, in this order:**

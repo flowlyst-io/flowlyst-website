@@ -11,6 +11,7 @@ import {
   typeMatches,
 } from '../helpers/rawHtml'
 import { E2E_BASE_URL } from '../helpers/serverURL'
+import { deriveFixtureEmail } from '../helpers/seedUser'
 
 /**
  * Keynotes solution page (issue #13, PRD §4.4 / §7 / §8 / §10).
@@ -39,9 +40,9 @@ const PATH = '/solutions/keynotes'
 // (dev-e2e-<hash>@payloadcms.com, derived per checkout+port) that admin.e2e.spec.ts
 // seeds/cleans, because Playwright runs
 // spec files in parallel: sharing that record races (one file's afterAll deletes the
-// user mid-login for the other). A per-run stamped email keeps the two isolated.
+// user mid-login for the other). A per-file derived email keeps the two isolated.
 const KN_ADMIN = {
-  email: `kn-e2e-admin-${Date.now()}@flowlyst.test`,
+  email: deriveFixtureEmail({ prefix: 'kn-e2e-admin' }),
   password: 'kn-e2e-password-123',
   name: 'Keynotes E2E Admin',
   role: 'admin' as const,

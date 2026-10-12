@@ -11,6 +11,7 @@ import {
   typeMatches,
 } from '../helpers/rawHtml'
 import { E2E_BASE_URL } from '../helpers/serverURL'
+import { deriveFixtureEmail } from '../helpers/seedUser'
 
 /**
  * /request-demo — the highest-intent lead page (issue #14, PRD §8.1 / §10, invariant d).
@@ -36,7 +37,7 @@ const PATH = '/request-demo'
 // Own admin identity for this file — NOT the shared seedTestUser (admin.e2e seeds
 // that one); Playwright runs spec files in parallel and a shared record races.
 const DEMO_ADMIN = {
-  email: `demo-e2e-admin-${Date.now()}@flowlyst.test`,
+  email: deriveFixtureEmail({ prefix: 'demo-e2e-admin' }),
   password: 'demo-e2e-password-123',
   name: 'Request-Demo E2E Admin',
   role: 'admin' as const,
