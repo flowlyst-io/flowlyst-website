@@ -30,10 +30,19 @@ const DEFAULT_INTERNAL_TO = 'info@flowlyst.io'
 
 const emailConfigured = (): boolean => Boolean(envValue('RESEND_API_KEY'))
 
+/** Mutable only so tests can lower it; production always uses the default. */
+export const sendTimeout = { ms: 5000 }
+
 /**
  * Attempt one send, guarded. Skips (logs) when email isn't configured; on a real
  * failure logs and returns — it does not rethrow, so a caller in an `afterChange`
  * hook can never turn an email problem into a failed create.
+ *
+ * Hooks await this, not fire-and-forget: on serverless the function is frozen once
+ * the response returns, which kills an in-flight send. `afterChange` runs inside
+ * Payload's still-open write transaction and the Resend fetch has no timeout, so
+ * the send is raced against `sendTimeout.ms`; otherwise a hung call would hold the
+ * transaction until the function is killed and the lead row would be lost.
  */
 async function trySend(
   payload: Payload,
@@ -44,10 +53,22 @@ async function trySend(
     payload.logger.info(`[email] skipped (RESEND_API_KEY unset): ${purpose} → ${to}`)
     return
   }
+  let timer: ReturnType<typeof setTimeout> | undefined
   try {
     // `from` is omitted deliberately — the Resend adapter supplies
     // defaultFromAddress (EMAIL_FROM).
-    await payload.sendEmail({ to, replyTo, subject, text })
+    const sent = Promise.resolve(payload.sendEmail({ to, replyTo, subject, text })).then(
+      () => 'sent' as const,
+    )
+    const timedOut = new Promise<'timeout'>((resolve) => {
+      timer = setTimeout(() => resolve('timeout'), sendTimeout.ms)
+    })
+    if ((await Promise.race([sent, timedOut])) === 'timeout') {
+      // A late rejection from the abandoned send must not become an unhandled rejection.
+      sent.catch(() => {})
+      payload.logger.error(`[email] send TIMED OUT (${purpose} → ${to}) — persistence unaffected`)
+      return
+    }
     payload.logger.info(`[email] sent: ${purpose} → ${to}`)
   } catch (err) {
     // Only message and cause are logged — never the API key or the email body.
@@ -60,6 +81,8 @@ async function trySend(
     payload.logger.error(
       `[email] send FAILED (${purpose} → ${to}) — persistence unaffected: ${message}${causeInfo}`,
     )
+  } finally {
+    clearTimeout(timer)
   }
 }
 

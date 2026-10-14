@@ -50,8 +50,6 @@ export const SpeakingRequests: CollectionConfig = {
     afterChange: [
       async ({ doc, operation, req }) => {
         if (operation === 'create')
-          // Awaited, not fire-and-forget: on serverless the function is frozen once the
-          // response returns, which kills an in-flight send. The notifier never throws.
           await notifySpeakingRequest(
             req.payload,
             doc as SpeakingRequest,

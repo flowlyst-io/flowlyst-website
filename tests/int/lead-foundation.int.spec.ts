@@ -26,6 +26,7 @@ import {
   notifyContactMessage,
   notifyDemoRequest,
   notifySpeakingRequest,
+  sendTimeout,
 } from '@/email/leadNotifications'
 
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
@@ -753,6 +754,28 @@ describe('Lead hooks — the send settles before create resolves, and never fail
         expect(send).toHaveBeenCalledTimes(1)
         expect(await countLeads(c, 'rejects')).toBe(1)
       } finally {
+        send.mockRestore()
+        vi.unstubAllEnvs()
+      }
+    })
+
+    it(`${c.label}: a send that never resolves is abandoned at the timeout and the row persists`, async () => {
+      vi.stubEnv('RESEND_API_KEY', 'test-key-int')
+      const previous = sendTimeout.ms
+      sendTimeout.ms = 150
+      const send = vi.spyOn(payload, 'sendEmail').mockImplementation(() => new Promise(() => {}))
+      const errorSpy = vi.spyOn(payload.logger, 'error')
+      try {
+        const started = Date.now()
+        const created = await createLead(c, 'hangs')
+        expect(created.id).toBeDefined()
+        expect(Date.now() - started).toBeLessThan(3000)
+        expect(send).toHaveBeenCalledTimes(1)
+        expect(errorSpy.mock.calls.some(([m]) => String(m).includes('send TIMED OUT'))).toBe(true)
+        expect(await countLeads(c, 'hangs')).toBe(1)
+      } finally {
+        sendTimeout.ms = previous
+        errorSpy.mockRestore()
         send.mockRestore()
         vi.unstubAllEnvs()
       }

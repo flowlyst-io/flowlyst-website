@@ -57,10 +57,10 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 
 ### Network side effects in Payload hooks are awaited, never `void`-ed
 
-1. **Rule**: a Payload hook that calls the network (sending email, for example) `await`s the call. The callee catches and logs its own errors, so the save never fails because of it.
+1. **Rule**: a Payload hook that calls the network (sending email, for example) `await`s the call. The callee catches and logs its own errors, so the save never fails because of it, and the awaited call is time-bounded (the callee races a timeout and logs).
 2. **Why**: Vercel freezes a serverless function once the response returns, which drops an in-flight request. Production lost a demo-request notification this way, logged as `fetch failed` (PR #118).
 3. **Minimal example**: `afterChange: [async ({ doc, operation, req }) => { if (operation === 'create') await notifyDemoRequest(req.payload, doc, …) }]`, where `notifyDemoRequest` sends through `trySend`, which catches every send error.
-4. **Gotcha**: once awaited, an exception that escapes the callee fails the request and can roll back the write it follows. The callee must never throw, and that includes the code that runs before its own `try`.
+4. **Gotcha**: once awaited, an exception that escapes the callee fails the request and can roll back the write it follows. The callee must never throw, and that includes the code that runs before its own `try`. `afterChange` runs inside the still-open write transaction, so an unbounded remote call holds the row hostage: if the function is killed, the lead is lost. A send can also go out for a row whose commit then fails (acceptable: the lead still reaches the inbox).
 
 ## The contract for this file
 
