@@ -111,7 +111,7 @@ export default function RequestDemoPage() {
               >
                 Average response
               </div>
-              <div style={{ fontSize: 18, fontWeight: 800 }}>Same business day, from Aziz.</div>
+              <div style={{ fontSize: 18, fontWeight: 800 }}>Same business day.</div>
             </div>
           </div>
 
