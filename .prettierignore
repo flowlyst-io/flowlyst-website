@@ -18,4 +18,5 @@ src/migrations/
 .codery/
 design/
 docs/PRD.md
+docs/README.md
 CLAUDE.md

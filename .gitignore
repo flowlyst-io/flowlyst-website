@@ -41,3 +41,6 @@ next-env.d.ts
 # Codery telemetry (machine-local)
 .codery/telemetry/
 .codery/run/
+
+# Codery: stays local
+.worktrees/
