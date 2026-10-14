@@ -3,7 +3,7 @@
 import React, { useId, useState } from 'react'
 
 import { RecaptchaNotice } from '@/components/RecaptchaNotice'
-import { CONTACT_REASONS, type ContactReason } from '@/utilities/contactReasons'
+import { CONTACT_REASONS, type ContactReason } from '@/utilities/contactReasonsShared'
 import { getRecaptchaToken, loadRecaptcha } from '@/utilities/recaptchaClient'
 import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
 

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 import { ContactForm } from '@/components/ContactForm'
-import { toContactReason } from '@/utilities/contactReasons'
+import { toContactReason } from '@/utilities/contactReasonsShared'
 import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
@@ -129,7 +129,7 @@ export default async function ContactPage({
           </div>
 
           {/* Interactive form — the page's only client island. */}
-          <ContactForm initialReason={initialReason} />
+          <ContactForm key={initialReason ?? ''} initialReason={initialReason} />
         </div>
       </div>
     </section>

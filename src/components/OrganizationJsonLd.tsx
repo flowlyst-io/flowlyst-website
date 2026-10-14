@@ -18,7 +18,7 @@ export function OrganizationJsonLd() {
     url: getServerURL(),
     email: 'info@flowlyst.io',
     description:
-      'flowlyst gives K–12 public school district leaders software, training, and consulting built and delivered by someone who used to do their jobs.',
+      'flowlyst gives K–12 public school district leaders software, training, and consulting built and delivered by a former school CFO.',
     areaServed: 'US',
   }
   return (

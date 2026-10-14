@@ -57,6 +57,13 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: the smallest snippet that shows the shape. Minimal, not representative.
 4. **Gotcha**: the thing that bites when you follow the rule naively. If there genuinely isn't one, say so; don't invent one.
 
+### URL-driven form defaults are read by the page, never by the island
+
+1. **Rule**: when a query parameter should prefill a form (e.g. `/contact?reason=pricing`), the server page reads it from `searchParams`, checks it against a dependency-free allow-list (here `toContactReason`), and passes the result to the client island as a prop; unknown values become `undefined`; the island never calls `useSearchParams()`.
+2. **Why**: `useSearchParams()` in a client island makes that part client-only and drops the form from the server HTML (invariant a); the allow-list keeps a hand-written or malicious param from reaching the select or the DB enum.
+3. **Minimal example**: `const { reason } = await searchParams; <ContactForm key={toContactReason(reason) ?? ''} initialReason={toContactReason(reason)} />`, island `useState({ ...INITIAL, reason: initialReason ?? '' })`.
+4. **Gotcha**: island state only takes the prop on first mount, so key the island on it; reading `searchParams` makes the page dynamic, which is acceptable only when the page makes no DB calls.
+
 **Entries arrive from the code reviewer.** The independent reviewer reads every diff with fresh eyes, which is exactly the position from which a new convention is visible. Its verdict says whether the change **established** a convention, which becomes an entry here, or **violated** one, which is a finding to fix in the review loop. Nobody writes speculative conventions in advance: an entry describes what a merged change actually did.
 
 **This is house style, not tutorial.** It says what this codebase does, not how the language works. And it obeys the house rules below, in particular no code-knowable facts: an entry that lists exact signatures or versions is stale the moment someone edits the code.

@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
 import { notifyContactMessage } from '@/email/leadNotifications'
 import type { ContactMessage } from '@/payload-types'
-import { CONTACT_REASONS } from '@/utilities/contactReasons'
+import { CONTACT_REASONS } from '@/utilities/contactReasonsShared'
 import { recaptchaGuard, recaptchaOutcomeOf } from '@/utilities/recaptcha'
 
 /**
