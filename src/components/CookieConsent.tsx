@@ -60,8 +60,8 @@ export function CookieConsent() {
     >
       <div className="cookie-consent__inner">
         <p className="cookie-consent__text">
-          We use a strictly necessary cookie to remember this choice. We’d also like to set optional
-          cookies to improve the site — none run until you accept. Read our{' '}
+          We only use essential cookies, including one that remembers this choice. If we ever add
+          optional ones, none will run until you accept. Read our{' '}
           <Link href="/cookies" className="cookie-consent__link">
             cookie policy
           </Link>
