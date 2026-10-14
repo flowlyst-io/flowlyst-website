@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
 import { notifyContactMessage } from '@/email/leadNotifications'
 import type { ContactMessage } from '@/payload-types'
+import { CONTACT_REASONS } from '@/utilities/contactReasonsShared'
 import { recaptchaGuard, recaptchaOutcomeOf } from '@/utilities/recaptcha'
 
 /**
@@ -65,16 +66,8 @@ export const ContactMessages: CollectionConfig = {
     {
       name: 'reason',
       type: 'select',
-      // Options aligned to the settled ContactPage design (design/site/pages.jsx):
-      // Press / Partnership / Training question / Support / Other. NOTE: the prior
-      // `general` value is intentionally dropped — the catch-all is now `other`.
-      options: [
-        { label: 'Press', value: 'press' },
-        { label: 'Partnership', value: 'partnership' },
-        { label: 'Training question', value: 'training' },
-        { label: 'Support', value: 'support' },
-        { label: 'Other', value: 'other' },
-      ],
+      // The retired `general` value is intentionally gone — the catch-all is `other`.
+      options: CONTACT_REASONS.map((r) => ({ ...r })),
     },
     { name: 'message', type: 'textarea', required: true },
     // Anti-spam honeypot (SpeakingRequests template) — hidden, server-validated.

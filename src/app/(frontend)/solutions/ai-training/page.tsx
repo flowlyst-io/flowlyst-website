@@ -190,7 +190,7 @@ export default function AiTrainingPage() {
         }
         lead="Customized workshops for the office that runs the district. Designed for K-12 leaders — adaptable to other organizations."
         primaryCta="Book a 15-min discussion"
-        primaryHref="/contact"
+        primaryHref="/contact?reason=training"
         secondaryCta="See sample agenda"
         secondaryHref="#agenda"
         badges={['100% satisfaction', '2,000+ leaders trained', '500+ hours saved']}

@@ -12,13 +12,13 @@ Drafted 2026-10-08 from `dig`, `curl` and the code on `main` (b173772).
 - **Who holds what:** registrar is **Namecheap**; nameservers are `ns-cloud-d1..d4.googledomains.com` (Google Cloud DNS). **Edit records in the DNS host (Google Cloud DNS), not in Namecheap's DNS panel**, which is not authoritative. Do not change the nameservers.
 - **Email must survive:** Google Workspace MX (`aspmx.l.google.com` priority 1, `alt1`/`alt2` priority 5, `alt3`/`alt4` priority 10), SPF `v=spf1 include:_spf.google.com ~all`, a Google DKIM key at `google._domainkey`, and DMARC at `_dmarc`. **Touch none of them.** Only the apex `A` and the `www` record change.
 - **Legacy `www` behaviour:** `https://www.flowlyst.io/*` 301s to the bare host. The new site must do the same (step 8).
-- **Legacy URLs:** 15 of 16 live URLs keep identical paths on the new site (inventory on #20). `/resources/case-studies` is 301'd in `next.config.ts`. **`/ai-chat` is live on legacy and 404s on the new site**, pending your decision on #70.
+- **Legacy URLs:** 15 of 16 live URLs keep identical paths on the new site (inventory on #20). `/resources/case-studies` is 301'd in `next.config.ts`. **`/ai-chat` is live on legacy and 404s on the new site**, by your decision (2026-10-13): the page is removed and the URL is left to 404, with no redirect.
 
 ## Go / no-go gates (all must be true before step 1)
 
 - [ ] PR #78 (legal pages, cookie consent) and PR #80 (perf/a11y) are merged and staging has redeployed. Today `https://flowlyst-website.vercel.app/privacy` returns **404**; the legacy footer links to it, so launching without #78 ships dead legal links.
 - [x] Legal copy on `/privacy`, `/terms`, `/cookies` signed off by you (#70), 2026-10-11; draft notice removed.
-- [ ] `/ai-chat` decided (#70): redirect target, or leave to 404. If redirect, an agent adds a 301 in `next.config.ts` and it is merged **before** step 9.
+- [x] `/ai-chat` decided (#70, 2026-10-13): removed, left to 404. No redirect.
 - [ ] Decisions in "Open decisions" at the bottom are answered.
 
 ## T-minus schedule
@@ -79,9 +79,10 @@ Vercel, project, Settings, Environment Variables. Set the values for the **Produ
 | `PREVIEW_SECRET`                 | **secret, you generate**     | `<PREVIEW_SECRET>` (step 2)                                                     | Prod, Preview                                | Absent means draft preview is denied (no fallback).                                                                                                                                                                                                                                    |
 | `RESEND_API_KEY`                 | **secret, Resend generates** | `re_...` from step 6                                                            | Prod (and Preview if you want staging email) | Unset means submissions persist but no email is sent (logged `skipped`).                                                                                                                                                                                                               |
 | `EMAIL_FROM`                     | not secret                   | `noreply@flowlyst.io` (must be on the Resend-verified domain)                   | Prod                                         | Defaults to this value if unset, but the domain must still be verified.                                                                                                                                                                                                                |
-| `SALES_NOTIFY_TO`                | not secret                   | e.g. `sales@flowlyst.io`                                                        | Prod                                         | Demo requests. Defaults to `info@flowlyst.io`.                                                                                                                                                                                                                                         |
-| `CONTACT_NOTIFY_TO`              | not secret                   | e.g. `info@flowlyst.io`                                                         | Prod                                         | Contact form. Default `info@flowlyst.io`.                                                                                                                                                                                                                                              |
-| `SPEAKING_NOTIFY_TO`             | not secret                   | e.g. `speaking@flowlyst.io`                                                     | Prod                                         | Keynote requests. Default falls back to `SALES_NOTIFY_TO`, then `info@flowlyst.io`.                                                                                                                                                                                                    |
+| `LEAD_NOTIFY_TO`                 | not secret                   | e.g. `leads@flowlyst.io`                                                        | Prod                                         | Set this one: default recipient for demo, contact and speaking notifications. Defaults to `info@flowlyst.io`.                                                                                                                                                                          |
+| `SALES_NOTIFY_TO`                | not secret                   | e.g. `sales@flowlyst.io`                                                        | Prod                                         | Optional override for demo requests. Defaults to `LEAD_NOTIFY_TO`.                                                                                                                                                                                                                     |
+| `CONTACT_NOTIFY_TO`              | not secret                   | e.g. `info@flowlyst.io`                                                         | Prod                                         | Optional override for the contact form. Default `LEAD_NOTIFY_TO`.                                                                                                                                                                                                                      |
+| `SPEAKING_NOTIFY_TO`             | not secret                   | e.g. `speaking@flowlyst.io`                                                     | Prod                                         | Optional override for keynote requests. Falls back to `SALES_NOTIFY_TO`, then `LEAD_NOTIFY_TO`.                                                                                                                                                                                        |
 | `NEXT_PUBLIC_SERVER_URL`         | not secret                   | `https://flowlyst.io`                                                           | Prod                                         | **Do not set yet: set it in step 7b.** Drives sitemap `<loc>`, the robots `Sitemap:` line, canonical/OG URLs, JSON-LD. **Set this explicitly**; do not rely on `VERCEL_PROJECT_PRODUCTION_URL`, which Vercel sets automatically and which may still resolve to the `.vercel.app` host. |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | not secret                   | Site key from step 2b                                                           | Prod, Preview                                | Inlined at build time, so redeploy after setting it. With either reCAPTCHA key unset, reCAPTCHA is off.                                                                                                                                                                                |
 | `RECAPTCHA_SECRET_KEY`           | **secret, Google generates** | Secret key from step 2b                                                         | Prod, Preview                                | Server-side token check.                                                                                                                                                                                                                                                               |
@@ -122,7 +123,7 @@ Skip on Path A (the schema is already there). On Path B follow `staging.md` Part
 - Add exactly what Resend displays (typically DKIM `resend._domainkey` and an SPF/MX pair on a `send` subdomain). They do not collide with the Workspace records.
 - **If Resend asks for a root-level SPF `TXT`, do not add a second SPF record** (two SPF records invalidate both). Merge into the existing one: `v=spf1 include:_spf.google.com include:<resend-include> ~all`.
 - **Do not edit or remove** MX, `google._domainkey` or `_dmarc`.
-  Then set `RESEND_API_KEY` (and the `*_NOTIFY_TO` vars) per step 3 and redeploy.
+  Then set `RESEND_API_KEY` (and `LEAD_NOTIFY_TO`) per step 3 and redeploy.
   **Verify:** Resend shows `flowlyst.io` **Verified**; `dig MX flowlyst.io +short` still returns the five Google hosts.
 
 ## Step 7 — Port the blog content (must run BEFORE the DNS flip)
@@ -167,7 +168,7 @@ for p in / /about /contact /request-demo /blog /solutions/ai-training /solutions
 curl -sI https://flowlyst-website.vercel.app/resources/case-studies | grep -iE '^(HTTP|location)'
 ```
 
-**Verify:** every line is `200`; `/resources/case-studies` is `301` with `location: /case-studies`. `/ai-chat` is the only known mismatch (your #70 decision); if a redirect was chosen it should be `301` here too.
+**Verify:** every line is `200`; `/resources/case-studies` is `301` with `location: /case-studies`. `/ai-chat` is not in the loop: it is removed and 404s by your 2026-10-13 decision (#70).
 
 ## Step 10 — The DNS flip
 
@@ -249,5 +250,5 @@ Email is unaffected by a flip or a rollback because MX is never changed. **Do no
 
 1. **Vercel Hobby is not licensed for commercial use.** This is a company marketing site; Vercel's terms point to **Pro** (about $20 per user per month) for it. Hobby also caps Speed Insights events and cron cadence. Spending call, yours.
 2. **Production database:** reuse the staging Neon project (recommended, Path A) or create a fresh one (Path B)?
-3. **`/ai-chat`:** rebuild later, 301 to `/request-demo` (or `/contact`, `/`), or let it 404 (#70)?
+3. **`/ai-chat`:** decided 2026-10-13: removed, let it 404 (no redirect) (#70).
 4. **Speed Insights:** approve `@vercel/speed-insights` (technology gate; ADR needed) or use Lighthouse plus Search Console only?

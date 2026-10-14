@@ -353,6 +353,55 @@ test.describe('Contact form — delivery path (invariant d)', () => {
     }
   })
 
+  test('?reason= preselects a known reason and ignores an unknown one', async ({
+    page,
+    request,
+  }) => {
+    for (const reason of ['training', 'assessment', 'pricing']) {
+      await page.goto(`${PATH}?reason=${reason}`)
+      await expect(page.getByLabel('Reason'), `?reason=${reason} preselects`).toHaveValue(reason)
+    }
+    // Preselection is server-rendered, so it is in the HTML before hydration.
+    const html = await fetchHtml(request, `${PATH}?reason=pricing`)
+    expect(html).toMatch(
+      /<option[^>]*value="pricing"[^>]*selected|<option[^>]*selected[^>]*value="pricing"/,
+    )
+
+    await page.goto(`${PATH}?reason=not-a-reason`)
+    await expect(page.getByLabel('Reason'), 'unknown reason falls back to Choose…').toHaveValue('')
+  })
+
+  test('a submission arriving from the pricing CTA persists reason "pricing"', async ({ page }) => {
+    test.setTimeout(90_000)
+    const stamp = Date.now()
+    const name = `E2E Pricing ${stamp}`
+    const email = `e2e-pricing-${stamp}@district.k12.us`
+    const message = `E2E pricing message ${stamp}.`
+
+    await page.goto(`${PATH}?reason=pricing`)
+    await page.getByLabel('Name').fill(name)
+    await page.getByLabel('Work email').fill(email)
+    await page.getByLabel('Message').fill(message)
+    await page.getByRole('button', { name: /send message/i }).click()
+    await expect(page.getByTestId('contact-form-success')).toBeVisible()
+
+    const ctx = await adminContext()
+    try {
+      const body = (await (await ctx.get(whereEmail(email))).json()) as {
+        totalDocs: number
+        docs: Array<Record<string, unknown>>
+      }
+      expect(body.totalDocs, 'the pricing submission persisted').toBe(1)
+      const doc = body.docs[0]
+      expect(doc.name).toBe(name)
+      expect(doc.message).toBe(message)
+      expect(doc.reason, 'the preselected reason persisted').toBe('pricing')
+      await ctx.delete(`/api/contact-messages/${doc.id}`)
+    } finally {
+      await ctx.dispose()
+    }
+  })
+
   test('without reCAPTCHA keys the form loads no Google script and sends no token', async ({
     page,
     request,

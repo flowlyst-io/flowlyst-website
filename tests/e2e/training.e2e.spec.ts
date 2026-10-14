@@ -393,6 +393,7 @@ test.describe('AI Training page — accessibility smoke', () => {
     const cta = page
       .locator('[data-testid="solution-hero"]')
       .getByRole('link', { name: /Book a 15-min discussion/i })
+    await expect(cta).toHaveAttribute('href', '/contact?reason=training')
     // Prove it's a real anchor in the tab order (a tabindex=-1 element would pass .focus()
     // alone), then confirm it can take focus.
     const tabindex = await cta.getAttribute('tabindex')

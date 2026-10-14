@@ -24,12 +24,12 @@ export const revalidate = 60
 export const metadata: Metadata = {
   title: 'flowlyst — Many tools, one platform for K–12 district budgeting',
   description:
-    'flowlyst gives K–12 public school district leaders budgeting software, AI training, and consulting — built and delivered by former school CFOs and district leaders.',
+    'flowlyst gives K–12 public school district leaders budgeting software, AI training, and consulting — built and delivered by a former school CFO.',
   alternates: { canonical: '/' },
   openGraph: {
     title: 'flowlyst — Many tools, one platform for K–12 district budgeting',
     description:
-      'Budgeting software, AI training, and consulting for K–12 public school districts, built by the people who used to do the job.',
+      'Budgeting software, AI training, and consulting for K–12 public school districts, built by someone who used to do the job.',
     url: '/',
     siteName: 'flowlyst',
     type: 'website',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'flowlyst — Many tools, one platform for K–12 district budgeting',
     description:
-      'Budgeting software, AI training, and consulting for K–12 public school districts, built by the people who used to do the job.',
+      'Budgeting software, AI training, and consulting for K–12 public school districts, built by someone who used to do the job.',
   },
 }
 
@@ -234,7 +234,7 @@ export default async function HomePage() {
               </h1>
               <p className="lead" style={{ fontSize: 22, maxWidth: '48ch', marginBottom: 40 }}>
                 {heroSubheadline ||
-                  'flowlyst replaces three apps and five spreadsheets with one platform — designed by former school CFOs, supplementary to your ERP.'}
+                  'flowlyst replaces three apps and five spreadsheets with one platform — designed by a former school CFO, supplementary to your ERP.'}
               </p>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <Link href="/request-demo" className="btn btn--primary btn--lg">
@@ -378,7 +378,7 @@ export default async function HomePage() {
       >
         <div className="container" style={{ maxWidth: 1100 }}>
           <div className="eyebrow" style={{ marginBottom: 48 }}>
-            Aziz Aghayev · Founder & Lead Consultant
+            Aziz Aghayev · Founder & CEO
           </div>
           <blockquote className="pull" style={{ color: 'var(--c-ink)', margin: 0 }}>
             “I sat in <em>your seat</em> for fifteen years. flowlyst is the partner I wished I’d had
@@ -389,7 +389,7 @@ export default async function HomePage() {
             <div>
               <div style={{ fontSize: 16, fontWeight: 800 }}>Aziz Aghayev</div>
               <div style={{ fontSize: 14, color: 'var(--c-ink-3)', marginTop: 4 }}>
-                Founder &amp; Lead Consultant · former school CFO · 15+ years
+                Founder &amp; CEO · former school CFO · 15+ years
               </div>
             </div>
             <Link href="/about" className="btn btn--ghost btn--sm" style={{ marginLeft: 'auto' }}>

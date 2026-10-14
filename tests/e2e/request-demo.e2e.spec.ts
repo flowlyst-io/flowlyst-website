@@ -176,7 +176,7 @@ test.describe('Request-demo page — server-rendered content (raw HTML, no JS)',
     for (const bullet of [
       'we open the product and show you',
       'Tailored to your district size and priorities',
-      'Aziz or a senior consultant on the call',
+      'Aziz on the call',
       '1-week typical implementation',
     ]) {
       expect(html, `bullet "${bullet}"`).toContain(bullet)

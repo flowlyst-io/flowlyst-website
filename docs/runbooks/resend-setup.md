@@ -7,7 +7,7 @@
 
 - `payload.config.ts` wires the Resend adapter **only when `RESEND_API_KEY` is set**. Unset → Payload logs email to the console; the notifier helpers (`src/email/leadNotifications.ts`) skip-and-log before attempting a send.
 - Email failure can **never** fail a form submission: notifiers run in `afterChange` (after the DB write) and never throw.
-- `from` is `EMAIL_FROM` (must be a Resend-verified sender). Recipients come from the `*_NOTIFY_TO` vars below (default `info@flowlyst.io`).
+- `from` is `EMAIL_FROM` (must be a Resend-verified sender). Recipients come from `LEAD_NOTIFY_TO` (set this one); the per-form `*_NOTIFY_TO` vars below are optional overrides (final default `info@flowlyst.io`).
 
 ## Steps
 
@@ -28,13 +28,14 @@
 
 Project → **Settings → Environment Variables** (Production, and Preview if you want staging email). Add:
 
-| Variable             | Value                       | Required | Notes                                                                                                  |
-| -------------------- | --------------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
-| `RESEND_API_KEY`     | `re_...` from step 1        | **Yes**  | Enables sending. Unset = skip-and-log.                                                                 |
-| `EMAIL_FROM`         | `noreply@flowlyst.io`       | **Yes**  | Verified sender (step 2). Defaults to `noreply@flowlyst.io` if unset, but that must still be verified. |
-| `SALES_NOTIFY_TO`    | e.g. `sales@flowlyst.io`    | No       | Demo-request notifications. Default `info@flowlyst.io`.                                                |
-| `CONTACT_NOTIFY_TO`  | e.g. `info@flowlyst.io`     | No       | Contact-form notifications (PRD §8.2). Default `info@flowlyst.io`.                                     |
-| `SPEAKING_NOTIFY_TO` | e.g. `speaking@flowlyst.io` | No       | Speaking-request notifications. Default → `SALES_NOTIFY_TO` → `info@flowlyst.io`.                      |
+| Variable             | Value                       | Required               | Notes                                                                                                  |
+| -------------------- | --------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| `RESEND_API_KEY`     | `re_...` from step 1        | **Yes**                | Enables sending. Unset = skip-and-log.                                                                 |
+| `EMAIL_FROM`         | `noreply@flowlyst.io`       | **Yes**                | Verified sender (step 2). Defaults to `noreply@flowlyst.io` if unset, but that must still be verified. |
+| `LEAD_NOTIFY_TO`     | e.g. `leads@flowlyst.io`    | **Yes** (set this one) | Default recipient for demo, contact and speaking notifications. Default `info@flowlyst.io`.            |
+| `SALES_NOTIFY_TO`    | e.g. `sales@flowlyst.io`    | No                     | Optional override: demo-request notifications. Default `LEAD_NOTIFY_TO`.                               |
+| `CONTACT_NOTIFY_TO`  | e.g. `info@flowlyst.io`     | No                     | Optional override: contact-form notifications (PRD §8.2). Default `LEAD_NOTIFY_TO`.                    |
+| `SPEAKING_NOTIFY_TO` | e.g. `speaking@flowlyst.io` | No                     | Optional override: speaking requests. Default → `SALES_NOTIFY_TO` → `LEAD_NOTIFY_TO`.                  |
 
 Redeploy (or let the next deploy pick them up).
 

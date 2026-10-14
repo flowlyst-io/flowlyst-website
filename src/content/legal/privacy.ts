@@ -12,8 +12,8 @@ import type { LegalDoc } from './types'
 export const privacyDoc: LegalDoc = {
   doc: 'privacy',
   title: 'Privacy policy',
-  sub: "How we collect, use, and protect data from people who use flowlyst's site and services.",
-  lastUpdated: 'October 11, 2026',
+  sub: 'How we collect, use, and protect data from people who use the flowlyst website.',
+  lastUpdated: 'October 13, 2026',
   sections: [
     {
       id: 'overview',
@@ -56,7 +56,7 @@ export const privacyDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'When you visit the site, our hosting provider records standard server and request information — such as your IP address, browser and device type, the pages you request, and the date and time — for security, diagnostics, and reliable operation. We also use a small number of cookies and similar technologies, described in our cookie policy. When you use one of our forms, Google reCAPTCHA sends device and interaction signals to Google to tell people from automated software.',
+          text: 'When you visit the site, our hosting provider records standard server and request information — such as your IP address, browser and device type, the pages you request, and the date and time — for security, diagnostics, and reliable operation. We also use a small number of cookies and similar technologies, described in our cookie policy. When you use one of our forms, Google reCAPTCHA sends device and interaction signals to Google to tell people apart from automated software.',
         },
         {
           kind: 'p',
@@ -83,7 +83,7 @@ export const privacyDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'We rely on your consent (which our forms ask for explicitly) and on our legitimate interest in responding to inquiries and running the site. We do not use your information to make automated decisions that produce legal or similarly significant effects about you.',
+          text: 'We rely on your consent (which our demo request form asks for explicitly, and which you give when you subscribe to the newsletter) and on our legitimate interest in responding to inquiries and running the site. We do not use your information to make automated decisions that produce legal or similarly significant effects about you.',
         },
       ],
     },
@@ -151,7 +151,7 @@ export const privacyDoc: LegalDoc = {
     },
     {
       id: 'children',
-      heading: "Children's privacy",
+      heading: 'Children’s privacy',
       blocks: [
         {
           kind: 'p',

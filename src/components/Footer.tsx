@@ -62,11 +62,13 @@ export function Footer() {
                 color: 'rgba(244, 241, 232, 0.6)',
               }}
             >
-              Built and delivered by the people who used to do your job.
+              Built and delivered by someone who used to do your job.
             </p>
-            <div style={{ marginTop: 18, fontSize: 13, color: 'rgba(244, 241, 232, 0.5)' }}>
-              info@flowlyst.io
-            </div>
+            <ul style={{ marginTop: 18 }}>
+              <li>
+                <a href="mailto:info@flowlyst.io">info@flowlyst.io</a>
+              </li>
+            </ul>
           </div>
           <div>
             <h4>Solutions</h4>

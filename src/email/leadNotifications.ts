@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 
 import type { ContactMessage, DemoRequest, SpeakingRequest } from '@/payload-types'
+import { CONTACT_REASONS } from '@/utilities/contactReasonsShared'
 import type { RecaptchaOutcome } from '@/utilities/recaptcha'
 
 /**
@@ -22,8 +23,8 @@ import type { RecaptchaOutcome } from '@/utilities/recaptcha'
  * come from env with sensible defaults — never invent key values.
  */
 
-// Default recipient for internal notifications when the per-purpose env var is
-// unset (PRD §8.2 names info@flowlyst.io for contact; a sensible shared default).
+// Last-resort recipient when neither the per-form override nor LEAD_NOTIFY_TO is set
+// (PRD §8.2 names info@flowlyst.io for contact).
 const DEFAULT_INTERNAL_TO = 'info@flowlyst.io'
 
 const emailConfigured = (): boolean => Boolean(process.env.RESEND_API_KEY)
@@ -35,9 +36,9 @@ const emailConfigured = (): boolean => Boolean(process.env.RESEND_API_KEY)
  */
 async function trySend(
   payload: Payload,
-  args: { to: string; subject: string; text: string; purpose: string },
+  args: { to: string; replyTo?: string; subject: string; text: string; purpose: string },
 ): Promise<void> {
-  const { to, subject, text, purpose } = args
+  const { to, replyTo, subject, text, purpose } = args
   if (!emailConfigured()) {
     payload.logger.info(`[email] skipped (RESEND_API_KEY unset): ${purpose} → ${to}`)
     return
@@ -45,7 +46,7 @@ async function trySend(
   try {
     // `from` is omitted deliberately — the Resend adapter supplies
     // defaultFromAddress (EMAIL_FROM).
-    await payload.sendEmail({ to, subject, text })
+    await payload.sendEmail({ to, replyTo, subject, text })
     payload.logger.info(`[email] sent: ${purpose} → ${to}`)
   } catch (err) {
     payload.logger.error(
@@ -75,7 +76,7 @@ export async function notifyDemoRequest(
   doc: DemoRequest,
   outcome?: RecaptchaOutcome,
 ): Promise<void> {
-  const to = process.env.SALES_NOTIFY_TO || DEFAULT_INTERNAL_TO
+  const to = process.env.SALES_NOTIFY_TO || process.env.LEAD_NOTIFY_TO || DEFAULT_INTERNAL_TO
   const interests = Array.isArray(doc.interests) ? doc.interests.join(', ') : ''
   const lines = [
     `New demo request from ${doc.fullName}${doc.title ? `, ${doc.title}` : ''}.`,
@@ -94,6 +95,7 @@ export async function notifyDemoRequest(
   const { subject, text } = markUnverified(outcome, `New demo request — ${doc.fullName}`, lines)
   await trySend(payload, {
     to,
+    replyTo: doc.workEmail,
     subject,
     text,
     purpose: 'demo-notification',
@@ -106,10 +108,10 @@ export async function notifyContactMessage(
   doc: ContactMessage,
   outcome?: RecaptchaOutcome,
 ): Promise<void> {
-  const to = process.env.CONTACT_NOTIFY_TO || DEFAULT_INTERNAL_TO
+  const to = process.env.CONTACT_NOTIFY_TO || process.env.LEAD_NOTIFY_TO || DEFAULT_INTERNAL_TO
   const lines = [
     `New contact message from ${doc.name} (${doc.email}).`,
-    `Reason: ${doc.reason || '—'}`,
+    `Reason: ${CONTACT_REASONS.find((r) => r.value === doc.reason)?.label ?? doc.reason ?? '—'}`,
     '',
     `Message:`,
     doc.message,
@@ -117,6 +119,7 @@ export async function notifyContactMessage(
   const { subject, text } = markUnverified(outcome, `New contact message — ${doc.name}`, lines)
   await trySend(payload, {
     to,
+    replyTo: doc.email,
     subject,
     text,
     purpose: 'contact-notification',
@@ -129,7 +132,11 @@ export async function notifySpeakingRequest(
   doc: SpeakingRequest,
   outcome?: RecaptchaOutcome,
 ): Promise<void> {
-  const to = process.env.SPEAKING_NOTIFY_TO || process.env.SALES_NOTIFY_TO || DEFAULT_INTERNAL_TO
+  const to =
+    process.env.SPEAKING_NOTIFY_TO ||
+    process.env.SALES_NOTIFY_TO ||
+    process.env.LEAD_NOTIFY_TO ||
+    DEFAULT_INTERNAL_TO
   const lines = [
     `New speaking request for "${doc.eventName}" (${doc.eventDate}).`,
     '',
@@ -148,6 +155,7 @@ export async function notifySpeakingRequest(
   )
   await trySend(payload, {
     to,
+    replyTo: doc.email,
     subject,
     text,
     purpose: 'speaking-notification',

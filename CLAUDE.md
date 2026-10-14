@@ -5,7 +5,7 @@ The ground-up **rewrite of flowlyst.io**, the marketing site for a US company se
 ## People
 
 - **Tural is the product owner.** He reviews by using the product on staging, never by reading code: *"imagine you are my engineering lead — I ask you to build something, you build it, you bring it to me, I use it and tell you what I feel about it"* (2026-07-12). He still makes the major architecture and stack decisions (see Tural decides).
-- **The lead (this main session, `fable`) owns engineering:** plans, briefs, adjudicates, owns quality. Aziz Aghayev (CEO of Flowlyst; site copy uses the title in PRD §6, never this one) is a brand and content stakeholder, not in the build loop.
+- **The lead (this main session, `fable`) owns engineering:** plans, briefs, adjudicates, owns quality. Aziz Aghayev (CEO of Flowlyst; site copy titles him "Founder & CEO", the only person on the site, per Tural 2026-10-13, overriding PRD §6's "Founder & Lead Consultant") is a brand and content stakeholder, not in the build loop.
 
 ## The squad
 

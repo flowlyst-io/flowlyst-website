@@ -52,8 +52,8 @@ const nextConfig: NextConfig = {
       // and PRD §11 specifies 301 for changed paths. (`statusCode` and `permanent` are
       // mutually exclusive.)
       //
-      // NOT redirected here: `/ai-chat` (parked as a Tural decision on #20 — the page
-      // was removed from the inventory, no destination chosen yet) and the www→bare
+      // NOT redirected here: `/ai-chat` (Tural, 2026-10-13: the page is removed and the
+      // legacy URL is left to 404 on purpose) and the www→bare
       // host canonical redirect (Vercel domain-level, a #11 cutover runbook item, not
       // an app redirect).
       {

@@ -20,8 +20,12 @@
 import { getPayload, type Payload, type PayloadRequest } from 'payload'
 
 import config from '@/payload.config'
-import type { ContactMessage, DemoRequest } from '@/payload-types'
-import { notifyContactMessage, notifyDemoRequest } from '@/email/leadNotifications'
+import type { ContactMessage, DemoRequest, SpeakingRequest } from '@/payload-types'
+import {
+  notifyContactMessage,
+  notifyDemoRequest,
+  notifySpeakingRequest,
+} from '@/email/leadNotifications'
 
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
@@ -216,7 +220,15 @@ describe('DemoRequests — consent gate, honeypot, PII, field locks', () => {
 // ========================== ContactMessages (#15/§8.2) =======================
 
 describe('ContactMessages — reason realignment, honeypot, PII', () => {
-  const REASONS = ['press', 'partnership', 'training', 'support', 'other'] as const
+  const REASONS = [
+    'press',
+    'partnership',
+    'training',
+    'assessment',
+    'pricing',
+    'support',
+    'other',
+  ] as const
 
   it('creates a valid public message (status defaults to "new")', async () => {
     const created = await payload.create({
@@ -233,7 +245,7 @@ describe('ContactMessages — reason realignment, honeypot, PII', () => {
     expect(created.reason).toBe('press')
   })
 
-  it('accepts each of the five realigned reason values', async () => {
+  it('accepts every reason value', async () => {
     for (const reason of REASONS) {
       const created = await payload.create({
         collection: 'contact-messages',
@@ -470,6 +482,62 @@ describe('Lead notifier — a mail problem never throws / never fails persistenc
       errorSpy.mockRestore()
       if (prevKey === undefined) delete process.env.RESEND_API_KEY
       else process.env.RESEND_API_KEY = prevKey
+    }
+  })
+
+  it('sets reply-to to the submitter on demo, contact and speaking notifications', async () => {
+    vi.stubEnv('RESEND_API_KEY', 'test-key-int')
+    const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
+    const speakingDoc = {
+      eventName: 'Summit',
+      eventDate: '2026-11-01',
+      contactName: 'Sam Host',
+      email: 'sam@host.org',
+    } as SpeakingRequest
+    try {
+      await notifyDemoRequest(payload, demoDoc)
+      await notifyContactMessage(payload, { ...contactDoc, reason: 'pricing' })
+      await notifySpeakingRequest(payload, speakingDoc)
+      expect(send.mock.calls.map(([m]) => m.replyTo)).toEqual([
+        'iron@district.k12.us',
+        'iron@example.org',
+        'sam@host.org',
+      ])
+      expect(String(send.mock.calls[1][0].text)).toContain('Reason: Pricing')
+    } finally {
+      send.mockRestore()
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('routes to the per-form override, else LEAD_NOTIFY_TO, else info@flowlyst.io', async () => {
+    vi.stubEnv('RESEND_API_KEY', 'test-key-int')
+    const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
+    const speakingDoc = { eventName: 'S', eventDate: 'd', email: 'a@b.org' } as SpeakingRequest
+    const sendAll = async () => {
+      send.mockClear()
+      await notifyDemoRequest(payload, demoDoc)
+      await notifyContactMessage(payload, contactDoc)
+      await notifySpeakingRequest(payload, speakingDoc)
+      return send.mock.calls.map(([m]) => m.to)
+    }
+    try {
+      for (const k of ['SALES', 'CONTACT', 'SPEAKING']) vi.stubEnv(`${k}_NOTIFY_TO`, '')
+      vi.stubEnv('LEAD_NOTIFY_TO', '')
+      expect(await sendAll()).toEqual(['info@flowlyst.io', 'info@flowlyst.io', 'info@flowlyst.io'])
+
+      vi.stubEnv('LEAD_NOTIFY_TO', 'lead@x.org')
+      expect(await sendAll()).toEqual(['lead@x.org', 'lead@x.org', 'lead@x.org'])
+
+      vi.stubEnv('SALES_NOTIFY_TO', 'sales@x.org')
+      expect(await sendAll()).toEqual(['sales@x.org', 'lead@x.org', 'sales@x.org'])
+
+      vi.stubEnv('CONTACT_NOTIFY_TO', 'contact@x.org')
+      vi.stubEnv('SPEAKING_NOTIFY_TO', 'speak@x.org')
+      expect(await sendAll()).toEqual(['sales@x.org', 'contact@x.org', 'speak@x.org'])
+    } finally {
+      send.mockRestore()
+      vi.unstubAllEnvs()
     }
   })
 

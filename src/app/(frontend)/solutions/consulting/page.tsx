@@ -27,7 +27,7 @@ const CANONICAL_PATH = '/solutions/consulting'
 
 const PAGE_TITLE = 'AI & Automation Consulting for K–12 Districts — flowlyst'
 const PAGE_DESCRIPTION =
-  'Hands-on AI & automation consulting for K–12 school districts — targeted projects or embedded, McKinsey-style engagements that automate routine work, delivered by former school CFOs.'
+  'Hands-on AI & automation consulting for K–12 school districts — targeted projects or embedded, McKinsey-style engagements that automate routine work, delivered by a former school CFO.'
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -134,7 +134,7 @@ export default function ConsultingPage() {
     name: 'flowlyst AI & Automation Consulting',
     serviceType: 'K–12 school district AI & automation consulting',
     description:
-      'Hands-on AI and automation consulting for K–12 public school districts — mapping and automating routine work across HR, the business office, and other central-office departments, delivered by former school CFOs and district leaders.',
+      'Hands-on AI and automation consulting for K–12 public school districts — mapping and automating routine work across HR, the business office, and other central-office departments, delivered by a former school CFO.',
     url: `${serverURL}${CANONICAL_PATH}`,
     areaServed: 'US',
     provider: {
@@ -159,12 +159,12 @@ export default function ConsultingPage() {
         eyebrow="AI & Automation Consulting"
         title={
           <>
-            Peer-to-peer consulting from <em>former school CFOs.</em>
+            Peer-to-peer consulting from <em>a former school CFO.</em>
           </>
         }
-        lead="Hands-on engagements that map and automate routine work across district operations. Not generalist ed-tech — operators who used to run your office."
+        lead="Hands-on engagements that map and automate routine work across district operations. Not generalist ed-tech — an operator who used to run your office."
         primaryCta="Free 30-min assessment"
-        primaryHref="/contact"
+        primaryHref="/contact?reason=assessment"
         secondaryCta="See case studies"
         secondaryHref="/case-studies"
         badges={['98% rollout satisfaction', 'Embedded engineers', 'McKinsey-style depth']}
