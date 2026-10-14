@@ -1,0 +1,10 @@
+{
+  "template": "product-owner",
+  "version": "0.1.0",
+  "params": {
+    "project_name": "flowlyst-website",
+    "test_command": "pnpm test",
+    "has_screen": true,
+    "extra_deny": ""
+  }
+}

@@ -1,4 +1,4 @@
-<!-- Rendered by Codery from catalog/code-comment-rules.md @ 0b9f8430 (D51). Maintained in place; CLAUDE.md is the contract. -->
+<!-- template: product-owner @ 0.1.0 — shared; change it through Codery -->
 
 # Comments in the code you write
 
