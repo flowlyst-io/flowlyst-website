@@ -62,7 +62,7 @@ export function Footer() {
                 color: 'rgba(244, 241, 232, 0.6)',
               }}
             >
-              Built and delivered by the people who used to do your job.
+              Built and delivered by someone who used to do your job.
             </p>
             <div style={{ marginTop: 18, fontSize: 13, color: 'rgba(244, 241, 232, 0.5)' }}>
               info@flowlyst.io

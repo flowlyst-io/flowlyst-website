@@ -32,7 +32,7 @@ const CANONICAL_PATH = '/blog'
 
 const PAGE_TITLE = 'The flowlyst blog — AI, school finance, and K–12 modernization'
 const PAGE_DESCRIPTION =
-  'Practical writing on AI, school finance, and district modernization — by Aziz Aghayev and the flowlyst team, former school CFOs and administrators.'
+  'Practical writing on AI, school finance, and district modernization — by Aziz Aghayev, flowlyst’s founder and a former school CFO.'
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -126,7 +126,7 @@ export default async function BlogIndexPage({
             Notes from the office that <em>runs the district.</em>
           </h1>
           <p className="lead" style={{ fontSize: 22, maxWidth: '52ch', marginBottom: 40 }}>
-            Practical posts on AI, school finance, and modernization. By Aziz and the flowlyst team.
+            Practical posts on AI, school finance, and modernization. By Aziz Aghayev.
           </p>
           <nav
             aria-label="Filter posts by category"

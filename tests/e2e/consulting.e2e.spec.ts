@@ -185,10 +185,10 @@ test.describe('Consulting page — server-rendered content (raw HTML, no JS)', (
   test('the hero is in the server HTML', async ({ request }) => {
     const html = await fetchHtml(request, PATH)
     expect(html, 'hero eyebrow').toContain('AI & Automation Consulting')
-    // "Peer-to-peer consulting from <em>former school CFOs.</em>" — the run is split by
+    // "Peer-to-peer consulting from <em>a former school CFO.</em>" — the run is split by
     // the <em>, so each side is matched on its own fragment.
     expect(html, 'hero headline (pre-em)').toContain('Peer-to-peer consulting from')
-    expect(html, 'hero headline (in-em)').toContain('former school CFOs')
+    expect(html, 'hero headline (in-em)').toContain('a former school CFO.')
     expect(html, 'hero lead').toMatch(/map and automate routine work/i)
     expect(html, 'hero primary CTA — the free assessment').toContain('Free 30-min assessment')
     expect(html, 'hero secondary CTA').toContain('See case studies')

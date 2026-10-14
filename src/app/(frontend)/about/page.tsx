@@ -28,15 +28,15 @@ import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 const serverURL = getServerURL()
 
 export const metadata: Metadata = {
-  title: 'About flowlyst — built by former school CFOs for K–12 districts',
+  title: 'About flowlyst — built by a former school CFO for K–12 districts',
   description:
     'flowlyst is K–12 first. Founder Aziz Aghayev is a former school CFO with 15+ years in district finance and a national speaker at ASBO International, NJASBO, and CPS.',
   alternates: { canonical: '/about' },
   openGraph: {
     images: [SOCIAL_IMAGE],
-    title: 'About flowlyst — built by former school CFOs for K–12 districts',
+    title: 'About flowlyst — built by a former school CFO for K–12 districts',
     description:
-      'K–12 first, by former school CFOs and admin leaders. Meet founder Aziz Aghayev and the operator-credibility mission behind flowlyst.',
+      'K–12 first, built by a former school CFO. Meet founder Aziz Aghayev and the operator-credibility mission behind flowlyst.',
     url: '/about',
     siteName: 'flowlyst',
     type: 'website',
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
   twitter: {
     images: [SOCIAL_IMAGE.url],
     card: 'summary_large_image',
-    title: 'About flowlyst — built by former school CFOs for K–12 districts',
+    title: 'About flowlyst — built by a former school CFO for K–12 districts',
     description:
-      'K–12 first, by former school CFOs and admin leaders. Meet founder Aziz Aghayev and the mission behind flowlyst.',
+      'K–12 first, built by a former school CFO. Meet founder Aziz Aghayev and the mission behind flowlyst.',
   },
 }
 
@@ -60,7 +60,7 @@ const personSchema = {
   '@type': 'Person',
   name: 'Aziz Aghayev',
   image: `${serverURL}/images/aziz-aghayev.jpg`,
-  jobTitle: 'Founder & Lead Consultant',
+  jobTitle: 'Founder & CEO',
   url: `${serverURL}/about`,
   worksFor: {
     '@type': 'Organization',
@@ -164,8 +164,8 @@ export default function AboutPage() {
             Now we build for it.
           </h1>
           <p className="lead" style={{ fontSize: 22, maxWidth: '54ch' }}>
-            flowlyst is K-12 first. The founder and consultants are former school CFOs and admin
-            leaders — not generalist ed-tech vendors. Everything we ship runs through that lens.
+            flowlyst is K-12 first. Our founder is a former school CFO — not a generalist ed-tech
+            vendor. Everything we ship runs through that lens.
           </p>
         </div>
       </section>
@@ -184,7 +184,7 @@ export default function AboutPage() {
             <FounderPortrait />
             <div>
               <div className="eyebrow" style={{ marginBottom: 32 }}>
-                Founder &amp; Lead Consultant
+                Founder &amp; CEO
               </div>
               <h2 className="h2" style={{ marginBottom: 32 }}>
                 Aziz Aghayev
@@ -203,8 +203,8 @@ export default function AboutPage() {
               </p>
               <p className="p" style={{ fontSize: 17, marginBottom: 32, maxWidth: '54ch' }}>
                 Aziz built flowlyst because the tools and partners he wished he had as a CFO didn’t
-                exist. Today he leads the consulting practice, delivers most keynotes, and writes
-                most of the blog.
+                exist. Today he leads the consulting practice, delivers the keynotes, and writes the
+                blog.
               </p>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 32 }}>
                 {AZIZ_CHIPS.map((chip) => (

@@ -282,7 +282,7 @@ test.describe('About — JSON-LD (Organization + Person)', () => {
     const node = person!.node
     expect(node.name, 'Person.name must be Aziz Aghayev').toBe('Aziz Aghayev')
     expect(typeof node.jobTitle, 'Person.jobTitle must be a string').toBe('string')
-    expect((node.jobTitle as string).length, 'Person.jobTitle non-empty').toBeGreaterThan(0)
+    expect(node.jobTitle, 'Person.jobTitle').toBe('Founder & CEO')
     // url is present and points at /about (port/host-agnostic).
     expect(typeof node.url, 'Person.url must be a string').toBe('string')
     expect(new URL(node.url as string).pathname, 'Person.url path must be "/about"').toBe('/about')

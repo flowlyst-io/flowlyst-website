@@ -46,7 +46,7 @@ export const metadata: Metadata = {
 const BULLETS = [
   'No slide deck — we open the product and show you',
   'Tailored to your district size and priorities',
-  'Aziz or a senior consultant on the call',
+  'Aziz on the call',
   '1-week typical implementation if it’s a fit',
 ]
 
@@ -111,9 +111,7 @@ export default function RequestDemoPage() {
               >
                 Average response
               </div>
-              <div style={{ fontSize: 18, fontWeight: 800 }}>
-                Same business day, from Aziz or a senior consultant.
-              </div>
+              <div style={{ fontSize: 18, fontWeight: 800 }}>Same business day, from Aziz.</div>
             </div>
           </div>
 

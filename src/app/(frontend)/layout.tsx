@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(serverURL),
   title: 'flowlyst',
   description:
-    'Software, training, and consulting for K–12 public school districts, built by former school CFOs and district leaders.',
+    'Software, training, and consulting for K–12 public school districts, built by a former school CFO.',
 }
 
 /**

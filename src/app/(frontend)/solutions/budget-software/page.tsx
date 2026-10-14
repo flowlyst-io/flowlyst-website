@@ -30,7 +30,7 @@ const CANONICAL_PATH = '/solutions/budget-software'
 
 const PAGE_TITLE = 'Budget Software for K–12 Districts — flowlyst'
 const PAGE_DESCRIPTION =
-  'Centralize your K–12 district’s budgeting — department entry, real-time tracking, and board-ready reports. Supplementary to your ERP, built by former school CFOs.'
+  'Centralize your K–12 district’s budgeting — department entry, real-time tracking, and board-ready reports. Supplementary to your ERP, built by a former school CFO.'
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -187,7 +187,7 @@ export default async function BudgetSoftwarePage() {
         primaryHref="/request-demo"
         secondaryCta="See pricing on a call"
         secondaryHref="/contact"
-        badges={['1-week implementation', 'No IT lift', 'Built by former school CFOs']}
+        badges={['1-week implementation', 'No IT lift', 'Built by a former school CFO']}
         visual={<ProductMock />}
       />
 
