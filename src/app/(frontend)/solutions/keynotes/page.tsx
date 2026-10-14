@@ -237,8 +237,7 @@ export default function KeynotesPage() {
                 Tell us about <em>your event.</em>
               </h2>
               <p className="lead">
-                We’ll come back within 3 business days with availability and topic-fit. Aziz
-                responds personally to event organizers.
+                We’ll come back within 3 business days with availability and topic-fit.
               </p>
             </div>
             <SpeakingRequestForm />
