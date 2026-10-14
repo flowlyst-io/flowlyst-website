@@ -12,13 +12,13 @@ Drafted 2026-10-08 from `dig`, `curl` and the code on `main` (b173772).
 - **Who holds what:** registrar is **Namecheap**; nameservers are `ns-cloud-d1..d4.googledomains.com` (Google Cloud DNS). **Edit records in the DNS host (Google Cloud DNS), not in Namecheap's DNS panel**, which is not authoritative. Do not change the nameservers.
 - **Email must survive:** Google Workspace MX (`aspmx.l.google.com` priority 1, `alt1`/`alt2` priority 5, `alt3`/`alt4` priority 10), SPF `v=spf1 include:_spf.google.com ~all`, a Google DKIM key at `google._domainkey`, and DMARC at `_dmarc`. **Touch none of them.** Only the apex `A` and the `www` record change.
 - **Legacy `www` behaviour:** `https://www.flowlyst.io/*` 301s to the bare host. The new site must do the same (step 8).
-- **Legacy URLs:** 15 of 16 live URLs keep identical paths on the new site (inventory on #20). `/resources/case-studies` is 301'd in `next.config.ts`. **`/ai-chat` is live on legacy and 404s on the new site**, pending your decision on #70.
+- **Legacy URLs:** 15 of 16 live URLs keep identical paths on the new site (inventory on #20). `/resources/case-studies` is 301'd in `next.config.ts`. **`/ai-chat` is live on legacy and 404s on the new site**, by your decision (2026-10-13): the page is removed and the URL is left to 404, with no redirect.
 
 ## Go / no-go gates (all must be true before step 1)
 
 - [ ] PR #78 (legal pages, cookie consent) and PR #80 (perf/a11y) are merged and staging has redeployed. Today `https://flowlyst-website.vercel.app/privacy` returns **404**; the legacy footer links to it, so launching without #78 ships dead legal links.
 - [x] Legal copy on `/privacy`, `/terms`, `/cookies` signed off by you (#70), 2026-10-11; draft notice removed.
-- [ ] `/ai-chat` decided (#70): redirect target, or leave to 404. If redirect, an agent adds a 301 in `next.config.ts` and it is merged **before** step 9.
+- [x] `/ai-chat` decided (#70, 2026-10-13): removed, left to 404. No redirect.
 - [ ] Decisions in "Open decisions" at the bottom are answered.
 
 ## T-minus schedule
@@ -167,7 +167,7 @@ for p in / /about /contact /request-demo /blog /solutions/ai-training /solutions
 curl -sI https://flowlyst-website.vercel.app/resources/case-studies | grep -iE '^(HTTP|location)'
 ```
 
-**Verify:** every line is `200`; `/resources/case-studies` is `301` with `location: /case-studies`. `/ai-chat` is the only known mismatch (your #70 decision); if a redirect was chosen it should be `301` here too.
+**Verify:** every line is `200`; `/resources/case-studies` is `301` with `location: /case-studies`. `/ai-chat` is not in the loop: it is removed and 404s by your 2026-10-13 decision (#70).
 
 ## Step 10 — The DNS flip
 
@@ -249,5 +249,5 @@ Email is unaffected by a flip or a rollback because MX is never changed. **Do no
 
 1. **Vercel Hobby is not licensed for commercial use.** This is a company marketing site; Vercel's terms point to **Pro** (about $20 per user per month) for it. Hobby also caps Speed Insights events and cron cadence. Spending call, yours.
 2. **Production database:** reuse the staging Neon project (recommended, Path A) or create a fresh one (Path B)?
-3. **`/ai-chat`:** rebuild later, 301 to `/request-demo` (or `/contact`, `/`), or let it 404 (#70)?
+3. **`/ai-chat`:** decided 2026-10-13: removed, let it 404 (no redirect) (#70).
 4. **Speed Insights:** approve `@vercel/speed-insights` (technology gate; ADR needed) or use Lighthouse plus Search Console only?
