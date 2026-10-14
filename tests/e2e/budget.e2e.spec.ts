@@ -170,16 +170,14 @@ test.describe('Budget page — server-rendered content (raw HTML, no JS)', () =>
     expect(html, 'supplementary body copy').toMatch(/supplementary to your ERP/i)
   })
 
-  test('all eight platform module titles are server-rendered', async ({ request }) => {
+  test('all six platform module titles are server-rendered', async ({ request }) => {
     const html = await fetchHtml(request, PATH)
     const modules = [
       'Department-level entry',
       'Real-time tracking',
       'Color-coded reports',
       'Supervisor rollup',
-      'Pre-built dashboards',
       'Fast table export',
-      'Custom dashboards',
       'AI budget analysis',
     ]
     for (const title of modules) {

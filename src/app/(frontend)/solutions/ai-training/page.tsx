@@ -418,18 +418,16 @@ export default function AiTrainingPage() {
 // styles reference brand tokens / the design source's own values (no invented
 // values).
 
-// Hero visual — a "workshop, live" roster of participants working through tasks.
+// Hero visual — a sample roster of what each role builds in a workshop (illustrative, not a live session).
 function TrainingHeroArt() {
   const participants = [
-    { name: 'Superintendent', task: 'Drafting a 3-month AI rollout', dur: '12 min', done: true },
-    { name: 'CFO', task: 'Prompt: monthly variance summary', dur: '18 min', done: true },
+    { name: 'Superintendent', task: 'Drafting a 3-month AI rollout' },
+    { name: 'CFO', task: 'Prompt: monthly variance summary' },
     {
       name: 'HR Director',
       task: 'Auto-classifying form submissions',
-      dur: 'In progress',
-      done: false,
     },
-    { name: 'IT Director', task: 'Setting up the prompt library', dur: 'Up next', done: false },
+    { name: 'IT Director', task: 'Setting up the prompt library' },
   ]
   return (
     <div
@@ -451,7 +449,7 @@ function TrainingHeroArt() {
           marginBottom: 24,
         }}
       >
-        Workshop · live
+        Sample workshop · what each role builds
       </div>
       {participants.map((p, i) => (
         <div
@@ -468,15 +466,6 @@ function TrainingHeroArt() {
           <div>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--c-ink)' }}>{p.name}</div>
             <div style={{ fontSize: 12, color: 'var(--c-ink-2)', marginTop: 2 }}>{p.task}</div>
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: p.done ? 'var(--fl-green-700)' : 'var(--c-ink-3)',
-            }}
-          >
-            {p.dur}
           </div>
         </div>
       ))}

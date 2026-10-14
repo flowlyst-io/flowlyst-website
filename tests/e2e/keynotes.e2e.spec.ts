@@ -249,7 +249,7 @@ test.describe('Keynotes page — server-rendered content (raw HTML, no JS)', () 
     )
   })
 
-  test('the venues strip is exactly the three real venues (no AASA / Regional PD overclaim)', async ({
+  test('the venues strip is exactly the three real venues (no AASA / NSBA / Regional PD overclaim)', async ({
     request,
   }) => {
     const html = await fetchHtml(request, PATH)
@@ -260,11 +260,14 @@ test.describe('Keynotes page — server-rendered content (raw HTML, no JS)', () 
     // "Regional PD" was dropped as a venue claim and must not reappear anywhere on the
     // page. (Audiences' "Regional service-agency PD" is a different, non-matching string.)
     expect(html, '"Regional PD" venue claim removed page-wide').not.toContain('Regional PD')
-    // AASA is a PRD audience example, NOT a venue — scope the negative to the venue
-    // strip, since AASA legitimately remains in the audiences copy elsewhere.
+    // AASA and NSBA are not claimed anywhere on the page.
+    expect(html, 'AASA claim removed page-wide').not.toContain('AASA')
+    expect(html, 'NSBA claim removed page-wide').not.toContain('NSBA')
     const strip = html.match(/data-testid="keynotes-venues"[\s\S]*?<\/section>/i)
     expect(strip, 'venues section present in the server HTML').toBeTruthy()
-    expect(strip![0], 'AASA is not presented as a venue tile').not.toContain('AASA')
+    // Only ASBO International is a keynote; NJASBO and CPS are sessions.
+    expect(strip![0]).toMatch(/ASBO International[\s\S]*?Keynote/)
+    expect(strip![0].match(/Session/g)).toHaveLength(2)
   })
 
   test('the speaking topics are server-rendered', async ({ request }) => {
@@ -682,7 +685,7 @@ test.describe('Keynotes page — responsive & accessibility smoke', () => {
     await page.goto(PATH)
     // toHaveText(array) asserts both the count (exactly 3) and each tile's text/order.
     const tiles = page.locator('[data-testid="keynotes-venues"] .stat-band__grid > div')
-    await expect(tiles).toHaveText(['ASBO International', 'NJASBO', 'CPS'])
+    await expect(tiles).toHaveText(['ASBO InternationalKeynote', 'NJASBOSession', 'CPSSession'])
   })
 
   test('the "Meet Aziz" secondary CTA links to /about and is keyboard-reachable', async ({

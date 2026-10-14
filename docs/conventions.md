@@ -62,6 +62,13 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: `afterChange: [async ({ doc, operation, req }) => { if (operation === 'create') await notifyDemoRequest(req.payload, doc, …) }]`, where `notifyDemoRequest` sends through `trySend`, which catches every send error.
 4. **Gotcha**: once awaited, an exception that escapes the callee fails the request and can roll back the write it follows. The callee must never throw, and that includes the code that runs before its own `try`. `afterChange` runs inside the still-open write transaction, so an unbounded remote call holds the row hostage: if the function is killed, the lead is lost. A send can also go out for a row whose commit then fails (acceptable: the lead still reaches the inbox).
 
+### One-off production data fixes are dry-by-default `scripts/*.ts` runs
+
+1. **Rule**: a one-off production data fix is a `scripts/*.ts` run only through a `package.json` script (`cross-env CI=true NODE_OPTIONS=--no-deprecation tsx ...`). It runs dry by default and writes only with `--apply`. It is idempotent: it re-reads state, so a re-run reports 0 changes. It writes with `overrideAccess: true` and `context: { disableRevalidate: true }`. It checks any precondition that would make a write unsafe, such as a missing Blob token, before the first write. It has a runbook section with the env vars, dry-run, apply and confirm commands, and the expected output.
+2. **Why**: Tural runs these against Neon himself, so the default must be harmless and a re-run must be safe. `CI=true` stops Payload pushing schema to production. `revalidatePath` throws outside a request.
+3. **Minimal example**: `"content:fix": "cross-env CI=true NODE_OPTIONS=--no-deprecation tsx scripts/fix-launch-content.ts"` with `const apply = process.argv.includes('--apply')`, and `if (apply && !token) throw` before any `payload.update`.
+4. **Gotcha**: with revalidation off, cached pages stay stale until the next production deploy, and the runbook says which deploy that is. On collections with drafts, a non-draft `update` writes over the published doc and hides a newer unpublished draft. Any flag that relaxes a safety guard must refuse a non-local database.
+
 ## The contract for this file
 
 **Every entry has four parts, in this order:**

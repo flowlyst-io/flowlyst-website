@@ -42,14 +42,12 @@ export const metadata: Metadata = {
   },
 }
 
-const MARQUEE_ITEMS = ['ASBO International', 'NJASBO', 'CPS', 'AASA', 'WSPS', 'BSD']
+const MARQUEE_ITEMS = ['ASBO International', 'NJASBO', 'CPS', 'WSPS', 'BSD']
 
 const FLAGSHIP_FEATURES = [
   'Department entry & approvals',
-  'Real-time GL actuals',
-  'Salary projections',
+  'Actuals imported from your ERP',
   'Board-ready reports',
-  'Pre-built dashboards',
   'Grants tracking',
 ]
 
@@ -67,7 +65,7 @@ const OFFERINGS: Offering[] = [
     num: '01',
     tag: 'Software',
     title: 'Budget Software',
-    copy: 'Department entry, real-time tracking, salary projections, board-ready reports — supplementary to your ERP.',
+    copy: 'Department entry, real-time tracking, board-ready reports — supplementary to your ERP.',
     cta: 'Request a demo',
     href: '/solutions/budget-software',
   },
@@ -91,7 +89,7 @@ const OFFERINGS: Offering[] = [
     num: '04',
     tag: 'Speaking',
     title: 'Keynotes',
-    copy: 'Aziz Aghayev on AI, school finance, and the future of district operations. ASBO International, NJASBO, CPS.',
+    copy: 'Aziz Aghayev on AI, school finance, and the future of district operations. Keynote at ASBO International; sessions at NJASBO and CPS.',
     cta: 'Submit a request',
     href: '/solutions/keynotes',
   },
@@ -274,8 +272,8 @@ export default async function HomePage() {
                 The platform we <em>wished existed</em> when we ran the budget.
               </h2>
               <p className="lead" style={{ fontSize: 19, marginBottom: 32 }}>
-                Department entry. Real-time tracking. Salary projections. Board-ready reports. One
-                source of truth that sits alongside the ERP you’ve already paid for.
+                Department entry. Real-time tracking. Board-ready reports. One source of truth that
+                sits alongside the ERP you’ve already paid for.
               </p>
               <div
                 style={{
@@ -567,18 +565,22 @@ function ArrowRight() {
 
 function Marquee({ items }: { items: string[] }) {
   // Duplicated for a seamless CSS loop (design/site/site.css `.marquee`).
-  const looped = [...items, ...items]
+  const half = (copy: 'primary' | 'duplicate') =>
+    items.map((item) => (
+      <React.Fragment key={`${copy}-${item}`}>
+        <span>{item}</span>
+        <span className="marquee__star" aria-hidden="true">
+          ✦
+        </span>
+      </React.Fragment>
+    ))
   return (
     <div className="marquee">
       <div className="marquee__track">
-        {looped.map((item, i) => (
-          <React.Fragment key={i}>
-            <span>{item}</span>
-            <span className="marquee__star" aria-hidden="true">
-              ✦
-            </span>
-          </React.Fragment>
-        ))}
+        <span className="marquee__half">{half('primary')}</span>
+        <span className="marquee__half marquee__half--duplicate" aria-hidden="true">
+          {half('duplicate')}
+        </span>
       </div>
     </div>
   )

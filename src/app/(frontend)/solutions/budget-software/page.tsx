@@ -82,21 +82,11 @@ const MODULES: Module[] = [
   },
   {
     num: '05',
-    title: 'Pre-built dashboards',
-    copy: 'Built by analysts and former school business officials. Available to every district.',
-  },
-  {
-    num: '06',
     title: 'Fast table export',
     copy: 'Any dataset, any time, in a format the auditor will accept.',
   },
   {
-    num: '07',
-    title: 'Custom dashboards',
-    copy: 'Tailored dashboards built on request — like multi-input salary projections. Available as a paid add-on.',
-  },
-  {
-    num: '08',
+    num: '06',
     title: 'AI budget analysis',
     copy: 'Talk to your data. Ask the questions you currently dig through spreadsheets to answer. — Coming soon.',
   },
@@ -216,7 +206,7 @@ export default async function BudgetSoftwarePage() {
                 give you.
               </p>
               <p className="p" style={{ fontSize: 17 }}>
-                Sync to your GL. Keep your ERP. Add real budgeting on top.
+                Bring in your actuals. Keep your ERP. Add real budgeting on top.
               </p>
             </div>
             <ERPDiagram />
@@ -231,7 +221,7 @@ export default async function BudgetSoftwarePage() {
             eyebrow="What’s in the platform"
             title={
               <>
-                Eight workflows. <em>One source of truth.</em>
+                Six workflows. <em>One source of truth.</em>
               </>
             }
             kicker="Illustrative — the platform keeps growing."
@@ -360,7 +350,6 @@ function ERPDiagram() {
     'Department-level budget entry',
     'Real-time variance tracking',
     'Board-ready reports',
-    'Salary projection scenarios',
   ]
   return (
     <div

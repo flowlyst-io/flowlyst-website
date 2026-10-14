@@ -437,6 +437,18 @@ code,
   background: currentColor;
   opacity: 0.6;
 }
+.rule-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.rule-label::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
 .eyebrow--on-dark {
   color: var(--fl-green);
 }
@@ -804,35 +816,6 @@ code,
   color: rgba(244, 241, 232, 0.7);
   padding: 96px 56px 40px;
 }
-.footer__cta {
-  border: 1px solid rgba(244, 241, 232, 0.12);
-  border-radius: 4px;
-  padding: 48px;
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 32px;
-  align-items: center;
-  margin-bottom: 80px;
-}
-.footer__cta h3 {
-  font-size: 40px;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.05;
-  color: #fff;
-  margin: 12px 0 0;
-}
-.footer__cta p {
-  font-size: 16px;
-  color: rgba(244, 241, 232, 0.6);
-  margin-top: 16px;
-  max-width: 50ch;
-}
-.footer__cta-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
 .footer__cols {
   display: grid;
   grid-template-columns: 1.4fr repeat(4, 1fr);
@@ -914,6 +897,9 @@ code,
 .marquee--dark .marquee__track {
   color: rgba(244, 241, 232, 0.6);
 }
+.marquee__half {
+  display: contents;
+}
 .marquee__star {
   color: var(--fl-green);
   font-size: 14px;
@@ -927,6 +913,9 @@ code,
 @media (prefers-reduced-motion: reduce) {
   .marquee__track {
     animation: none;
+  }
+  .marquee__half--duplicate {
+    display: none;
   }
 }
 @keyframes marquee {
@@ -1147,13 +1136,6 @@ code,
     grid-template-columns: 1.4fr 1fr 1fr;
     row-gap: 40px;
   }
-  .footer__cta {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  .footer__cta-actions {
-    justify-content: flex-start;
-  }
 }
 
 /* ---------- Nav-only breakpoint (issues #45, #58) ----------
@@ -1176,7 +1158,7 @@ code,
    tablet padding comes from the 960px block above). Generic content breakpoints
    (grid collapse, footer stacking) stay at 680 below — this moves ONLY the nav.
    Design-source fold-in still pending — site.css needs the same change upstream.
-   (Same pattern as the .footer__cta phone amendment below.) */
+   */
 @media (max-width: 959px) {
   .nav {
     padding: 14px 20px !important;
@@ -1292,23 +1274,6 @@ code,
     align-items: flex-start;
   }
 
-  /* A11y-driven responsive amendment to the reference (WCAG 1.4.10 reflow).
-     site.css's phone rules cover .nav__cta but not .footer__cta: the CTA band
-     keeps 48px inset padding and a nowrap two-button actions row, whose
-     min-content pushes past a 390px viewport and clips content. Mirror the
-     established .nav__cta phone pattern — stack the actions into full-width
-     buttons — and trim the band padding to --sp-6 (24px, spacing scale). */
-  .footer__cta {
-    padding: 24px;
-  }
-  .footer__cta-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .footer__cta-actions .btn {
-    width: 100%;
-  }
-
   /* Tabular list rows stack */
   .t-row {
     grid-template-columns: 1fr !important;
@@ -1334,9 +1299,6 @@ code,
   }
   .pull {
     font-size: clamp(30px, 9vw, 44px);
-  }
-  .footer__cta h3 {
-    font-size: 30px;
   }
   .lead {
     font-size: 18px !important;

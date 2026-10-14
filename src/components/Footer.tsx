@@ -6,7 +6,7 @@ import { Mark } from './Mark'
  * Site footer (design/site/site.jsx `Footer`, design/site/site.css `.footer`).
  *
  * Server component — pure content, no interactivity. Reproduces the settled
- * chrome faithfully: the CTA band, five columns (brand / Solutions / Proof /
+ * chrome faithfully: five columns (brand / Solutions / Proof /
  * Company / Legal), and the bottom bar. Legal is Privacy / Terms / Cookies only
  * (site.jsx is authoritative; there is no /accessibility page in the PRD).
  *
@@ -19,34 +19,6 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="container">
-        <div className="footer__cta">
-          <div>
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                color: 'var(--fl-green)',
-              }}
-            >
-              Ready when you are
-            </div>
-            <h3>
-              See flowlyst running on <span className="accent">your district’s</span> budget.
-            </h3>
-            <p>Meet the person who’s done your job.</p>
-          </div>
-          <div className="footer__cta-actions">
-            <Link href="/request-demo" className="btn btn--primary btn--lg">
-              Request a demo
-            </Link>
-            <Link href="/about" className="btn btn--ghost-light btn--lg">
-              Meet Aziz
-            </Link>
-          </div>
-        </div>
-
         <div className="footer__cols">
           <div>
             <Link href="/" className="footer__brand">

@@ -43,7 +43,7 @@
  *   in the runbook as a CMS-editable option — it is deliberately NOT baked in here,
  *   because it would be a guess presented as source truth.
  *
- * - AUTHOR is Aziz Aghayev, "Founder & Lead Consultant" (PRD §6). The legacy byline
+ * - AUTHOR is Aziz Aghayev, "Founder & CEO". The legacy byline
  *   is the generic "Flowlyst Team"; per the #20 brief every post is attributed to the
  *   named founder. No photo — the design's fallback avatar is intentional until #42.
  *
@@ -59,6 +59,7 @@ import { JSDOM } from 'jsdom'
 
 import config from '@payload-config'
 import type { BlogPost } from '@/payload-types'
+import { convertBoldMarkers } from '@/utilities/lexicalBold'
 
 const LEGACY_ORIGIN = 'https://flowlyst.io'
 
@@ -93,7 +94,7 @@ const TITLE_CORRECTIONS: Record<string, [from: string, to: string]> = {
 const AUTHOR = {
   name: 'Aziz Aghayev',
   slug: 'aziz-aghayev',
-  title: 'Founder & Lead Consultant',
+  title: 'Founder & CEO',
 } as const
 
 type LegacyPost = {
@@ -243,11 +244,13 @@ async function main(): Promise<void> {
 
     // Payload's converter returns its own TypedEditorState; the generated `body` type
     // is the equivalent serialized shape. The cast bridges the two (same runtime data).
-    const body = convertHTMLToLexical({
+    const converted = convertHTMLToLexical({
       editorConfig,
       html: legacy.bodyHTML,
       JSDOM,
     }) as unknown as BlogPost['body']
+    // Legacy text carries literal `**x**` that the HTML converter leaves as plain text.
+    const body = convertBoldMarkers(converted).body
 
     // Look the post up by slug FIRST — it is the idempotency key for the post itself
     // AND the handle through which we reuse its already-uploaded featured image.

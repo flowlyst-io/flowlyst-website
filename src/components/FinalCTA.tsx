@@ -7,8 +7,7 @@ import Link from 'next/link'
  * Server component — pure content. The full-bleed green band that sits just above
  * the footer on the marketing pages. The two-button actions row carries the
  * design's own `flexWrap: 'wrap'`, which is what keeps it from overflowing the
- * narrow (390px) viewport the retro flagged for the footer's separate `.footer__cta`
- * band; the buttons wrap rather than clip. Inline styles are carried over verbatim
+ * narrow (390px) viewport; the buttons wrap rather than clip. Inline styles are carried over verbatim
  * from site.jsx (brand tokens / cream-at-opacity — no invented values).
  *
  * The `.html` hrefs in the comp map to the real app routes (PRD §7 / §11).
