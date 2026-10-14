@@ -36,6 +36,10 @@ test.describe('Frontend', () => {
     // Footer landmark (contentinfo) with legal links + copyright.
     const footer = page.getByRole('contentinfo')
     await expect(footer.getByRole('link', { name: 'Privacy' })).toBeVisible()
+    await expect(footer.getByRole('link', { name: 'info@flowlyst.io' })).toHaveAttribute(
+      'href',
+      'mailto:info@flowlyst.io',
+    )
     await expect(footer.getByText('© 2026 flowlyst LLC')).toBeVisible()
   })
 
