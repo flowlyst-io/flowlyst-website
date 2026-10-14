@@ -10,6 +10,7 @@ import sharp from 'sharp'
 
 import { isAdmin } from './access'
 import { getServerURL } from './utilities/serverURL'
+import { envValue } from './utilities/envValue'
 import { Users } from './collections/Users'
 
 /**
@@ -90,10 +91,10 @@ export default buildConfig({
   // additionally skip-and-log when the key is unset, so an unconfigured
   // environment never errors. `defaultFromAddress` is EMAIL_FROM (a verified
   // Resend sender per the runbook); no key values are hard-coded here.
-  email: process.env.RESEND_API_KEY
+  email: envValue('RESEND_API_KEY')
     ? resendAdapter({
-        apiKey: process.env.RESEND_API_KEY,
-        defaultFromAddress: process.env.EMAIL_FROM || 'noreply@flowlyst.io',
+        apiKey: envValue('RESEND_API_KEY') as string,
+        defaultFromAddress: envValue('EMAIL_FROM') || 'noreply@flowlyst.io',
         defaultFromName: 'flowlyst',
       })
     : undefined,

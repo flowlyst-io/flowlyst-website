@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 
 import type { ContactMessage, DemoRequest, SpeakingRequest } from '@/payload-types'
+import { envValue } from '@/utilities/envValue'
 import { CONTACT_REASONS } from '@/utilities/contactReasonsShared'
 import type { RecaptchaOutcome } from '@/utilities/recaptcha'
 
@@ -27,7 +28,7 @@ import type { RecaptchaOutcome } from '@/utilities/recaptcha'
 // (PRD §8.2 names info@flowlyst.io for contact).
 const DEFAULT_INTERNAL_TO = 'info@flowlyst.io'
 
-const emailConfigured = (): boolean => Boolean(process.env.RESEND_API_KEY)
+const emailConfigured = (): boolean => Boolean(envValue('RESEND_API_KEY'))
 
 /**
  * Attempt one send, guarded. Skips (logs) when email isn't configured; on a real
@@ -49,10 +50,15 @@ async function trySend(
     await payload.sendEmail({ to, replyTo, subject, text })
     payload.logger.info(`[email] sent: ${purpose} → ${to}`)
   } catch (err) {
+    // Only message and cause are logged — never the API key or the email body.
+    const message = err instanceof Error ? err.message : String(err)
+    const cause =
+      err instanceof Error
+        ? (err.cause as { code?: unknown; message?: unknown } | undefined)
+        : undefined
+    const causeInfo = cause ? ` (cause: ${String(cause.code ?? cause.message ?? cause)})` : ''
     payload.logger.error(
-      `[email] send FAILED (${purpose} → ${to}) — persistence unaffected: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
+      `[email] send FAILED (${purpose} → ${to}) — persistence unaffected: ${message}${causeInfo}`,
     )
   }
 }
@@ -76,7 +82,7 @@ export async function notifyDemoRequest(
   doc: DemoRequest,
   outcome?: RecaptchaOutcome,
 ): Promise<void> {
-  const to = process.env.SALES_NOTIFY_TO || process.env.LEAD_NOTIFY_TO || DEFAULT_INTERNAL_TO
+  const to = envValue('SALES_NOTIFY_TO') || envValue('LEAD_NOTIFY_TO') || DEFAULT_INTERNAL_TO
   const interests = Array.isArray(doc.interests) ? doc.interests.join(', ') : ''
   const lines = [
     `New demo request from ${doc.fullName}${doc.title ? `, ${doc.title}` : ''}.`,
@@ -108,7 +114,7 @@ export async function notifyContactMessage(
   doc: ContactMessage,
   outcome?: RecaptchaOutcome,
 ): Promise<void> {
-  const to = process.env.CONTACT_NOTIFY_TO || process.env.LEAD_NOTIFY_TO || DEFAULT_INTERNAL_TO
+  const to = envValue('CONTACT_NOTIFY_TO') || envValue('LEAD_NOTIFY_TO') || DEFAULT_INTERNAL_TO
   const lines = [
     `New contact message from ${doc.name} (${doc.email}).`,
     `Reason: ${CONTACT_REASONS.find((r) => r.value === doc.reason)?.label ?? doc.reason ?? '—'}`,
@@ -133,9 +139,9 @@ export async function notifySpeakingRequest(
   outcome?: RecaptchaOutcome,
 ): Promise<void> {
   const to =
-    process.env.SPEAKING_NOTIFY_TO ||
-    process.env.SALES_NOTIFY_TO ||
-    process.env.LEAD_NOTIFY_TO ||
+    envValue('SPEAKING_NOTIFY_TO') ||
+    envValue('SALES_NOTIFY_TO') ||
+    envValue('LEAD_NOTIFY_TO') ||
     DEFAULT_INTERNAL_TO
   const lines = [
     `New speaking request for "${doc.eventName}" (${doc.eventDate}).`,

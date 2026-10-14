@@ -20,6 +20,7 @@
 import { getPayload, type Payload, type PayloadRequest } from 'payload'
 
 import config from '@/payload.config'
+import { envValue } from '@/utilities/envValue'
 import type { ContactMessage, DemoRequest, SpeakingRequest } from '@/payload-types'
 import {
   notifyContactMessage,
@@ -539,6 +540,74 @@ describe('Lead notifier — a mail problem never throws / never fails persistenc
       send.mockRestore()
       vi.unstubAllEnvs()
     }
+  })
+
+  it('trims padded recipient env values and falls through on whitespace-only ones', async () => {
+    vi.stubEnv('RESEND_API_KEY', 'test-key-int')
+    const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
+    const speakingDoc = { eventName: 'S', eventDate: 'd', email: 'a@b.org' } as SpeakingRequest
+    try {
+      vi.stubEnv('SALES_NOTIFY_TO', ' sales@x.org\n')
+      vi.stubEnv('CONTACT_NOTIFY_TO', '   ')
+      vi.stubEnv('SPEAKING_NOTIFY_TO', '\t')
+      vi.stubEnv('LEAD_NOTIFY_TO', '  lead@x.org ')
+      await notifyDemoRequest(payload, demoDoc)
+      await notifyContactMessage(payload, contactDoc)
+      await notifySpeakingRequest(payload, speakingDoc)
+      expect(send.mock.calls.map(([m]) => m.to)).toEqual([
+        'sales@x.org',
+        'lead@x.org',
+        'sales@x.org',
+      ])
+
+      send.mockClear()
+      vi.stubEnv('LEAD_NOTIFY_TO', '  ')
+      await notifyContactMessage(payload, contactDoc)
+      expect(send.mock.calls[0][0].to).toBe('info@flowlyst.io')
+    } finally {
+      send.mockRestore()
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('treats a whitespace-only RESEND_API_KEY as unset', async () => {
+    vi.stubEnv('RESEND_API_KEY', ' \n')
+    const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
+    try {
+      await notifyDemoRequest(payload, demoDoc)
+      expect(send).not.toHaveBeenCalled()
+    } finally {
+      send.mockRestore()
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('logs the error cause on a transport failure, never the key or body', async () => {
+    vi.stubEnv('RESEND_API_KEY', 'secret-key-value')
+    const failure = new TypeError('fetch failed', { cause: { code: 'ENOTFOUND' } })
+    const send = vi.spyOn(payload, 'sendEmail').mockRejectedValue(failure)
+    const errorSpy = vi.spyOn(payload.logger, 'error')
+    try {
+      await notifyContactMessage(payload, contactDoc)
+      const logged = String(errorSpy.mock.calls[0][0])
+      expect(logged).toContain('fetch failed')
+      expect(logged).toContain('ENOTFOUND')
+      expect(logged).not.toContain('secret-key-value')
+      expect(logged).not.toContain(contactDoc.message)
+    } finally {
+      send.mockRestore()
+      errorSpy.mockRestore()
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('envValue trims, and returns undefined for unset or whitespace-only', () => {
+    vi.stubEnv('ENV_VALUE_PROBE', '  abc \n')
+    expect(envValue('ENV_VALUE_PROBE')).toBe('abc')
+    vi.stubEnv('ENV_VALUE_PROBE', '  ')
+    expect(envValue('ENV_VALUE_PROBE')).toBeUndefined()
+    vi.unstubAllEnvs()
+    expect(envValue('ENV_VALUE_PROBE')).toBeUndefined()
   })
 
   it('persists a demo request even though the create fires the (skipping) notifier hook', async () => {
