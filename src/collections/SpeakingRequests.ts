@@ -48,9 +48,9 @@ export const SpeakingRequests: CollectionConfig = {
     // write, non-throwing, skips when email is unconfigured — never fails
     // persistence (invariant d).
     afterChange: [
-      ({ doc, operation, req }) => {
+      async ({ doc, operation, req }) => {
         if (operation === 'create')
-          void notifySpeakingRequest(
+          await notifySpeakingRequest(
             req.payload,
             doc as SpeakingRequest,
             recaptchaOutcomeOf(req.context),

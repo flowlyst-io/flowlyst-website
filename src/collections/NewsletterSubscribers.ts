@@ -45,9 +45,9 @@ export const NewsletterSubscribers: CollectionConfig = {
     // (an update) sends its own confirmation. After-write, non-throwing, and
     // skips when email is unconfigured — never fails persistence (invariant d).
     afterChange: [
-      ({ doc, operation, req }) => {
+      async ({ doc, operation, req }) => {
         if (operation === 'create')
-          void sendNewsletterConfirmation(req.payload, doc.email as string)
+          await sendNewsletterConfirmation(req.payload, doc.email as string)
       },
     ],
   },

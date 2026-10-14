@@ -20,11 +20,13 @@
 import { getPayload, type Payload, type PayloadRequest } from 'payload'
 
 import config from '@/payload.config'
+import { envValue } from '@/utilities/envValue'
 import type { ContactMessage, DemoRequest, SpeakingRequest } from '@/payload-types'
 import {
   notifyContactMessage,
   notifyDemoRequest,
   notifySpeakingRequest,
+  sendTimeout,
 } from '@/email/leadNotifications'
 
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
@@ -541,6 +543,74 @@ describe('Lead notifier — a mail problem never throws / never fails persistenc
     }
   })
 
+  it('trims padded recipient env values and falls through on whitespace-only ones', async () => {
+    vi.stubEnv('RESEND_API_KEY', 'test-key-int')
+    const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
+    const speakingDoc = { eventName: 'S', eventDate: 'd', email: 'a@b.org' } as SpeakingRequest
+    try {
+      vi.stubEnv('SALES_NOTIFY_TO', ' sales@x.org\n')
+      vi.stubEnv('CONTACT_NOTIFY_TO', '   ')
+      vi.stubEnv('SPEAKING_NOTIFY_TO', '\t')
+      vi.stubEnv('LEAD_NOTIFY_TO', '  lead@x.org ')
+      await notifyDemoRequest(payload, demoDoc)
+      await notifyContactMessage(payload, contactDoc)
+      await notifySpeakingRequest(payload, speakingDoc)
+      expect(send.mock.calls.map(([m]) => m.to)).toEqual([
+        'sales@x.org',
+        'lead@x.org',
+        'sales@x.org',
+      ])
+
+      send.mockClear()
+      vi.stubEnv('LEAD_NOTIFY_TO', '  ')
+      await notifyContactMessage(payload, contactDoc)
+      expect(send.mock.calls[0][0].to).toBe('info@flowlyst.io')
+    } finally {
+      send.mockRestore()
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('treats a whitespace-only RESEND_API_KEY as unset', async () => {
+    vi.stubEnv('RESEND_API_KEY', ' \n')
+    const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
+    try {
+      await notifyDemoRequest(payload, demoDoc)
+      expect(send).not.toHaveBeenCalled()
+    } finally {
+      send.mockRestore()
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('logs the error cause on a transport failure, never the key or body', async () => {
+    vi.stubEnv('RESEND_API_KEY', 'secret-key-value')
+    const failure = new TypeError('fetch failed', { cause: { code: 'ENOTFOUND' } })
+    const send = vi.spyOn(payload, 'sendEmail').mockRejectedValue(failure)
+    const errorSpy = vi.spyOn(payload.logger, 'error')
+    try {
+      await notifyContactMessage(payload, contactDoc)
+      const logged = String(errorSpy.mock.calls[0][0])
+      expect(logged).toContain('fetch failed')
+      expect(logged).toContain('ENOTFOUND')
+      expect(logged).not.toContain('secret-key-value')
+      expect(logged).not.toContain(contactDoc.message)
+    } finally {
+      send.mockRestore()
+      errorSpy.mockRestore()
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('envValue trims, and returns undefined for unset or whitespace-only', () => {
+    vi.stubEnv('ENV_VALUE_PROBE', '  abc \n')
+    expect(envValue('ENV_VALUE_PROBE')).toBe('abc')
+    vi.stubEnv('ENV_VALUE_PROBE', '  ')
+    expect(envValue('ENV_VALUE_PROBE')).toBeUndefined()
+    vi.unstubAllEnvs()
+    expect(envValue('ENV_VALUE_PROBE')).toBeUndefined()
+  })
+
   it('persists a demo request even though the create fires the (skipping) notifier hook', async () => {
     // End-to-end proof of the iron rule through the real hook: the afterChange
     // notifier runs on create (skip-and-log here) and never blocks persistence.
@@ -583,4 +653,148 @@ describe('SpeakingRequests — create still works after the notifier was wired',
     })
     expect(found.totalDocs).toBe(1)
   })
+})
+
+// ============== afterChange hooks await their notification (PR #118) ==========
+
+describe('Lead hooks — the send settles before create resolves, and never fails it', () => {
+  type LeadCase = {
+    label: string
+    collection:
+      'demo-requests' | 'contact-messages' | 'speaking-requests' | 'newsletter-subscribers'
+    data: (tag: string) => Record<string, unknown>
+    where: (tag: string) => Record<string, { equals: string }>
+  }
+
+  const cases: LeadCase[] = [
+    {
+      label: 'demo request',
+      collection: 'demo-requests',
+      data: (tag) => ({
+        fullName: 'Await Demo',
+        workEmail: `demo-${tag}-${stamp}@district.k12.us`,
+        consent: true,
+      }),
+      where: (tag) => ({ workEmail: { equals: `demo-${tag}-${stamp}@district.k12.us` } }),
+    },
+    {
+      label: 'contact message',
+      collection: 'contact-messages',
+      data: (tag) => ({
+        name: 'Await Contact',
+        email: `contact-${tag}-${stamp}@example.org`,
+        reason: 'other',
+        message: 'hello',
+      }),
+      where: (tag) => ({ email: { equals: `contact-${tag}-${stamp}@example.org` } }),
+    },
+    {
+      label: 'speaking request',
+      collection: 'speaking-requests',
+      data: (tag) => ({
+        contactName: 'Await Speaking',
+        email: `speak-${tag}-${stamp}@assoc.org`,
+        eventName: `Await ${tag} ${stamp}`,
+        eventDate: 'Fall 2026',
+      }),
+      where: (tag) => ({ eventName: { equals: `Await ${tag} ${stamp}` } }),
+    },
+    {
+      label: 'newsletter subscriber',
+      collection: 'newsletter-subscribers',
+      data: (tag) => ({ email: `news-${tag}-${stamp}@example.org` }),
+      where: (tag) => ({ email: { equals: `news-${tag}-${stamp}@example.org` } }),
+    },
+  ]
+
+  async function createLead(c: LeadCase, tag: string) {
+    return payload.create({
+      collection: c.collection,
+      data: c.data(tag) as never,
+      // Newsletter create is admin-only; the public path is the /subscribe endpoint.
+      overrideAccess: c.collection === 'newsletter-subscribers',
+    })
+  }
+
+  async function countLeads(c: LeadCase, tag: string) {
+    const found = await payload.find({
+      collection: c.collection,
+      where: c.where(tag),
+      overrideAccess: true,
+    })
+    return found.totalDocs
+  }
+
+  for (const c of cases) {
+    it(`${c.label}: the send has settled by the time create resolves`, async () => {
+      vi.stubEnv('RESEND_API_KEY', 'test-key-int')
+      let settled = false
+      const send = vi.spyOn(payload, 'sendEmail').mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 200))
+        settled = true
+        return undefined as never
+      })
+      try {
+        await createLead(c, 'awaited')
+        expect(send).toHaveBeenCalledTimes(1)
+        expect(settled, 'create resolved before the send finished (fire-and-forget)').toBe(true)
+        expect(await countLeads(c, 'awaited')).toBe(1)
+      } finally {
+        send.mockRestore()
+        vi.unstubAllEnvs()
+      }
+    })
+
+    it(`${c.label}: a rejecting send leaves the create successful and the row persisted`, async () => {
+      vi.stubEnv('RESEND_API_KEY', 'test-key-int')
+      const send = vi.spyOn(payload, 'sendEmail').mockRejectedValue(new Error('fetch failed'))
+      try {
+        const created = await createLead(c, 'rejects')
+        expect(created.id).toBeDefined()
+        expect(send).toHaveBeenCalledTimes(1)
+        expect(await countLeads(c, 'rejects')).toBe(1)
+      } finally {
+        send.mockRestore()
+        vi.unstubAllEnvs()
+      }
+    })
+
+    it(`${c.label}: a send that never resolves is abandoned at the timeout and the row persists`, async () => {
+      vi.stubEnv('RESEND_API_KEY', 'test-key-int')
+      const previous = sendTimeout.ms
+      sendTimeout.ms = 150
+      const send = vi.spyOn(payload, 'sendEmail').mockImplementation(() => new Promise(() => {}))
+      const errorSpy = vi.spyOn(payload.logger, 'error')
+      try {
+        const started = Date.now()
+        const created = await createLead(c, 'hangs')
+        expect(created.id).toBeDefined()
+        expect(Date.now() - started).toBeLessThan(3000)
+        expect(send).toHaveBeenCalledTimes(1)
+        expect(errorSpy.mock.calls.some(([m]) => String(m).includes('send TIMED OUT'))).toBe(true)
+        expect(await countLeads(c, 'hangs')).toBe(1)
+      } finally {
+        sendTimeout.ms = previous
+        errorSpy.mockRestore()
+        send.mockRestore()
+        vi.unstubAllEnvs()
+      }
+    })
+
+    it(`${c.label}: a synchronously throwing send leaves the create successful`, async () => {
+      vi.stubEnv('RESEND_API_KEY', 'test-key-int')
+      const send = vi.spyOn(payload, 'sendEmail').mockImplementation(() => {
+        throw new Error('sync boom')
+      })
+      try {
+        const created = await createLead(c, 'throws')
+        expect(created.id).toBeDefined()
+        expect(send).toHaveBeenCalledTimes(1)
+        expect(await countLeads(c, 'throws')).toBe(1)
+      } finally {
+        send.mockRestore()
+        vi.unstubAllEnvs()
+      }
+    })
+  }
 })

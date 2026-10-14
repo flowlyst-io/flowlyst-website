@@ -12,7 +12,7 @@ let loading: Promise<void> | null = null
 
 // The literal property access is what lets Next inline the value at build time.
 export function recaptchaSiteKey(): string | undefined {
-  return process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || undefined
+  return process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY?.trim() || undefined
 }
 
 export function loadRecaptcha(): Promise<void> {

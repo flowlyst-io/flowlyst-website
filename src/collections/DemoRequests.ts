@@ -41,9 +41,9 @@ export const DemoRequests: CollectionConfig = {
     // write, and the helper never throws / skips when email is unconfigured, so
     // a mail problem can never fail persistence (review invariant d).
     afterChange: [
-      ({ doc, operation, req }) => {
+      async ({ doc, operation, req }) => {
         if (operation === 'create')
-          void notifyDemoRequest(req.payload, doc as DemoRequest, recaptchaOutcomeOf(req.context))
+          await notifyDemoRequest(req.payload, doc as DemoRequest, recaptchaOutcomeOf(req.context))
       },
     ],
   },

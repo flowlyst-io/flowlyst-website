@@ -1,6 +1,7 @@
 import { APIError } from 'payload'
 import type { CollectionBeforeChangeHook } from 'payload'
 
+import { envValue } from './envValue'
 import { RECAPTCHA_HEADER, type RecaptchaAction } from './recaptchaShared'
 
 /**
@@ -31,7 +32,7 @@ type SiteverifyResponse = {
 }
 
 const enabled = (): boolean =>
-  Boolean(process.env.RECAPTCHA_SECRET_KEY && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY)
+  Boolean(envValue('RECAPTCHA_SECRET_KEY') && envValue('NEXT_PUBLIC_RECAPTCHA_SITE_KEY'))
 
 function minScore(): number {
   const parsed = Number.parseFloat(process.env.RECAPTCHA_MIN_SCORE ?? '')
@@ -52,7 +53,7 @@ export async function verifyRecaptcha(
       method: 'POST',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        secret: process.env.RECAPTCHA_SECRET_KEY as string,
+        secret: envValue('RECAPTCHA_SECRET_KEY') as string,
         response: token,
       }),
       signal: AbortSignal.timeout(4000),
