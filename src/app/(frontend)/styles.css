@@ -914,7 +914,22 @@ code,
   .marquee__track {
     animation: none;
   }
+  .marquee__track {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 16px;
+  }
   .marquee__half--duplicate {
+    display: none;
+  }
+  /* The separator only exists to join copies in the loop; the lone set ends on a name. */
+  .marquee__half:not(.marquee__half--duplicate) .marquee__star:last-child {
+    display: none;
+  }
+}
+/* Wrapped rows would strand separators at line ends, so drop them on narrow screens. */
+@media (prefers-reduced-motion: reduce) and (max-width: 680px) {
+  .marquee__star {
     display: none;
   }
 }
