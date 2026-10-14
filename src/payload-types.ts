@@ -587,7 +587,7 @@ export interface ContactMessage {
   internalNotes?: string | null;
   name: string;
   email: string;
-  reason?: ('press' | 'partnership' | 'training' | 'support' | 'other') | null;
+  reason?: ('press' | 'partnership' | 'training' | 'assessment' | 'pricing' | 'support' | 'other') | null;
   message: string;
   botField?: string | null;
   updatedAt: string;

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 import { ContactForm } from '@/components/ContactForm'
+import { toContactReason } from '@/utilities/contactReasons'
 import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
@@ -69,7 +70,17 @@ const linkStyle: CSSProperties = {
   paddingBottom: 3,
 }
 
-export default function ContactPage() {
+// `?reason=` lets a CTA elsewhere (e.g. "See pricing on a call") land with the matching
+// Reason preselected. Read here rather than via useSearchParams() in the island, which
+// would drop the form out of the server HTML; unknown values are ignored.
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const { reason } = await searchParams
+  const initialReason = toContactReason(reason)
+
   return (
     <section style={{ padding: '64px 56px 120px' }} data-testid="contact-page">
       <div className="container">
@@ -118,7 +129,7 @@ export default function ContactPage() {
           </div>
 
           {/* Interactive form — the page's only client island. */}
-          <ContactForm />
+          <ContactForm initialReason={initialReason} />
         </div>
       </div>
     </section>

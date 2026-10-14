@@ -214,6 +214,14 @@ test.describe('Budget page — copy guardrails', () => {
     expect(html, 'secondary CTA offers pricing on a call').toContain('See pricing on a call')
   })
 
+  test('the pricing CTA preselects the pricing reason on /contact', async ({ page }) => {
+    await page.goto(PATH)
+    const cta = page
+      .locator('[data-testid="solution-hero"]')
+      .getByRole('link', { name: /See pricing on a call/i })
+    await expect(cta).toHaveAttribute('href', '/contact?reason=pricing')
+  })
+
   test('never positions flowlyst as an ERP replacement', async ({ request }) => {
     const html = await fetchHtml(request, PATH)
     // Supplementary-not-replacement is the flagship stance (PRD §4.1). These

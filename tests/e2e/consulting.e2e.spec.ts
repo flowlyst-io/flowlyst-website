@@ -364,7 +364,9 @@ test.describe('Consulting page — responsive & accessibility smoke', () => {
     }
   })
 
-  test('the hero assessment CTA is keyboard-reachable and points at /contact', async ({ page }) => {
+  test('the hero assessment CTA is keyboard-reachable and preselects the assessment reason', async ({
+    page,
+  }) => {
     await page.goto(PATH)
     const cta = page
       .locator('[data-testid="solution-hero"]')
@@ -372,7 +374,7 @@ test.describe('Consulting page — responsive & accessibility smoke', () => {
     // The page goal (PRD §4.3) is the assessment booking, so its CTA must be a real,
     // keyboard-reachable anchor pointing at the contact route.
     await expect(cta, 'the hero assessment CTA must exist').toHaveCount(1)
-    await expect(cta).toHaveAttribute('href', '/contact')
+    await expect(cta).toHaveAttribute('href', '/contact?reason=assessment')
     // Prove it's in the tab order (a tabindex=-1 element would pass .focus() alone),
     // then confirm it can take focus.
     const tabindex = await cta.getAttribute('tabindex')

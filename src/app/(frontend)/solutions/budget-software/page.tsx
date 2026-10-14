@@ -186,7 +186,7 @@ export default async function BudgetSoftwarePage() {
         primaryCta="Request a demo"
         primaryHref="/request-demo"
         secondaryCta="See pricing on a call"
-        secondaryHref="/contact"
+        secondaryHref="/contact?reason=pricing"
         badges={['1-week implementation', 'No IT lift', 'Built by a former school CFO']}
         visual={<ProductMock />}
       />

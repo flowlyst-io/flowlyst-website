@@ -164,7 +164,7 @@ export default function ConsultingPage() {
         }
         lead="Hands-on engagements that map and automate routine work across district operations. Not generalist ed-tech — an operator who used to run your office."
         primaryCta="Free 30-min assessment"
-        primaryHref="/contact"
+        primaryHref="/contact?reason=assessment"
         secondaryCta="See case studies"
         secondaryHref="/case-studies"
         badges={['98% rollout satisfaction', 'Embedded engineers', 'McKinsey-style depth']}

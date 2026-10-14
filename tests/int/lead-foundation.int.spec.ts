@@ -216,7 +216,15 @@ describe('DemoRequests — consent gate, honeypot, PII, field locks', () => {
 // ========================== ContactMessages (#15/§8.2) =======================
 
 describe('ContactMessages — reason realignment, honeypot, PII', () => {
-  const REASONS = ['press', 'partnership', 'training', 'support', 'other'] as const
+  const REASONS = [
+    'press',
+    'partnership',
+    'training',
+    'assessment',
+    'pricing',
+    'support',
+    'other',
+  ] as const
 
   it('creates a valid public message (status defaults to "new")', async () => {
     const created = await payload.create({
@@ -233,7 +241,7 @@ describe('ContactMessages — reason realignment, honeypot, PII', () => {
     expect(created.reason).toBe('press')
   })
 
-  it('accepts each of the five realigned reason values', async () => {
+  it('accepts every reason value', async () => {
     for (const reason of REASONS) {
       const created = await payload.create({
         collection: 'contact-messages',

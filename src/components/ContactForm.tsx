@@ -3,6 +3,7 @@
 import React, { useId, useState } from 'react'
 
 import { RecaptchaNotice } from '@/components/RecaptchaNotice'
+import { CONTACT_REASONS, type ContactReason } from '@/utilities/contactReasons'
 import { getRecaptchaToken, loadRecaptcha } from '@/utilities/recaptchaClient'
 import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
 
@@ -28,14 +29,6 @@ import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
  * focus-first-invalid, success/error states, aria wiring).
  */
 
-const REASON_OPTIONS = [
-  { value: 'press', label: 'Press' },
-  { value: 'partnership', label: 'Partnership' },
-  { value: 'training', label: 'Training question' },
-  { value: 'support', label: 'Support' },
-  { value: 'other', label: 'Other' },
-] as const
-
 type FieldName = 'name' | 'email' | 'reason' | 'message'
 
 type FormValues = Record<FieldName, string>
@@ -57,9 +50,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 type SubmitState = 'idle' | 'submitting' | 'success' | 'error'
 
-export function ContactForm() {
+export function ContactForm({ initialReason }: { initialReason?: ContactReason }) {
   const baseId = useId()
-  const [values, setValues] = useState<FormValues>(INITIAL)
+  const [values, setValues] = useState<FormValues>({ ...INITIAL, reason: initialReason ?? '' })
   const [honeypot, setHoneypot] = useState('')
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({})
   const [state, setState] = useState<SubmitState>('idle')
@@ -254,7 +247,7 @@ export function ContactForm() {
             onChange={set('reason')}
           >
             <option value="">Choose…</option>
-            {REASON_OPTIONS.map((o) => (
+            {CONTACT_REASONS.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
               </option>
