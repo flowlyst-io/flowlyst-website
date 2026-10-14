@@ -28,7 +28,7 @@ const CANONICAL_PATH = '/solutions/keynotes'
 
 const PAGE_TITLE = 'Keynote Speaker on AI in K–12 — flowlyst'
 const PAGE_DESCRIPTION =
-  'Book Aziz Aghayev to keynote your event on AI for K–12 school business officials, district finance modernization, and school operations. Keynote at ASBO International; sessions at NJASBO and CPS.'
+  'Book Aziz Aghayev to keynote on AI for K–12 school business officials and finance teams. Keynote at ASBO International; sessions at NJASBO and CPS.'
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,

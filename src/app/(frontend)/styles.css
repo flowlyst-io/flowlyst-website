@@ -445,8 +445,9 @@ code,
 .rule-label::before {
   content: '';
   width: 24px;
-  height: 2px;
+  height: 1px;
   background: currentColor;
+  opacity: 0.6;
 }
 .eyebrow--on-dark {
   color: var(--fl-green);

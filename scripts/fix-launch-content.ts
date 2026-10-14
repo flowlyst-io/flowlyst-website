@@ -28,8 +28,6 @@ const PHOTO_PATH = 'public/images/aziz-aghayev.jpg'
 const PHOTO_ALT = 'Aziz Aghayev, founder of flowlyst'
 
 const apply = process.argv.includes('--apply')
-// Local proof only: lets --apply run without Vercel Blob, writing media to ./media.
-const allowLocalMedia = process.argv.includes('--local-media')
 
 async function fixPosts(payload: Payload): Promise<{ changed: number; unmatched: number }> {
   const posts = await payload.find({
@@ -84,7 +82,8 @@ async function fixAuthor(payload: Payload): Promise<number> {
 
   const needsPhoto = !author.photo
   if (needsPhoto) {
-    if (apply && !process.env.BLOB_READ_WRITE_TOKEN && !allowLocalMedia) {
+    // Must match the storage switch in src/payload.config.ts (vercelBlobStorage `enabled`).
+    if (apply && !process.env.BLOB_READ_WRITE_TOKEN) {
       throw new Error(
         'BLOB_READ_WRITE_TOKEN is not set: the headshot would land on local disk, where the deployed site cannot see it.',
       )

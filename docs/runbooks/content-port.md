@@ -201,6 +201,8 @@ With `--apply`, a missing `BLOB_READ_WRITE_TOKEN` aborts before anything is writ
 (only when the photo still has to be uploaded), because the photo would otherwise land on
 local disk where the deployed site cannot see it.
 
+Before `--apply`, check Versions in `/admin` for any post with an unpublished draft; the fix writes over the published version and would hide that draft.
+
 ```bash
 export DATABASE_URL='<pooled Neon connection string>'
 export PAYLOAD_SECRET='<PAYLOAD_SECRET>'
@@ -230,4 +232,3 @@ Any `unmatched` line names a post and a snippet to fix by hand in `/admin`.
 The script writes with revalidation disabled, so the live blog pages keep their cached
 HTML until the next production deploy. Cutover step 7b (the redeploy without build
 cache) refreshes them; after it, check a post that had `**` and the About page byline.
-`--local-media` exists only for proving the script against a local database.
