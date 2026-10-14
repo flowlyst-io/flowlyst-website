@@ -10,8 +10,8 @@ import type { LegalDoc } from './types'
 export const termsDoc: LegalDoc = {
   doc: 'terms',
   title: 'Terms of service',
-  sub: 'The rules that govern your use of flowlyst.',
-  lastUpdated: 'October 11, 2026',
+  sub: 'The rules that govern your use of the flowlyst website.',
+  lastUpdated: 'October 13, 2026',
   sections: [
     {
       id: 'overview',
