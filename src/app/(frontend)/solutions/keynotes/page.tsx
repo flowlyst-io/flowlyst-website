@@ -28,7 +28,7 @@ const CANONICAL_PATH = '/solutions/keynotes'
 
 const PAGE_TITLE = 'Keynote Speaker on AI in K–12 — flowlyst'
 const PAGE_DESCRIPTION =
-  'Book Aziz Aghayev to keynote your event on AI for K–12 school business officials, district finance modernization, and school operations. Past venues: ASBO International, NJASBO, CPS.'
+  'Book Aziz Aghayev to keynote your event on AI for K–12 school business officials, district finance modernization, and school operations. Keynote at ASBO International; sessions at NJASBO and CPS.'
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -50,11 +50,15 @@ export const metadata: Metadata = {
   },
 }
 
-// Past venues (PRD §4.4 / §5) — exactly the three attributable to Aziz; listing
-// more (e.g. AASA, which the PRD names as an audience example, not a venue) would
-// overclaim a real person's speaking history. A 3-column row that collapses
-// responsively via `.stat-band__grid` (--stat-band-cols: 3).
-const VENUES = ['ASBO International', 'NJASBO', 'CPS'] as const
+// Where Aziz has spoken — exactly the three attributable to him, each with its
+// real format (keynote vs. session); listing more or upgrading a session to a
+// keynote would overclaim a real person's speaking history. A 3-column row that
+// collapses responsively via `.stat-band__grid` (--stat-band-cols: 3).
+const VENUES = [
+  { name: 'ASBO International', format: 'Keynote' },
+  { name: 'NJASBO', format: 'Session' },
+  { name: 'CPS', format: 'Session' },
+] as const
 
 // Topics Aziz speaks on (PRD §4.4). Tabular rows, mirroring the design.
 type Topic = { num: string; tag: string; title: string; copy: string }
@@ -81,7 +85,7 @@ const TOPICS: Topic[] = [
 
 // Who books keynotes (PRD §4.4 audiences).
 const AUDIENCES: Array<{ title: string; copy: string }> = [
-  { title: 'State & national associations', copy: 'ASBO International, AASA, NSBA.' },
+  { title: 'State & national associations', copy: 'ASBO International and state associations.' },
   { title: 'District-hosted summits', copy: 'Internal leadership convenings.' },
   { title: 'Regional service-agency PD', copy: 'County offices, ESCs, BOCES.' },
   { title: 'School finance conferences', copy: 'CPS, NJASBO, others.' },
@@ -136,18 +140,18 @@ export default function KeynotesPage() {
         visual={<KeynoteHeroArt />}
       />
 
-      {/* PAST VENUES — 3-column row, responsive via stat-band__grid. */}
+      {/* WHERE AZIZ HAS SPOKEN — 3-column row, responsive via stat-band__grid. */}
       <section className="section section--cream" data-testid="keynotes-venues">
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
             <div className="eyebrow" style={{ justifyContent: 'center' }}>
-              Past venues
+              Where Aziz has spoken
             </div>
           </div>
           <div className="stat-band__grid" style={{ '--stat-band-cols': 3 } as React.CSSProperties}>
             {VENUES.map((venue) => (
               <div
-                key={venue}
+                key={venue.name}
                 style={{
                   padding: '40px 16px',
                   textAlign: 'center',
@@ -159,7 +163,20 @@ export default function KeynotesPage() {
                   letterSpacing: '-0.01em',
                 }}
               >
-                {venue}
+                {venue.name}
+                <span
+                  style={{
+                    display: 'block',
+                    marginTop: 8,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: 'var(--c-ink-2)',
+                  }}
+                >
+                  {venue.format}
+                </span>
               </div>
             ))}
           </div>

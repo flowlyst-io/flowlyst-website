@@ -106,7 +106,7 @@ const OFFERINGS: Offering[] = [
   { title: 'Keynotes', href: '/solutions/keynotes' },
 ]
 
-const AZIZ_CHIPS = ['Former school CFO', 'ASBO International speaker', 'NJASBO · CPS', 'AASA']
+const AZIZ_CHIPS = ['Former school CFO', 'ASBO International speaker', 'NJASBO · CPS']
 
 export default function AboutPage() {
   return (
@@ -278,6 +278,7 @@ export default function AboutPage() {
               homepage ghost-light label fix (#6). Sized here, not in the shared
               .section--green block (the homepage reuses it). A tester guards this. */}
           <div
+            className="rule-label"
             style={{
               fontSize: 19,
               fontWeight: 700,
@@ -287,7 +288,7 @@ export default function AboutPage() {
               marginBottom: 40,
             }}
           >
-            ─── Aziz on flowlyst
+            Aziz on flowlyst
           </div>
           <blockquote
             className="h1"

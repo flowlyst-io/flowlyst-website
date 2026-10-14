@@ -34,7 +34,7 @@ For each of the 7 legacy posts it:
    publish date (`<time datetime>`), body HTML (the `.prose` region), featured image,
    and tags — nothing is hand-transcribed, so a re-run reproduces the same content.
 2. **Converts** the body HTML to Lexical via Payload's own `convertHTMLToLexical`.
-3. **Upserts the author** — Aziz Aghayev, "Founder & Lead Consultant" (PRD §6). The
+3. **Upserts the author** — Aziz Aghayev, "Founder & CEO". The
    legacy byline is a generic "Flowlyst Team"; every post is re-attributed to the
    named founder. No author photo (the design's fallback avatar is intentional until
    issue #42).
@@ -153,7 +153,7 @@ dev check):
 1. `/blog` — the index lists all 7 posts, newest first (Apr 5 2025 → Mar 8 2025).
 2. Each `/blog/<slug>` (the 7 slugs above) renders with:
    - the correct **title** (post #1 shows **K-12**, not K-15),
-   - byline **Aziz Aghayev · Founder & Lead Consultant** and the legacy date,
+   - byline **Aziz Aghayev · Founder & CEO** and the legacy date,
    - **reading time** (2–3 min),
    - the full body (intro, `##` subheads, bullet lists),
    - a valid **`Article`** JSON-LD block in the page source (`type="application/ld+json"`).
@@ -179,3 +179,55 @@ by slug (and, if desired, their author and media) — either:
 
 Because the script is idempotent, the usual "fix" is simply to **re-run** it (e.g.
 after correcting content upstream) rather than roll back.
+
+---
+
+## Launch-day content fix (`pnpm content:fix`, issue #70)
+
+A follow-up data fix for content already in the database. It does two things:
+
+1. **Bold markers.** In every blog post body, literal `**x**` in text becomes real bold.
+   A lone or cross-node `**` is left alone and listed under its slug for hand editing.
+2. **Author `aziz-aghayev`.** Sets the title to "Founder & CEO", and, if the author has
+   no photo, uploads `public/images/aziz-aghayev.jpg` to Media (alt "Aziz Aghayev,
+   founder of flowlyst") and sets it as the photo.
+
+It is **dry-run by default** and **idempotent**: a re-run after `--apply` reports 0
+changes. Use the package script, never bare `tsx` (it bakes in `CI=true` so no schema is
+pushed to Neon).
+
+Env vars, same as the port: `DATABASE_URL`, `PAYLOAD_SECRET`, `BLOB_READ_WRITE_TOKEN`.
+With `--apply`, a missing `BLOB_READ_WRITE_TOKEN` aborts before anything is written
+(only when the photo still has to be uploaded), because the photo would otherwise land on
+local disk where the deployed site cannot see it.
+
+```bash
+export DATABASE_URL='<pooled Neon connection string>'
+export PAYLOAD_SECRET='<PAYLOAD_SECRET>'
+export BLOB_READ_WRITE_TOKEN='<Vercel Blob token>'
+
+pnpm content:fix            # 1. dry run: read the report
+pnpm content:fix --apply    # 2. write
+pnpm content:fix            # 3. confirm: 0 post(s) to change, 0 author change(s)
+```
+
+Expected dry-run output (counts vary with the data):
+
+```
+DRY RUN — no changes written (use --apply)
+
+Author:
+  aziz-aghayev: would set title, photo
+
+Blog posts:
+  <slug>: N bold pair(s) to convert, 0 unmatched
+  ...
+Summary: N post(s) to change, 2 author change(s), 0 unmatched ** to review by hand.
+```
+
+Any `unmatched` line names a post and a snippet to fix by hand in `/admin`.
+
+The script writes with revalidation disabled, so the live blog pages keep their cached
+HTML until the next production deploy. Cutover step 7b (the redeploy without build
+cache) refreshes them; after it, check a post that had `**` and the About page byline.
+`--local-media` exists only for proving the script against a local database.
