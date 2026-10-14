@@ -48,6 +48,20 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: `export async function wrapPendingJobUsers(db) {…}`; `up` runs the ALTERs, then `await wrapPendingJobUsers(db)`. The test inserts a legacy row, calls `wrapPendingJobUsers(payload.db.drizzle)`, then `payload.jobs.run()`, and asserts the outcome. See `src/migrations/20261012_023721_payload_3_90_upgrade.ts` and `tests/int/cms.int.spec.ts`.
 4. **Gotcha**: Payload's loader reads only `up` and `down`, so extra exports are safe. A migration's name is permanent once applied to a shared database, so rename only before it reaches main. The rewrite cannot cover rows the old deployment writes while the production build is running.
 
+### Server env vars are read through `envValue`, never raw `process.env`
+
+1. **Rule**: every server-side secret, address or key env var is read through `envValue(name)` from `src/utilities/envValue.ts`, never as a raw `process.env.X`. Client `NEXT_PUBLIC_*` reads stay literal member accesses, written `process.env.NEXT_PUBLIC_X?.trim() || undefined`.
+2. **Why**: values pasted into the Vercel dashboard carry stray whitespace, which breaks recipients and headers and makes a blank value look set (PR #118).
+3. **Minimal example**: `const to = envValue('SALES_NOTIFY_TO') || envValue('LEAD_NOTIFY_TO') || DEFAULT_INTERNAL_TO`
+4. **Gotcha**: never pass a `NEXT_PUBLIC_*` name to `envValue` in client code. Next.js inlines only literal `process.env.NEXT_PUBLIC_X` accesses at build time, so the dynamic lookup is `undefined` in the browser.
+
+### Network side effects in Payload hooks are awaited, never `void`-ed
+
+1. **Rule**: a Payload hook that calls the network (sending email, for example) `await`s the call. The callee catches and logs its own errors, so the save never fails because of it.
+2. **Why**: Vercel freezes a serverless function once the response returns, which drops an in-flight request. Production lost a demo-request notification this way, logged as `fetch failed` (PR #118).
+3. **Minimal example**: `afterChange: [async ({ doc, operation, req }) => { if (operation === 'create') await notifyDemoRequest(req.payload, doc, …) }]`, where `notifyDemoRequest` sends through `trySend`, which catches every send error.
+4. **Gotcha**: once awaited, an exception that escapes the callee fails the request and can roll back the write it follows. The callee must never throw, and that includes the code that runs before its own `try`.
+
 ## The contract for this file
 
 **Every entry has four parts, in this order:**

@@ -45,9 +45,11 @@ export const NewsletterSubscribers: CollectionConfig = {
     // (an update) sends its own confirmation. After-write, non-throwing, and
     // skips when email is unconfigured — never fails persistence (invariant d).
     afterChange: [
-      ({ doc, operation, req }) => {
+      async ({ doc, operation, req }) => {
         if (operation === 'create')
-          void sendNewsletterConfirmation(req.payload, doc.email as string)
+          // Awaited, not fire-and-forget: on serverless the function is frozen once the
+          // response returns, which kills an in-flight send. The notifier never throws.
+          await sendNewsletterConfirmation(req.payload, doc.email as string)
       },
     ],
   },

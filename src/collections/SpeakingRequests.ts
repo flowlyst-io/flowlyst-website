@@ -48,9 +48,11 @@ export const SpeakingRequests: CollectionConfig = {
     // write, non-throwing, skips when email is unconfigured — never fails
     // persistence (invariant d).
     afterChange: [
-      ({ doc, operation, req }) => {
+      async ({ doc, operation, req }) => {
         if (operation === 'create')
-          void notifySpeakingRequest(
+          // Awaited, not fire-and-forget: on serverless the function is frozen once the
+          // response returns, which kills an in-flight send. The notifier never throws.
+          await notifySpeakingRequest(
             req.payload,
             doc as SpeakingRequest,
             recaptchaOutcomeOf(req.context),

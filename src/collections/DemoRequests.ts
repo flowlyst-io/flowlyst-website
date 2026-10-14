@@ -41,9 +41,11 @@ export const DemoRequests: CollectionConfig = {
     // write, and the helper never throws / skips when email is unconfigured, so
     // a mail problem can never fail persistence (review invariant d).
     afterChange: [
-      ({ doc, operation, req }) => {
+      async ({ doc, operation, req }) => {
         if (operation === 'create')
-          void notifyDemoRequest(req.payload, doc as DemoRequest, recaptchaOutcomeOf(req.context))
+          // Awaited, not fire-and-forget: on serverless the function is frozen once the
+          // response returns, which kills an in-flight send. The notifier never throws.
+          await notifyDemoRequest(req.payload, doc as DemoRequest, recaptchaOutcomeOf(req.context))
       },
     ],
   },

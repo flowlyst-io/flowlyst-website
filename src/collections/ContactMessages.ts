@@ -31,9 +31,11 @@ export const ContactMessages: CollectionConfig = {
     // Notify info@ when a contact message is created (PRD §8.2). After-write,
     // non-throwing, skips when email is unconfigured — never fails persistence.
     afterChange: [
-      ({ doc, operation, req }) => {
+      async ({ doc, operation, req }) => {
         if (operation === 'create')
-          void notifyContactMessage(
+          // Awaited, not fire-and-forget: on serverless the function is frozen once the
+          // response returns, which kills an in-flight send. The notifier never throws.
+          await notifyContactMessage(
             req.payload,
             doc as ContactMessage,
             recaptchaOutcomeOf(req.context),
