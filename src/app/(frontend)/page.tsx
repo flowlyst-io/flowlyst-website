@@ -543,6 +543,7 @@ export default async function HomePage() {
                           : null
                       }
                       index={i}
+                      sizes="(max-width: 680px) 100vw, (max-width: 960px) 50vw, 410px"
                     />
                     <div style={{ padding: 28 }}>
                       <div
