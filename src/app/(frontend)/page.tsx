@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
-import type { BlogPost, Testimonial } from '@/payload-types'
+import type { BlogPost, Organization, Testimonial } from '@/payload-types'
 import { Mark } from '@/components/Mark'
 import { FinalCTA } from '@/components/FinalCTA'
 
@@ -41,8 +41,6 @@ export const metadata: Metadata = {
       'Budgeting software, AI training, and consulting for K–12 public school districts, built by someone who used to do the job.',
   },
 }
-
-const MARQUEE_ITEMS = ['ASBO International', 'NJASBO', 'CPS', 'WSPS', 'BSD']
 
 const FLAGSHIP_FEATURES = [
   'Department entry & approvals',
@@ -139,7 +137,7 @@ export default async function HomePage() {
   // control apply, so an anonymous request never sees drafts (the Local API
   // otherwise defaults to overriding access). Site Settings is public-read with no
   // draft concept, so its default is fine.
-  const [settings, testimonialsResult, postsResult] = await Promise.all([
+  const [settings, testimonialsResult, postsResult, organizationsResult] = await Promise.all([
     payload.findGlobal({ slug: 'site-settings' }),
     payload.find({
       collection: 'testimonials',
@@ -160,10 +158,29 @@ export default async function HomePage() {
       limit: 3,
       sort: '-publishedAt',
     }),
+    // The strip is decoration: a failed query (e.g. the table not migrated yet) hides
+    // it rather than taking `/` down.
+    payload
+      .find({
+        collection: 'organizations',
+        where: {
+          and: [{ showInMarquee: { equals: true } }, { status: { equals: 'published' } }],
+        },
+        overrideAccess: false,
+        depth: 0,
+        sort: ['order', 'createdAt'],
+        limit: 0,
+        pagination: false,
+      })
+      .catch((error: unknown) => {
+        payload.logger.error({ err: error }, 'Homepage organizations strip query failed')
+        return { docs: [] as Organization[] }
+      }),
   ])
 
   const testimonials = testimonialsResult.docs
   const posts = postsResult.docs
+  const marqueeNames = organizationsResult.docs.map((organization) => organization.name)
 
   const heroHeadline = settings?.hero?.headline?.trim()
   const heroSubheadline = settings?.hero?.subheadline?.trim()
@@ -248,9 +265,11 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <div style={{ marginTop: 96 }}>
-          <Marquee items={MARQUEE_ITEMS} />
-        </div>
+        {marqueeNames.length > 0 && (
+          <div style={{ marginTop: 96 }} data-testid="home-marquee">
+            <Marquee items={marqueeNames} />
+          </div>
+        )}
       </section>
 
       {/* FLAGSHIP — Budget Software on cream */}

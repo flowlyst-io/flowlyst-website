@@ -70,6 +70,7 @@ export interface Config {
     'blog-posts': BlogPost;
     'case-studies': CaseStudy;
     testimonials: Testimonial;
+    organizations: Organization;
     'training-programs': TrainingProgram;
     authors: Author;
     media: Media;
@@ -91,6 +92,7 @@ export interface Config {
     'blog-posts': BlogPostsSelect<false> | BlogPostsSelect<true>;
     'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
+    organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     'training-programs': TrainingProgramsSelect<false> | TrainingProgramsSelect<true>;
     authors: AuthorsSelect<false> | AuthorsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -471,6 +473,28 @@ export interface Testimonial {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: number;
+  name: string;
+  /**
+   * Shows in the homepage strip only when also Published.
+   */
+  showInMarquee?: boolean | null;
+  /**
+   * Lower numbers roll first. Blank goes after the numbered ones.
+   */
+  order?: number | null;
+  /**
+   * Only Published organizations appear on the site.
+   */
+  status: 'draft' | 'published';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "training-programs".
  */
 export interface TrainingProgram {
@@ -843,6 +867,10 @@ export interface PayloadLockedDocument {
         value: number | Testimonial;
       } | null)
     | ({
+        relationTo: 'organizations';
+        value: number | Organization;
+      } | null)
+    | ({
         relationTo: 'training-programs';
         value: number | TrainingProgram;
       } | null)
@@ -997,6 +1025,18 @@ export interface TestimonialsSelect<T extends boolean = true> {
   videoUrl?: T;
   photo?: T;
   featured?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations_select".
+ */
+export interface OrganizationsSelect<T extends boolean = true> {
+  name?: T;
+  showInMarquee?: T;
+  order?: T;
   status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1408,6 +1448,7 @@ export interface TaskCreateCollectionExport {
       | 'blog-posts'
       | 'case-studies'
       | 'testimonials'
+      | 'organizations'
       | 'training-programs'
       | 'authors'
       | 'media'

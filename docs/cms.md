@@ -15,6 +15,7 @@ Grouped as they appear in the admin nav.
 | **Blog Posts**        | Lexical body, excerpt, featured + OG image, author, tags, service category, auto reading-time, SEO meta             | Drafts + scheduled publish + preview |
 | **Case Studies**      | Structured long-form: intro / challenge / solution / results (each Lexical), district info, metrics, hero, SEO meta | Drafts + scheduled publish + preview |
 | **Testimonials**      | Quote, client, org/district, industry, service category, video URL, photo, featured flag                            | Plain `status` (draft/published)     |
+| **Organizations**     | Names on the homepage trust strip; show-on-homepage flag and order                                                  | Plain `status` (draft/published)     |
 | **Training Programs** | Hierarchical: program → ordered modules; level, format, duration                                                    | Plain `status`                       |
 | **Authors**           | Name, title, photo, bio, links — referenced by blog posts                                                           | Public                               |
 | **Media**             | Image library; **alt text required (validated)**; auto image sizes                                                  | Public read                          |
@@ -55,7 +56,7 @@ Guardrails:
 ## Drafts, scheduled publishing, preview
 
 - **Drafts** — Blog Posts and Case Studies use Payload versions/drafts; unpublished
-  work is invisible to the public. Testimonials/Training use a simple `status` select.
+  work is invisible to the public. Testimonials/Organizations/Training use a simple `status` select.
 - **Scheduled publishing** — enabled via `versions.drafts.schedulePublish` on Blog
   Posts and Case Studies. Setting a future publish date enqueues a `schedulePublish`
   job. **The job only runs when the jobs queue is triggered** (see below).
