@@ -7,6 +7,7 @@ import * as migration_20260714_142633_testimonials_keynotes_category from './202
 import * as migration_20260714_162601_content_model_touchup from './20260714_162601_content_model_touchup';
 import * as migration_20261012_023721_payload_3_90_upgrade from './20261012_023721_payload_3_90_upgrade';
 import * as migration_20261014_003843_contact_reason_assessment_pricing from './20261014_003843_contact_reason_assessment_pricing';
+import * as migration_20261017_000039_organizations from './20261017_000039_organizations';
 
 export const migrations = [
   {
@@ -52,6 +53,11 @@ export const migrations = [
   {
     up: migration_20261014_003843_contact_reason_assessment_pricing.up,
     down: migration_20261014_003843_contact_reason_assessment_pricing.down,
-    name: '20261014_003843_contact_reason_assessment_pricing'
+    name: '20261014_003843_contact_reason_assessment_pricing',
+  },
+  {
+    up: migration_20261017_000039_organizations.up,
+    down: migration_20261017_000039_organizations.down,
+    name: '20261017_000039_organizations'
   },
 ];

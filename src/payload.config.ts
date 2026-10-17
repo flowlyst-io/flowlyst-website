@@ -39,6 +39,7 @@ import { Authors } from './collections/Authors'
 import { BlogPosts } from './collections/BlogPosts'
 import { CaseStudies } from './collections/CaseStudies'
 import { Testimonials } from './collections/Testimonials'
+import { Organizations } from './collections/Organizations'
 import { TrainingPrograms } from './collections/TrainingPrograms'
 import { DemoRequests } from './collections/DemoRequests'
 import { SpeakingRequests } from './collections/SpeakingRequests'
@@ -71,6 +72,7 @@ export default buildConfig({
     BlogPosts,
     CaseStudies,
     Testimonials,
+    Organizations,
     TrainingPrograms,
     Authors,
     Media,
