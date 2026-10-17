@@ -10,6 +10,7 @@ import { Mark } from '@/components/Mark'
 import { FinalCTA } from '@/components/FinalCTA'
 import { PostThumb } from '@/components/blog/BlogArt'
 import { ProductMock } from '@/components/solutions/ProductMock'
+import { getSiteSettings } from '@/utilities/siteSettings'
 
 /**
  * Homepage (`/`) — the real page for issue #6, built against the settled design
@@ -137,10 +138,11 @@ export default async function HomePage() {
 
   // Public reads: `overrideAccess: false` makes the `publishedOrStaff` access
   // control apply, so an anonymous request never sees drafts (the Local API
-  // otherwise defaults to overriding access). Site Settings is public-read with no
-  // draft concept, so its default is fine.
+  // otherwise defaults to overriding access). Site Settings goes through the
+  // tolerant loader: a failed read (a preview database not migrated yet) falls back
+  // to the default hero copy instead of failing the prerender.
   const [settings, testimonialsResult, postsResult, organizationsResult] = await Promise.all([
-    payload.findGlobal({ slug: 'site-settings' }),
+    getSiteSettings(),
     payload.find({
       collection: 'testimonials',
       where: {

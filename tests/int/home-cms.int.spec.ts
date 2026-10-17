@@ -28,9 +28,10 @@ import sharp from 'sharp'
 
 import config from '@/payload.config'
 import HomePage from '@/app/(frontend)/page'
+import { seedMarqueeOrganizations } from '@/migrations/20261017_000039_organizations'
 import type { BlogPost } from '@/payload-types'
 
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 let payload: Payload
 const stamp = Date.now()
@@ -96,10 +97,32 @@ beforeAll(async () => {
 })
 
 describe('Homepage CMS rendering', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   // Each test owns a clean content slate so ordering across files can't leak
   // data in. (fileParallelism is off, so files run serially — see vitest.config.)
   beforeEach(async () => {
     await clearContent()
+  })
+
+  it('still renders the hero and the marquee when the Site Settings read fails', async () => {
+    await payload.delete({ collection: 'organizations', where: { id: { exists: true } } })
+    await payload.create({
+      collection: 'organizations',
+      data: { name: `ORG-SETTINGS-${stamp}`, status: 'published', showInMarquee: true },
+    })
+    vi.spyOn(payload, 'findGlobal').mockRejectedValue(
+      new Error('column "founder_linked_in" does not exist'),
+    )
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    const html = await renderHome()
+    expect(html, 'homepage still renders its h1').toContain('<h1')
+    expect(html, 'marquee still renders').toContain('data-testid="home-marquee"')
+    await payload.delete({ collection: 'organizations', where: { id: { exists: true } } })
+    await seedMarqueeOrganizations(payload.db.drizzle)
   })
 
   it('omits the testimonials and blog sections when the CMS is empty', async () => {
