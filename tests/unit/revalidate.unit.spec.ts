@@ -10,17 +10,24 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // `next/cache` is mocked so the outside-scope throw is reproduced deterministically,
 // without booting Payload or a request. The two collection-level never-throw tests
 // (blog + case-studies int specs) exercise the same guarantee through the real hook.
-const { revalidatePathMock } = vi.hoisted(() => ({ revalidatePathMock: vi.fn() }))
+const { revalidatePathMock, revalidateTagMock } = vi.hoisted(() => ({
+  revalidatePathMock: vi.fn(),
+  revalidateTagMock: vi.fn(),
+}))
 
-vi.mock('next/cache', () => ({ revalidatePath: revalidatePathMock }))
+vi.mock('next/cache', () => ({
+  revalidatePath: revalidatePathMock,
+  revalidateTag: revalidateTagMock,
+}))
 
-import { revalidatePaths } from '@/utilities/revalidate'
+import { revalidatePaths, revalidateSiteSettings } from '@/utilities/revalidate'
 
 const warn = vi.fn()
 const req = { payload: { logger: { warn } } }
 
 beforeEach(() => {
   revalidatePathMock.mockReset()
+  revalidateTagMock.mockReset()
   warn.mockReset()
 })
 
@@ -52,5 +59,30 @@ describe('revalidatePaths (shared content revalidation helper)', () => {
     })
     expect(revalidatePathMock).not.toHaveBeenCalled()
     expect(warn).not.toHaveBeenCalled()
+  })
+})
+
+describe('revalidateSiteSettings', () => {
+  it('expires the site-settings tag immediately and the root layout', () => {
+    revalidateSiteSettings(req)
+    expect(revalidateTagMock).toHaveBeenCalledWith('site-settings', { expire: 0 })
+    expect(revalidatePathMock).toHaveBeenCalledWith('/', 'layout')
+  })
+
+  it.each([
+    ['revalidateTag', () => revalidateTagMock],
+    ['revalidatePath', () => revalidatePathMock],
+  ])('never throws when %s throws, and warns once', (_name, mock) => {
+    mock().mockImplementation(() => {
+      throw new Error('outside a request scope')
+    })
+    expect(() => revalidateSiteSettings(req)).not.toThrow()
+    expect(warn).toHaveBeenCalledOnce()
+  })
+
+  it('calls neither when context.disableRevalidate is set', () => {
+    revalidateSiteSettings({ context: { disableRevalidate: true }, payload: { logger: { warn } } })
+    expect(revalidateTagMock).not.toHaveBeenCalled()
+    expect(revalidatePathMock).not.toHaveBeenCalled()
   })
 })
