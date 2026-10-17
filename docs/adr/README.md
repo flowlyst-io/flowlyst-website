@@ -23,10 +23,11 @@ When **not** to write one:
 
 Decisions taken before this record existed live on issue #1 (Architecture decision log) and in [stack.md](../stack.md).
 
-| #    | Title                                                  | Status   |
-| ---- | ------------------------------------------------------ | -------- |
-| 0001 | [Vercel Web Analytics](./0001-vercel-web-analytics.md) | Accepted |
-| 0002 | [Google reCAPTCHA v3](./0002-google-recaptcha.md)      | Accepted |
+| #    | Title                                                    | Status   |
+| ---- | -------------------------------------------------------- | -------- |
+| 0001 | [Vercel Web Analytics](./0001-vercel-web-analytics.md)   | Accepted |
+| 0002 | [Google reCAPTCHA v3](./0002-google-recaptcha.md)        | Accepted |
+| 0003 | [Vercel Speed Insights](./0003-vercel-speed-insights.md) | Accepted |
 
 ---
 
