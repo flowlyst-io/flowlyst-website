@@ -60,7 +60,7 @@ export const privacyDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking). The site does not use advertising trackers. If we add cookie-based analytics or advertising trackers, any non-essential cookie will run only after you accept it in the cookie banner, and this policy and the cookie policy will be updated first.',
+          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking), and Vercel Speed Insights, which is also cookieless and measures aggregated page-load performance. The site does not use advertising trackers. If we add cookie-based analytics or advertising trackers, any non-essential cookie will run only after you accept it in the cookie banner, and this policy and the cookie policy will be updated first.',
         },
       ],
     },
@@ -98,7 +98,7 @@ export const privacyDoc: LegalDoc = {
         {
           kind: 'list',
           items: [
-            'Vercel — website hosting, content delivery, and cookieless web analytics (United States).',
+            'Vercel — website hosting, content delivery, cookieless web analytics, and performance measurement (United States).',
             'Neon — the database that stores your form submissions.',
             'Resend — sends the email notifications that tell our team about your request.',
             'Zoho Bigin — our customer relationship management (CRM) system, where demo requests are recorded so our team can follow up.',

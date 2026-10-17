@@ -3,7 +3,7 @@ import type { LegalDoc } from './types'
 /**
  * Cookie policy (issue #22). Documents the cookies/storage the site ACTUALLY
  * uses today: the strictly-necessary consent cookie (`fl_cookie_consent`), the Payload
- * staff-session cookie. The site runs cookieless Vercel Web Analytics; Google reCAPTCHA v3
+ * staff-session cookie. The site runs cookieless Vercel Web Analytics and Speed Insights; Google reCAPTCHA v3
  * protects the forms and is treated as strictly necessary (ADR 0002). Unknowns are `flag`
  * blocks. Signed off by Tural 2026-10-11.
  */
@@ -58,7 +58,7 @@ export const cookiesDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking). The site uses no advertising cookies. If we add any cookie-based analytics later, we will list it here and it will run only after you accept.',
+          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking), and Vercel Speed Insights, which is also cookieless and measures aggregated page-load performance. The site uses no advertising cookies. If we add any cookie-based analytics later, we will list it here and it will run only after you accept.',
         },
         {
           kind: 'subheading',
