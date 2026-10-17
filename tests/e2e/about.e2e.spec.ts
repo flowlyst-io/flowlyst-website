@@ -291,6 +291,11 @@ test.describe('About — JSON-LD (Organization + Person)', () => {
     expect(worksFor, 'Person.worksFor must be present').toBeTruthy()
     expect(typeMatches(worksFor!, 'Organization'), 'worksFor must be an Organization').toBe(true)
     expect(worksFor!.name, 'worksFor.name must be flowlyst').toBe('flowlyst')
+    const organization = nodes.find(({ node }) => typeMatches(node, 'Organization'))
+    expect(organization, 'the layout Organization node must be present').toBeTruthy()
+    expect(worksFor!['@id'], 'worksFor must reference the Organization node by @id').toBe(
+      organization!.node['@id'],
+    )
   })
 })
 

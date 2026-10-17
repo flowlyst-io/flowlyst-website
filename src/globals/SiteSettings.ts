@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 import { anyone, isAdmin } from '@/access'
 import { validateURL } from '@/fields/validators'
+import { revalidateSiteSettings } from '@/utilities/revalidate'
 
 /**
  * Site-wide settings (PRD §9): footer copy, social links, contact email, and
@@ -18,6 +19,14 @@ export const SiteSettings: GlobalConfig = {
   access: {
     read: anyone,
     update: isAdmin,
+  },
+  hooks: {
+    afterChange: [
+      ({ req, doc }) => {
+        revalidateSiteSettings(req)
+        return doc
+      },
+    ],
   },
   fields: [
     {
@@ -43,6 +52,10 @@ export const SiteSettings: GlobalConfig = {
       name: 'socialLinks',
       type: 'array',
       labels: { singular: 'Social Link', plural: 'Social Links' },
+      admin: {
+        description:
+          'The footer shows the LinkedIn entry as an icon; every entry feeds the Organization structured data. Leave empty to hide.',
+      },
       fields: [
         {
           name: 'platform',
@@ -58,6 +71,15 @@ export const SiteSettings: GlobalConfig = {
         },
         { name: 'url', type: 'text', required: true, validate: validateURL },
       ],
+    },
+    {
+      name: 'founderLinkedIn',
+      type: 'text',
+      label: "Aziz's LinkedIn URL",
+      validate: validateURL,
+      admin: {
+        description: "Shown on /about and in Aziz's structured data. Leave empty to hide.",
+      },
     },
   ],
 }

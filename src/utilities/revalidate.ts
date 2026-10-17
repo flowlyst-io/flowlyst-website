@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 /**
  * Shared on-demand revalidation for the content collections (issue #1 decision;
@@ -43,5 +43,26 @@ export function revalidatePaths(
     }
   } catch (err) {
     req?.payload?.logger?.warn(`revalidatePath skipped (no Next request scope): ${String(err)}`)
+  }
+}
+
+/** Tag on the cached Site Settings read (`getSiteSettings`). Lives here, not beside the loader, to keep the global -> revalidate -> payload config import chain acyclic. */
+export const SITE_SETTINGS_TAG = 'site-settings'
+
+/**
+ * Site Settings feed the footer, Organization JSON-LD and /about on every page, so a
+ * save expires both caches: the tag for the data cache, the root layout for the
+ * route cache. `{ expire: 0 }` makes the first visit after a save fresh rather than
+ * stale-while-revalidate. Same opt-out and never-throw rules as `revalidatePaths`.
+ */
+export function revalidateSiteSettings(req?: RevalidateReq): void {
+  if (req?.context?.disableRevalidate) return
+  try {
+    revalidateTag(SITE_SETTINGS_TAG, { expire: 0 })
+    revalidatePath('/', 'layout')
+  } catch (err) {
+    req?.payload?.logger?.warn(
+      `Site Settings revalidation skipped (no Next request scope): ${String(err)}`,
+    )
   }
 }

@@ -8,6 +8,8 @@ import { Footer } from '@/components/Footer'
 import { CookieConsent } from '@/components/CookieConsent'
 import { getServerURL } from '@/utilities/serverURL'
 import { OrganizationJsonLd } from '@/components/OrganizationJsonLd'
+import { getSiteSettings } from '@/utilities/siteSettings'
+import { companyLinkedIn, companySameAs } from '@/utilities/socialLinks'
 import './styles.css'
 
 const serverURL = getServerURL()
@@ -32,11 +34,12 @@ export const metadata: Metadata = {
  *
  * Pages own their single H1; the layout owns the <main> landmark.
  */
-export default function FrontendLayout({ children }: { children: React.ReactNode }) {
+export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSiteSettings()
   return (
     <html lang="en" className={nunito.variable}>
       <body>
-        <OrganizationJsonLd />
+        <OrganizationJsonLd sameAs={companySameAs(settings)} />
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
@@ -44,7 +47,7 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
         <main id="main-content" tabIndex={-1}>
           {children}
         </main>
-        <Footer />
+        <Footer linkedInUrl={companyLinkedIn(settings)} />
         <CookieConsent />
         <Analytics />
         <SpeedInsights />
