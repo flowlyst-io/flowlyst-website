@@ -25,6 +25,7 @@ const revalidateAfterDelete: CollectionAfterDeleteHook = ({ doc, req }) => {
 export const Organizations: CollectionConfig = {
   slug: 'organizations',
   labels: { singular: 'Organization', plural: 'Organizations' },
+  defaultSort: 'order',
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'order', 'showInMarquee', 'status'],
@@ -41,7 +42,14 @@ export const Organizations: CollectionConfig = {
     afterDelete: [revalidateAfterDelete],
   },
   fields: [
-    { name: 'name', type: 'text', required: true },
+    {
+      name: 'name',
+      type: 'text',
+      required: true,
+      hooks: {
+        beforeValidate: [({ value }) => (typeof value === 'string' ? value.trim() : value)],
+      },
+    },
     {
       name: 'showInMarquee',
       type: 'checkbox',

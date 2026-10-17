@@ -177,6 +177,15 @@ describe('Organizations collection', () => {
     expect(result.docs.map((doc) => doc.name)).not.toContain('AASA')
   })
 
+  it('rejects a whitespace-only name and stores a padded name trimmed', async () => {
+    await expect(
+      createOrg({ name: '   ', status: 'published', showInMarquee: true }),
+    ).rejects.toThrow()
+
+    const padded = await createOrg({ name: '  CPS  ', status: 'published', showInMarquee: true })
+    expect(padded.name).toBe('CPS')
+  })
+
   it('runs its revalidation hooks on create, update and delete outside a request', async () => {
     const created = await createOrg({
       name: `ORG-HOOK-${stamp}`,
