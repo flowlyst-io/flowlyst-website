@@ -4,7 +4,7 @@ import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { OrganizationJsonLd } from '@/components/OrganizationJsonLd'
 import { getSiteSettings } from '@/utilities/siteSettings'
-import { companySameAs } from '@/utilities/socialLinks'
+import { companyLinkedIn, companySameAs } from '@/utilities/socialLinks'
 import NotFound from './(frontend)/not-found'
 import './(frontend)/styles.css'
 
@@ -23,7 +23,7 @@ export default async function GlobalNotFound() {
         <main id="main-content" tabIndex={-1}>
           <NotFound />
         </main>
-        <Footer />
+        <Footer linkedInUrl={companyLinkedIn(settings)} />
       </body>
     </html>
   )

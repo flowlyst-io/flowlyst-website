@@ -9,7 +9,7 @@ import { CookieConsent } from '@/components/CookieConsent'
 import { getServerURL } from '@/utilities/serverURL'
 import { OrganizationJsonLd } from '@/components/OrganizationJsonLd'
 import { getSiteSettings } from '@/utilities/siteSettings'
-import { companySameAs } from '@/utilities/socialLinks'
+import { companyLinkedIn, companySameAs } from '@/utilities/socialLinks'
 import './styles.css'
 
 const serverURL = getServerURL()
@@ -47,7 +47,7 @@ export default async function FrontendLayout({ children }: { children: React.Rea
         <main id="main-content" tabIndex={-1}>
           {children}
         </main>
-        <Footer />
+        <Footer linkedInUrl={companyLinkedIn(settings)} />
         <CookieConsent />
         <Analytics />
         <SpeedInsights />
