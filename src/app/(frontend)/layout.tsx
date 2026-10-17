@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { nunito } from './fonts'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
@@ -46,6 +47,7 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
         <Footer />
         <CookieConsent />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
