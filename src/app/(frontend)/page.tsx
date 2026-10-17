@@ -8,6 +8,8 @@ import config from '@payload-config'
 import type { BlogPost, Organization, Testimonial } from '@/payload-types'
 import { Mark } from '@/components/Mark'
 import { FinalCTA } from '@/components/FinalCTA'
+import { PostThumb } from '@/components/blog/BlogArt'
+import { ProductMock } from '@/components/solutions/ProductMock'
 
 /**
  * Homepage (`/`) — the real page for issue #6, built against the settled design
@@ -534,7 +536,14 @@ export default async function HomePage() {
                   data-testid="blog-teaser-card"
                 >
                   <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                    <BlogTileArt index={i} />
+                    <PostThumb
+                      image={
+                        post.featuredImage && typeof post.featuredImage === 'object'
+                          ? post.featuredImage
+                          : null
+                      }
+                      index={i}
+                    />
                     <div style={{ padding: 28 }}>
                       <div
                         style={{
@@ -605,138 +614,6 @@ function Marquee({ items }: { items: string[] }) {
   )
 }
 
-// Light-UI product screenshot mock (matches the light-theme product; no dark mode).
-function ProductMock() {
-  return (
-    <div
-      style={{
-        position: 'relative',
-        aspectRatio: '4/3',
-        background: 'var(--c-paper)',
-        border: '1px solid var(--c-line)',
-        borderRadius: 8,
-        overflow: 'hidden',
-        boxShadow: '0 32px 80px -16px rgba(14,20,16,0.18)',
-      }}
-    >
-      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <div
-          style={{
-            padding: '12px 16px',
-            borderBottom: '1px solid var(--c-line-2)',
-            display: 'flex',
-            gap: 6,
-            alignItems: 'center',
-            background: 'var(--c-cream)',
-          }}
-        >
-          <span
-            style={{ width: 8, height: 8, borderRadius: 999, background: 'rgba(26,26,27,0.18)' }}
-          />
-          <span
-            style={{ width: 8, height: 8, borderRadius: 999, background: 'rgba(26,26,27,0.18)' }}
-          />
-          <span
-            style={{ width: 8, height: 8, borderRadius: 999, background: 'rgba(26,26,27,0.18)' }}
-          />
-          <span
-            style={{
-              marginLeft: 12,
-              fontSize: 11,
-              fontFamily: 'JetBrains Mono, monospace',
-              color: 'var(--c-ink-3)',
-            }}
-          >
-            flowlyst · FY27 budget
-          </span>
-        </div>
-        <div style={{ padding: 24, flex: 1, color: 'var(--c-ink)' }}>
-          <div
-            style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-0.025em', marginBottom: 4 }}
-          >
-            $84.2M
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: 'var(--c-ink-3)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              marginBottom: 28,
-              fontWeight: 800,
-            }}
-          >
-            Total district budget · FY 2026–27
-          </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: 12,
-              marginBottom: 20,
-            }}
-          >
-            {(
-              [
-                ['Encumbered', '$61.7M', '73% of plan'],
-                ['Variance', '−$240K', 'Under budget'],
-              ] as const
-            ).map(([label, num, detail]) => (
-              <div
-                key={label}
-                style={{
-                  padding: '14px 16px',
-                  border: '1px solid var(--c-line)',
-                  borderRadius: 4,
-                  background: 'var(--c-sage)',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: 'var(--c-ink-3)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    fontWeight: 800,
-                  }}
-                >
-                  {label}
-                </div>
-                <div
-                  style={{
-                    fontSize: 24,
-                    fontWeight: 800,
-                    margin: '6px 0 2px',
-                    letterSpacing: '-0.02em',
-                  }}
-                >
-                  {num}
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--fl-green-700)', fontWeight: 800 }}>
-                  {detail}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 90 }}>
-            {[40, 65, 50, 78, 55, 92, 72, 68, 85, 60, 75, 88].map((h, i) => (
-              <div
-                key={i}
-                style={{
-                  flex: 1,
-                  height: h + '%',
-                  background: i === 5 ? 'var(--fl-green)' : 'rgba(0,165,104,0.22)',
-                  borderRadius: '2px 2px 0 0',
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function FounderAvatar({ size = 64 }: { size?: number }) {
   return (
     <Image
@@ -755,66 +632,4 @@ function FounderAvatar({ size = 64 }: { size?: number }) {
       }}
     />
   )
-}
-
-// Geometric blog-tile placeholders — distinct per index, light-theme-friendly.
-function BlogTileArt({ index = 0 }: { index?: number }) {
-  const variants = [
-    <svg
-      key="a"
-      viewBox="0 0 400 160"
-      aria-hidden="true"
-      style={{ width: '100%', height: 160, display: 'block', background: 'var(--c-sage)' }}
-    >
-      <rect x="20" y="60" width="40" height="80" fill="rgba(0,165,104,0.35)" />
-      <rect x="80" y="40" width="40" height="100" fill="rgba(0,165,104,0.55)" />
-      <rect x="140" y="20" width="40" height="120" fill="var(--fl-green)" />
-      <rect x="200" y="50" width="40" height="90" fill="rgba(0,165,104,0.45)" />
-      <rect x="260" y="70" width="40" height="70" fill="rgba(0,165,104,0.3)" />
-      <rect x="320" y="30" width="40" height="110" fill="rgba(0,165,104,0.5)" />
-    </svg>,
-    <svg
-      key="b"
-      viewBox="0 0 400 160"
-      aria-hidden="true"
-      style={{ width: '100%', height: 160, display: 'block', background: 'var(--fl-green)' }}
-    >
-      <path
-        d="M 20 130 Q 100 130 140 90 T 280 60 T 380 30"
-        fill="none"
-        stroke="#fff"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <path
-        d="M 20 130 Q 100 130 140 90 T 280 60 T 380 30 L 380 160 L 20 160 Z"
-        fill="rgba(255,255,255,0.15)"
-      />
-      <circle cx="280" cy="60" r="6" fill="#fff" />
-      <circle cx="380" cy="30" r="6" fill="#FFE9A0" />
-    </svg>,
-    <svg
-      key="c"
-      viewBox="0 0 400 160"
-      aria-hidden="true"
-      style={{ width: '100%', height: 160, display: 'block', background: 'var(--c-cream)' }}
-    >
-      {Array(8)
-        .fill(0)
-        .map((_, x) =>
-          Array(4)
-            .fill(0)
-            .map((_, y) => (
-              <circle
-                key={x + '-' + y}
-                cx={30 + x * 48}
-                cy={30 + y * 35}
-                r={x === 5 && y === 1 ? 12 : 5}
-                fill={x === 5 && y === 1 ? 'var(--fl-green)' : 'rgba(14,20,16,0.35)'}
-              />
-            )),
-        )}
-    </svg>,
-  ]
-  return variants[index % variants.length]
 }

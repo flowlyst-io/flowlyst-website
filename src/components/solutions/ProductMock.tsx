@@ -2,11 +2,10 @@ import React from 'react'
 
 /**
  * Light-UI product screenshot mock (design/site/home.jsx) — the budget dashboard
- * visual used in the Budget Software hero. Extracted verbatim from the homepage's
- * local `ProductMock` (issue #6, src/app/(frontend)/page.tsx) so the two pages
- * render the identical mock; the homepage still carries its own local copy, which
- * a later refactor can point at this shared component once the homepage file is in
- * scope. Server component, pure/decorative; inline styles reference brand tokens
+ * visual shared by the homepage and the Budget Software hero, so both pages render
+ * the identical mock. Originally extracted verbatim from the homepage's local copy
+ * (issue #6); the homepage now imports this one (#40).
+ * Server component, pure/decorative; inline styles reference brand tokens
  * only (no invented values).
  */
 export function ProductMock() {
