@@ -381,7 +381,9 @@ code,
 /* Heavy italic INSIDE a display heading is the inflection.
    WCAG 1.4.3 amendment (#10, 2026-10-14): the accent is --fl-green-600, not the
    comp's --fl-green, so it clears contrast on cream and white. Same departure from
-   the design source: --c-ink-3 (#666667) and .btn--primary (--fl-green-700). */
+   the design source: --c-ink-3 (#666667) and .btn--primary (--fl-green-700).
+   Further departures decided on #10 (2026-10-16): .footer__bottom at cream 0.6,
+   --accent/--accent-hover -> green-700, budget-software ERP "Add" box -> green-700. */
 .h1 em,
 .h2 em,
 .pull em {

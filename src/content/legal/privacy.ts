@@ -7,7 +7,8 @@ import type { LegalDoc } from './types'
  * forms; Vercel hosting; Neon Postgres; Resend email; Zoho Bigin CRM; Google
  * reCAPTCHA. Unknowns that only Tural/counsel can settle are `flag` blocks, not
  * guesses.
- * Signed off by Tural 2026-10-11 (issue #70).
+ * Signed off by Tural 2026-10-11 (issue #70); the Speed Insights sentences were
+ * added by #10 (2026-10-16), after that sign-off.
  */
 export const privacyDoc: LegalDoc = {
   doc: 'privacy',

@@ -5,7 +5,8 @@ import type { LegalDoc } from './types'
  * uses today: the strictly-necessary consent cookie (`fl_cookie_consent`), the Payload
  * staff-session cookie. The site runs cookieless Vercel Web Analytics and Speed Insights; Google reCAPTCHA v3
  * protects the forms and is treated as strictly necessary (ADR 0002). Unknowns are `flag`
- * blocks. Signed off by Tural 2026-10-11.
+ * blocks. Signed off by Tural 2026-10-11; the Speed Insights sentences were added
+ * by #10 (2026-10-16), after that sign-off.
  */
 export const cookiesDoc: LegalDoc = {
   doc: 'cookies',
