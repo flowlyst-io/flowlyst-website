@@ -145,7 +145,7 @@
 
   --c-ink: #1a1a1b;
   --c-ink-2: #4a4a4b;
-  --c-ink-3: #8a8a8b;
+  --c-ink-3: #666667;
 
   --c-line: rgba(26, 26, 27, 0.1);
   --c-line-2: rgba(26, 26, 27, 0.06);
@@ -378,13 +378,16 @@ code,
   margin: 0;
 }
 
-/* Heavy italic INSIDE a display heading is the inflection. */
+/* Heavy italic INSIDE a display heading is the inflection.
+   WCAG 1.4.3 amendment (#10, 2026-10-14): the accent is --fl-green-600, not the
+   comp's --fl-green, so it clears contrast on cream and white. Same departure from
+   the design source: --c-ink-3 (#666667) and .btn--primary (--fl-green-700). */
 .h1 em,
 .h2 em,
 .pull em {
   font-style: italic;
   font-weight: 800;
-  color: var(--fl-green);
+  color: var(--fl-green-600);
 }
 /* Plain bold inflection (no italic) */
 .h1 strong,
@@ -570,13 +573,13 @@ code,
   text-decoration: none;
 }
 .btn--primary {
-  background: var(--fl-green);
+  background: var(--fl-green-700);
   color: #fff;
   box-shadow: 0 8px 20px rgba(0, 165, 104, 0.28);
 }
 .btn--primary:hover {
   color: #fff;
-  background: var(--fl-green-600);
+  background: var(--fl-green-700);
   transform: translateY(-1px);
   box-shadow: 0 12px 28px rgba(0, 165, 104, 0.36);
 }
@@ -1385,8 +1388,8 @@ code,
    values (top:100px mirrors .request-demo__aside above). It
    collapses to one column at the 960px reflow breakpoint, where
    the sidebar stops sticking and stacks above the copy. Colors
-   are tokens; small text uses --c-ink-2, NOT the parked-AA-fail
-   --c-ink-3 the comp painted it with (see LegalPage.tsx header).
+   are tokens; small text uses --c-ink-2 rather than the comp's
+   --c-ink-3 (see LegalPage.tsx header).
    ============================================================ */
 .legal {
   padding: 56px 56px 120px;

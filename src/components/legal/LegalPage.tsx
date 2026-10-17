@@ -12,10 +12,9 @@ import { LEGAL_NAV, type LegalBlock, type LegalDoc } from '@/content/legal/types
  *
  * Two deliberate deviations from the comp, both documented:
  *  - Small text (the inactive TOC links and the "last updated" caption) uses
- *    `--c-ink-2`, not the comp's `--c-ink-3`. `--c-ink-3` (~3.44:1) is a known AA
- *    contrast fail parked on #70; reproducing it would ship a fresh AA fail on new
- *    text. `--c-ink-2` is a design-system token that clears AA — the same
- *    AA-driven-deviation-from-comp the About page already took. Tokens are not touched.
+ *    `--c-ink-2`, not the comp's `--c-ink-3`. `--c-ink-3` was an AA fail until #10
+ *    darkened it to #666667; the legal pages keep `--c-ink-2` (higher contrast, and
+ *    the same deviation-from-comp the About page took).
  *  - The comp's single decorative "email us" cream box is dropped: each document now
  *    carries a real "Contact us" section, so the box would duplicate it.
  *
