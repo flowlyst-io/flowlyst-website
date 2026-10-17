@@ -1,4 +1,16 @@
-import { test, expect, type APIRequestContext, type Locator } from '@playwright/test'
+import {
+  test,
+  expect,
+  request as apiRequest,
+  type APIRequestContext,
+  type Locator,
+} from '@playwright/test'
+import { getPayload } from 'payload'
+
+import config from '../../src/payload.config.js'
+import { fetchHtml } from '../helpers/rawHtml'
+import { E2E_BASE_URL } from '../helpers/serverURL'
+import { deriveFixtureEmail } from '../helpers/seedUser'
 
 /**
  * Homepage — server-rendering, SEO surface, and accessibility smoke (issue #6).
@@ -420,5 +432,85 @@ test.describe('Homepage — WCAG 1.4.3 contrast on the brand-green bands', () =>
       `ghost-light label must be >=18.66px at weight >=700 — got ${c.fontSize}px/${c.fontWeight}`,
     ).toBe(true)
     expect(c.color, 'ghost-light label must be full-opacity white').toBe(WHITE)
+  })
+})
+
+test.describe('Homepage organizations strip follows the admin without a redeploy', () => {
+  const ADMIN = {
+    email: deriveFixtureEmail({ prefix: 'home-marquee-e2e-admin' }),
+    password: 'home-marquee-e2e-password-123',
+    name: 'Home Marquee E2E Admin',
+    role: 'admin' as const,
+  }
+  const stamp = Date.now()
+  const createdIds: number[] = []
+  let admin: APIRequestContext
+
+  test.beforeAll(async () => {
+    test.setTimeout(120_000)
+    const payload = await getPayload({ config })
+    await payload.delete({ collection: 'users', where: { email: { equals: ADMIN.email } } })
+    await payload.create({ collection: 'users', data: ADMIN })
+
+    const loginCtx = await apiRequest.newContext({ baseURL: E2E_BASE_URL })
+    const res = await loginCtx.post('/api/users/login', {
+      data: { email: ADMIN.email, password: ADMIN.password },
+    })
+    expect(res.ok(), 'admin REST login must succeed').toBeTruthy()
+    const { token } = (await res.json()) as { token?: string }
+    expect(token, 'login must return a JWT').toBeTruthy()
+    await loginCtx.dispose()
+    admin = await apiRequest.newContext({
+      baseURL: E2E_BASE_URL,
+      extraHTTPHeaders: { Authorization: `JWT ${token}` },
+    })
+  })
+
+  test.afterAll(async () => {
+    const payload = await getPayload({ config })
+    await payload.delete({
+      collection: 'organizations',
+      where: { id: { in: createdIds } },
+    })
+    await payload.delete({ collection: 'users', where: { email: { equals: ADMIN.email } } })
+    await admin?.dispose()
+  })
+
+  async function createOrg(name: string): Promise<number> {
+    const res = await admin.post('/api/organizations', {
+      data: { name, status: 'published', showInMarquee: true, order: 0 },
+    })
+    expect(res.ok(), 'creating an organization over REST must succeed').toBeTruthy()
+    const { doc } = (await res.json()) as { doc: { id: number } }
+    createdIds.push(doc.id)
+    return doc.id
+  }
+
+  // Polls as an anonymous visitor: the plain `request` fixture carries no session.
+  // 15s is well under the 60s ISR window, so under `pnpm start` a pass proves
+  // on-demand revalidation; under `pnpm dev` there is no cache and it passes trivially.
+  const pollHome = (request: APIRequestContext, name: string, present: boolean) =>
+    expect
+      .poll(async () => (await fetchHtml(request, '/')).includes(name), { timeout: 15_000 })
+      .toBe(present)
+
+  test('a new organization appears, then disappears when hidden', async ({ request }) => {
+    const name = `E2E-ORG-HIDE-${stamp}`
+    const id = await createOrg(name)
+    await pollHome(request, name, true)
+
+    const res = await admin.patch(`/api/organizations/${id}`, { data: { showInMarquee: false } })
+    expect(res.ok(), 'hiding over REST must succeed').toBeTruthy()
+    await pollHome(request, name, false)
+  })
+
+  test('an organization disappears when deleted', async ({ request }) => {
+    const name = `E2E-ORG-DELETE-${stamp}`
+    const id = await createOrg(name)
+    await pollHome(request, name, true)
+
+    const res = await admin.delete(`/api/organizations/${id}`)
+    expect(res.ok(), 'deleting over REST must succeed').toBeTruthy()
+    await pollHome(request, name, false)
   })
 })
