@@ -8,6 +8,7 @@ import * as migration_20260714_162601_content_model_touchup from './20260714_162
 import * as migration_20261012_023721_payload_3_90_upgrade from './20261012_023721_payload_3_90_upgrade';
 import * as migration_20261014_003843_contact_reason_assessment_pricing from './20261014_003843_contact_reason_assessment_pricing';
 import * as migration_20261017_000039_organizations from './20261017_000039_organizations';
+import * as migration_20261017_184755_site_settings_founder_linkedin from './20261017_184755_site_settings_founder_linkedin';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20261017_000039_organizations.up,
     down: migration_20261017_000039_organizations.down,
-    name: '20261017_000039_organizations'
+    name: '20261017_000039_organizations',
+  },
+  {
+    up: migration_20261017_184755_site_settings_founder_linkedin.up,
+    down: migration_20261017_184755_site_settings_founder_linkedin.down,
+    name: '20261017_184755_site_settings_founder_linkedin'
   },
 ];

@@ -24,12 +24,14 @@
 import { getPayload, type Payload } from 'payload'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactElement } from 'react'
+import sharp from 'sharp'
 
 import config from '@/payload.config'
 import HomePage from '@/app/(frontend)/page'
+import { seedMarqueeOrganizations } from '@/migrations/20261017_000039_organizations'
 import type { BlogPost } from '@/payload-types'
 
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 let payload: Payload
 const stamp = Date.now()
@@ -84,15 +86,43 @@ async function clearContent(): Promise<void> {
   await payload.delete({ collection: 'blog-posts', where: { id: { exists: true } } })
 }
 
+function blogSection(html: string): string {
+  const start = html.indexOf('data-testid="home-blog"')
+  expect(start, 'blog section must render').toBeGreaterThan(-1)
+  return html.slice(start, html.indexOf('</section>', start))
+}
+
 beforeAll(async () => {
   payload = await getPayload({ config: await config })
 })
 
 describe('Homepage CMS rendering', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   // Each test owns a clean content slate so ordering across files can't leak
   // data in. (fileParallelism is off, so files run serially — see vitest.config.)
   beforeEach(async () => {
     await clearContent()
+  })
+
+  it('still renders the hero and the marquee when the Site Settings read fails', async () => {
+    await payload.delete({ collection: 'organizations', where: { id: { exists: true } } })
+    await payload.create({
+      collection: 'organizations',
+      data: { name: `ORG-SETTINGS-${stamp}`, status: 'published', showInMarquee: true },
+    })
+    vi.spyOn(payload, 'findGlobal').mockRejectedValue(
+      new Error('column "founder_linked_in" does not exist'),
+    )
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    const html = await renderHome()
+    expect(html, 'homepage still renders its h1').toContain('<h1')
+    expect(html, 'marquee still renders').toContain('data-testid="home-marquee"')
+    await payload.delete({ collection: 'organizations', where: { id: { exists: true } } })
+    await seedMarqueeOrganizations(payload.db.drizzle)
   })
 
   it('omits the testimonials and blog sections when the CMS is empty', async () => {
@@ -188,5 +218,66 @@ describe('Homepage CMS rendering', () => {
     )
     expect(html, 'published post title must render in the teaser').toContain(publishedTitle)
     expect(html, 'draft post title must NOT leak to the public homepage').not.toContain(draftTitle)
+  })
+
+  it('shows the featured image in a lazy next/image when a post has one', async () => {
+    const alt = `HOME-TEASER-ALT-${stamp}`
+    const buf = await sharp({
+      create: { width: 800, height: 450, channels: 3, background: { r: 18, g: 120, b: 92 } },
+    })
+      .jpeg({ quality: 80 })
+      .toBuffer()
+    const media = await payload.create({
+      collection: 'media',
+      data: { alt },
+      file: {
+        data: buf,
+        mimetype: 'image/jpeg',
+        name: `home-teaser-${stamp}.jpg`,
+        size: buf.length,
+      },
+    })
+    try {
+      await payload.create({
+        collection: 'blog-posts',
+        data: {
+          title: `IMG-POST-${stamp}`,
+          slug: `img-post-${stamp}`,
+          body: lexicalBody,
+          serviceCategory: 'general',
+          featuredImage: media.id,
+          _status: 'published',
+        },
+      })
+
+      const section = blogSection(await renderHome())
+      const img = section.match(/<img\b[^>]*>/)?.[0] ?? ''
+      expect(img, 'teaser must render an <img>').not.toBe('')
+      expect(img).toContain(`alt="${alt}"`)
+      expect(img).toContain('loading="lazy"')
+      expect(img).toContain('/_next/image')
+      expect(img).not.toContain('fetchpriority="high"')
+    } finally {
+      await clearContent()
+      await payload.delete({ collection: 'media', id: media.id })
+    }
+  })
+
+  it('falls back to the geometric tile when a post has no featured image', async () => {
+    await payload.create({
+      collection: 'blog-posts',
+      data: {
+        title: `NOIMG-POST-${stamp}`,
+        slug: `noimg-post-${stamp}`,
+        body: lexicalBody,
+        serviceCategory: 'general',
+        _status: 'published',
+      },
+    })
+
+    const section = blogSection(await renderHome())
+    expect(section).toContain('<svg')
+    expect(section).toContain('aria-hidden="true"')
+    expect(section).not.toContain('<img')
   })
 })

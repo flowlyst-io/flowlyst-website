@@ -7,6 +7,9 @@ import { Mark } from '@/components/Mark'
 import { FinalCTA } from '@/components/FinalCTA'
 import { getServerURL } from '@/utilities/serverURL'
 import { serializeJsonLd } from '@/utilities/jsonLd'
+import { getSiteSettings } from '@/utilities/siteSettings'
+import { founderLinkedIn } from '@/utilities/socialLinks'
+import { buildFounderPersonSchema } from '@/utilities/structuredData'
 import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
@@ -19,10 +22,10 @@ import { SOCIAL_IMAGE } from '@/utilities/socialImage'
  * from the frontend layout; this page renders its own sections + the closing FinalCTA,
  * exactly as the homepage does.
  *
- * The founder's LinkedIn (design href="#") is intentionally OMITTED: no real URL
- * exists yet (SiteSettings.socialLinks is company-level, not Aziz's personal profile,
- * and none is populated). A dead link is worse than none; the real profile lands with
- * the founder-portrait work (#42 / #40).
+ * The founder's LinkedIn comes from Site Settings (`founderLinkedIn`) and renders only
+ * when filled — in the Meet-Aziz links row and the Person `sameAs`. A dead link is
+ * worse than none, so an empty field hides both. The page stays static: the settings
+ * read is cached and revalidated on save, not fetched per request.
  */
 
 const serverURL = getServerURL()
@@ -48,33 +51,6 @@ export const metadata: Metadata = {
     description:
       'K–12 first, built by a former school CFO. Meet founder Aziz Aghayev and the mission behind flowlyst.',
   },
-}
-
-/**
- * schema.org Person for Aziz Aghayev (PRD §6; review invariant a — Person on About).
- * Emitted alongside the layout's site-wide Organization node. `sameAs` is omitted
- * intentionally — no founder social URL exists yet, and the node is valid without it.
- */
-const personSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Person',
-  name: 'Aziz Aghayev',
-  image: `${serverURL}/images/aziz-aghayev.jpg`,
-  jobTitle: 'Founder & CEO',
-  url: `${serverURL}/about`,
-  worksFor: {
-    '@type': 'Organization',
-    name: 'flowlyst',
-    url: serverURL,
-  },
-  description:
-    'Former school CFO with 15+ years in K–12 finance and leadership. National speaker on AI in K–12 administration and school finance modernization.',
-  knowsAbout: [
-    'K–12 school finance',
-    'AI in district administration',
-    'Automation for school operations',
-    'School budget modernization',
-  ],
 }
 
 type Pillar = { num: string; title: string; copy: string }
@@ -108,13 +84,16 @@ const OFFERINGS: Offering[] = [
 
 const AZIZ_CHIPS = ['Former school CFO', 'ASBO International speaker', 'NJASBO · CPS']
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const linkedIn = founderLinkedIn(await getSiteSettings())
   return (
     <>
       {/* Founder structured data (PRD §6). The layout owns the Organization node. */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(personSchema) }}
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(buildFounderPersonSchema({ serverURL, linkedIn })),
+        }}
       />
 
       {/* HERO — cream, type-led, soft warm wash + oversized faded mark */}
@@ -213,10 +192,19 @@ export default function AboutPage() {
                   </span>
                 ))}
               </div>
-              {/* LinkedIn (design href="#") omitted — no real URL yet (see file header).
-                  "What districts say" → /testimonials satisfies issue #7's testimonials CTA,
+              {/* "What districts say" → /testimonials satisfies issue #7's testimonials CTA,
                   styled identically to the design's inline links. */}
               <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+                {linkedIn && (
+                  <a
+                    href={linkedIn}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={meetAzizLinkStyle}
+                  >
+                    LinkedIn <ArrowRight />
+                  </a>
+                )}
                 <MeetAzizLink href="/solutions/keynotes">Keynotes</MeetAzizLink>
                 <MeetAzizLink href="/contact">Contact Aziz</MeetAzizLink>
                 <MeetAzizLink href="/testimonials">What districts say</MeetAzizLink>
@@ -350,21 +338,20 @@ function ArrowRight() {
   )
 }
 
+const meetAzizLinkStyle: React.CSSProperties = {
+  fontSize: 14,
+  fontWeight: 700,
+  color: 'var(--c-ink)',
+  textDecoration: 'none',
+  borderBottom: '1.5px solid var(--fl-green)',
+  paddingBottom: 3,
+}
+
 // Meet-Aziz inline link — the design's underlined green-accent text link, as a
 // Next Link so internal routes get client transitions and prefetch.
 function MeetAzizLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link
-      href={href}
-      style={{
-        fontSize: 14,
-        fontWeight: 700,
-        color: 'var(--c-ink)',
-        textDecoration: 'none',
-        borderBottom: '1.5px solid var(--fl-green)',
-        paddingBottom: 3,
-      }}
-    >
+    <Link href={href} style={meetAzizLinkStyle}>
       {children} <ArrowRight />
     </Link>
   )

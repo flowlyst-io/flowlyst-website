@@ -35,7 +35,7 @@ see these inboxes.
 ### Admin
 
 - **Users** — auth collection with an enforced `role` (see Roles).
-- **Site Settings** (global) — contact email, hero copy, footer text, social links. Admin-only.
+- **Site Settings** (global) — contact email, hero copy, footer text, social links (the LinkedIn row drives the footer icon; every row feeds the Organization `sameAs`) and Aziz's LinkedIn URL (the /about link and Person `sameAs`). An empty URL hides it; saving revalidates the whole site. Admin-only.
 
 ## Roles (enforced)
 

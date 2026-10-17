@@ -1391,6 +1391,9 @@ export interface SiteSetting {
    * Copyright / footer blurb.
    */
   footerText?: string | null;
+  /**
+   * The footer shows the LinkedIn entry as an icon; every entry feeds the Organization structured data. Leave empty to hide.
+   */
   socialLinks?:
     | {
         platform: 'linkedin' | 'twitter' | 'facebook' | 'youtube' | 'instagram';
@@ -1398,6 +1401,10 @@ export interface SiteSetting {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Shown on /about and in Aziz's structured data. Leave empty to hide.
+   */
+  founderLinkedIn?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1421,6 +1428,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
+  founderLinkedIn?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
