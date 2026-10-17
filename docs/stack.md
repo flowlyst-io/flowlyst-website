@@ -71,3 +71,11 @@ These were in `package.json` when the record began and no decision for them is o
 | `pnpm` (package manager)           | `1bb48b7` P1: Scaffold (#23); #1 lists "package manager confirmation" as still open |                           |
 
 Issue #1 also lists the media storage adapter ("Vercel Blob expected") as still to be decided, which is why `@payloadcms/storage-vercel-blob` sits in this tier and not the one above.
+
+## Security floors (pnpm overrides)
+
+Overrides that lift a transitive past a parent's exact pin to clear a security alert. Each outlives its need: remove it when the parent's own pin reaches the fix.
+
+| Override         | Parent                              | Issue |
+| ---------------- | ----------------------------------- | ----- |
+| `payload>undici` | `payload` (exact pin below the fix) | #83   |
