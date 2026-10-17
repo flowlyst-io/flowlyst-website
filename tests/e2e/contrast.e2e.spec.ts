@@ -2,7 +2,8 @@ import { test, expect, type Page } from '@playwright/test'
 
 /**
  * WCAG 1.4.3 colour fixes decided on #10: the `--c-ink-3` grey, the green heading
- * accent, and the primary button. Contrast is computed from resolved CSS values with
+ * accent, and the primary button, plus the footer legal line, the ERP "Add" box and
+ * plain text links. Contrast is computed from resolved CSS values with
  * the WCAG relative-luminance formula (axe is not a dependency).
  */
 
@@ -32,6 +33,17 @@ function contrast(a: string, b: string): number {
   }
   const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x)
   return (hi + 0.05) / (lo + 0.05)
+}
+
+function alphaRgb(color: string): [number, number, number, number] {
+  const m = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
+  if (!m) throw new Error(`Cannot parse colour: ${color}`)
+  return [Number(m[1]), Number(m[2]), Number(m[3]), m[4] === undefined ? 1 : Number(m[4])]
+}
+
+function blend(fg: [number, number, number], alpha: number, bg: [number, number, number]): string {
+  const c = fg.map((v, i) => Math.round(v * alpha + bg[i] * (1 - alpha)))
+  return `rgb(${c[0]}, ${c[1]}, ${c[2]})`
 }
 
 async function rootVars(page: Page, names: string[]): Promise<Record<string, string>> {
@@ -119,5 +131,65 @@ test.describe('#10 contrast fixes', () => {
     expect(s.color).toBe('rgb(255, 255, 255)')
     expect(s.deco).toBe('none')
     expect(contrast(s.color, s.bg)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  test('C8 footer bottom text clears 4.5:1 on the footer background', async ({ page }) => {
+    await page.goto('/')
+    const s = await page.locator('.footer__bottom').evaluate((el) => {
+      const cs = getComputedStyle(el)
+      return { color: cs.color, bg: getComputedStyle(el.closest('.footer')!).backgroundColor }
+    })
+    const [r, g, b, a] = alphaRgb(s.color)
+    expect(a).toBeCloseTo(0.6, 2)
+    expect(contrast(blend([r, g, b], a, rgbOf(s.bg)), s.bg)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  test('C9 ERP "Add" label, opacity blended, clears 4.5:1 on its box', async ({ page }) => {
+    await page.goto('/solutions/budget-software')
+    const label = page.getByText('Add', { exact: true })
+    await expect(label).toHaveCount(1)
+    const s = await label.evaluate((el) => {
+      const cs = getComputedStyle(el)
+      return {
+        color: cs.color,
+        opacity: Number(cs.opacity),
+        bg: getComputedStyle(el.parentElement!).backgroundColor,
+      }
+    })
+    expect(s.bg).toBe('rgb(0, 113, 71)')
+    const fg = blend(rgbOf(s.color), s.opacity, rgbOf(s.bg))
+    expect(contrast(fg, s.bg)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  test('C10 plain text links clear 4.5:1 on white and on cream', async ({ page }) => {
+    await page.goto('/solutions/budget-software')
+    const surfaces = [
+      { name: 'white', selector: '[data-testid="budget-modules"]', bg: [255, 255, 255] },
+      { name: 'cream', selector: '[data-testid="budget-supplementary"]', bg: null },
+    ]
+    for (const { name, selector, bg } of surfaces) {
+      const s = await page.locator(selector).evaluate((el) => {
+        const probe = document.createElement('a')
+        probe.href = '#probe'
+        probe.textContent = 'probe'
+        el.appendChild(probe)
+        const out = { color: getComputedStyle(probe).color, bg: '' }
+        let node: Element | null = el
+        while (node) {
+          const bg = getComputedStyle(node).backgroundColor
+          if (bg !== 'rgba(0, 0, 0, 0)') {
+            out.bg = bg
+            break
+          }
+          node = node.parentElement
+        }
+        probe.remove()
+        return out
+      })
+      expect(s.bg, `${name} surface must resolve`).not.toBe('')
+      if (bg) expect(rgbOf(s.bg), `${name} surface`).toEqual(bg)
+      expect(s.color).toBe('rgb(0, 113, 71)')
+      expect(contrast(s.color, s.bg), `link on ${name}`).toBeGreaterThanOrEqual(4.5)
+    }
   })
 })

@@ -390,7 +390,7 @@ function ERPDiagram() {
           style={{
             flex: 1,
             padding: '20px 16px',
-            background: 'var(--fl-green)',
+            background: 'var(--fl-green-700)',
             borderRadius: 4,
             textAlign: 'center',
             color: '#fff',

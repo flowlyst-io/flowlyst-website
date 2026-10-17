@@ -64,8 +64,8 @@
   --border-subtle: var(--fl-gray-300);
   --border-strong: #bfbfbf;
 
-  --accent: var(--fl-green);
-  --accent-hover: var(--fl-green-600);
+  --accent: var(--fl-green-700);
+  --accent-hover: var(--fl-green-700);
   --accent-press: var(--fl-green-700);
   --accent-soft: var(--fl-green-50);
 
@@ -870,7 +870,7 @@ code,
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: rgba(244, 241, 232, 0.4);
+  color: rgba(244, 241, 232, 0.6);
 }
 
 /* ============================================================
