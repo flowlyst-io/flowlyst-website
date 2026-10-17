@@ -7,6 +7,7 @@ import config from '@/payload.config'
 import type { BlogPost } from '@/payload-types'
 
 import { sql } from '@payloadcms/db-postgres'
+import sharp from 'sharp'
 import { beforeAll, describe, expect, it } from 'vitest'
 import {
   unwrapPendingJobUsers,
@@ -190,6 +191,39 @@ describe('Media', () => {
       },
     })
     expect(created.alt).toBe('A test pixel')
+  })
+
+  it('generates every configured image size from a large upload', async () => {
+    const large = await sharp({
+      create: {
+        width: 1600,
+        height: 900,
+        channels: 3,
+        background: { r: 20, g: 90, b: 160 },
+      },
+    })
+      .png()
+      .toBuffer()
+    const created = await payload.create({
+      collection: 'media',
+      data: { alt: 'A large test image' },
+      file: {
+        data: large,
+        mimetype: 'image/png',
+        name: `large-${stamp}.png`,
+        size: large.length,
+      },
+    })
+    const sizes = created.sizes!
+    expect(sizes.thumbnail?.width).toBe(400)
+    expect(sizes.card?.width).toBe(768)
+    expect(sizes.feature?.width).toBe(1200)
+    expect(sizes.og?.width).toBe(1200)
+    expect(sizes.og?.height).toBe(630)
+    for (const name of ['thumbnail', 'card', 'feature', 'og'] as const) {
+      expect(sizes[name]?.filename).toEqual(expect.any(String))
+      expect(sizes[name]?.filename?.length).toBeGreaterThan(0)
+    }
   })
 })
 
