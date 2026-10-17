@@ -6,6 +6,7 @@ settings:
 
 overrides:
   dompurify: ^3.4.16
+  payload>undici: ^7.29.1
   postcss: ^8.5.23
 
 importers:
@@ -4654,10 +4655,6 @@ packages:
     resolution: {integrity: sha512-EvRlUt/QqAEvXdQeRMYUfwOQsfzpDztykrG2owGEE/rBOBoYv9uF39ZzsNDh4lTFHhTr2XOZjKkYgueD12ZmGA==}
     engines: {node: '>=18.17'}
 
-  undici@7.29.0:
-    resolution: {integrity: sha512-IDxfleLmmbSskfWSUATiN1nfn2rDuvnMOqb5CWR92iIfojA0Ud+ulOAAEQ57LPr9rWmsreUyf5lwyao+7GNNVw==}
-    engines: {node: '>=20.18.1'}
-
   undici@7.30.1:
     resolution: {integrity: sha512-03KrMbjIFDWQR5RNPrSw3bd1r12JpyFQl9/yxjUbJtqkjmllqC5lFjZh6ujeuJCKr8EOQvRW872Oy/az+nLYxg==}
     engines: {node: '>=20.18.1'}
@@ -8955,7 +8952,7 @@ snapshots:
       sax: 1.6.1
       ts-essentials: 10.0.3(typescript@5.7.3)
       tsx: 4.22.4
-      undici: 7.29.0
+      undici: 7.30.1
       uuid: 13.0.2
       ws: 8.21.0
     transitivePeerDependencies:
@@ -9714,8 +9711,6 @@ snapshots:
   undici-types@7.28.0: {}
 
   undici@6.29.1: {}
-
-  undici@7.29.0: {}
 
   undici@7.30.1: {}
 
