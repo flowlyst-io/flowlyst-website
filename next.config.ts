@@ -65,4 +65,23 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withPayload(nextConfig, { devBundleServerPackages: false })
+const config = withPayload(nextConfig, { devBundleServerPackages: false })
+const payloadHeaders = config.headers
+
+// withPayload sends `Critical-CH` on every path so the admin gets its colour-scheme hint
+// on first load. On the public site Chrome answers it with a navigation restart (a
+// same-URL "307 Internal Redirect") that Lighthouse prices at about 0.76 s of LCP, so
+// the header is kept for /admin only.
+config.headers = async () => {
+  const rules = (await payloadHeaders?.()) ?? []
+  return rules.flatMap((rule) => {
+    const critical = rule.headers.filter((h) => h.key === 'Critical-CH')
+    if (rule.source !== '/:path*' || critical.length === 0) return [rule]
+    return [
+      { ...rule, headers: rule.headers.filter((h) => h.key !== 'Critical-CH') },
+      { source: '/admin/:path*', headers: critical },
+    ]
+  })
+}
+
+export default config
