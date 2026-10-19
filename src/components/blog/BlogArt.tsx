@@ -138,11 +138,11 @@ export function PostThumb({
  */
 export function AuthorAvatar({ size = 64, photo }: { size?: number; photo?: Media | null }) {
   if (photo?.url) {
-    // Plain <img> for the same reason as PostThumb (runtime-variable media origin).
+    // Through next/image like PostThumb: the original upload is a full-size photo, and
+    // shipping it raw for a 48px / 88px avatar put ~100 KB ahead of the post's LCP (#10).
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={photo.url}
+      <Image
+        src={mediaSrc(photo.url)}
         alt={photo.alt ?? ''}
         width={size}
         height={size}
