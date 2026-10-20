@@ -28,6 +28,15 @@ import type { RecaptchaOutcome } from '@/utilities/recaptcha'
 // (PRD §8.2 names info@flowlyst.io for contact).
 const DEFAULT_INTERNAL_TO = 'info@flowlyst.io'
 
+/** LEAD_NOTIFY_CC as a clean list, minus anything already in `to`; undefined when nothing is left. */
+function ccFor(to: string): string[] | undefined {
+  const cc = (envValue('LEAD_NOTIFY_CC') ?? '')
+    .split(',')
+    .map((a) => a.trim())
+    .filter((a) => a && a.toLowerCase() !== to.toLowerCase())
+  return cc.length ? cc : undefined
+}
+
 const emailConfigured = (): boolean => Boolean(envValue('RESEND_API_KEY'))
 
 /** Mutable only so tests can lower it; production always uses the default. */
@@ -46,18 +55,26 @@ export const sendTimeout = { ms: 5000 }
  */
 async function trySend(
   payload: Payload,
-  args: { to: string; replyTo?: string; subject: string; text: string; purpose: string },
+  args: {
+    to: string
+    cc?: string[]
+    replyTo?: string
+    subject: string
+    text: string
+    purpose: string
+  },
 ): Promise<void> {
-  const { to, replyTo, subject, text, purpose } = args
+  const { to, cc, replyTo, subject, text, purpose } = args
+  const recipients = cc ? `${to} (cc ${cc.join(', ')})` : to
   if (!emailConfigured()) {
-    payload.logger.info(`[email] skipped (RESEND_API_KEY unset): ${purpose} → ${to}`)
+    payload.logger.info(`[email] skipped (RESEND_API_KEY unset): ${purpose} → ${recipients}`)
     return
   }
   let timer: ReturnType<typeof setTimeout> | undefined
   try {
     // `from` is omitted deliberately — the Resend adapter supplies
     // defaultFromAddress (EMAIL_FROM).
-    const sent = Promise.resolve(payload.sendEmail({ to, replyTo, subject, text })).then(
+    const sent = Promise.resolve(payload.sendEmail({ to, cc, replyTo, subject, text })).then(
       () => 'sent' as const,
     )
     const timedOut = new Promise<'timeout'>((resolve) => {
@@ -66,10 +83,12 @@ async function trySend(
     if ((await Promise.race([sent, timedOut])) === 'timeout') {
       // A late rejection from the abandoned send must not become an unhandled rejection.
       sent.catch(() => {})
-      payload.logger.error(`[email] send TIMED OUT (${purpose} → ${to}) — persistence unaffected`)
+      payload.logger.error(
+        `[email] send TIMED OUT (${purpose} → ${recipients}) — persistence unaffected`,
+      )
       return
     }
-    payload.logger.info(`[email] sent: ${purpose} → ${to}`)
+    payload.logger.info(`[email] sent: ${purpose} → ${recipients}`)
   } catch (err) {
     // Only message and cause are logged — never the API key or the email body.
     const message = err instanceof Error ? err.message : String(err)
@@ -79,7 +98,7 @@ async function trySend(
         : undefined
     const causeInfo = cause ? ` (cause: ${String(cause.code ?? cause.message ?? cause)})` : ''
     payload.logger.error(
-      `[email] send FAILED (${purpose} → ${to}) — persistence unaffected: ${message}${causeInfo}`,
+      `[email] send FAILED (${purpose} → ${recipients}) — persistence unaffected: ${message}${causeInfo}`,
     )
   } finally {
     clearTimeout(timer)
@@ -124,6 +143,7 @@ export async function notifyDemoRequest(
   const { subject, text } = markUnverified(outcome, `New demo request — ${doc.fullName}`, lines)
   await trySend(payload, {
     to,
+    cc: ccFor(to),
     replyTo: doc.workEmail,
     subject,
     text,
@@ -148,6 +168,7 @@ export async function notifyContactMessage(
   const { subject, text } = markUnverified(outcome, `New contact message — ${doc.name}`, lines)
   await trySend(payload, {
     to,
+    cc: ccFor(to),
     replyTo: doc.email,
     subject,
     text,
@@ -184,6 +205,7 @@ export async function notifySpeakingRequest(
   )
   await trySend(payload, {
     to,
+    cc: ccFor(to),
     replyTo: doc.email,
     subject,
     text,
