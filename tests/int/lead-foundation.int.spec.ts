@@ -597,6 +597,13 @@ describe('Lead notifier — a mail problem never throws / never fails persistenc
       vi.stubEnv('LEAD_NOTIFY_CC', ' cc1@example.test , ,cc2@example.test,, ')
       expect(await sendAll()).toEqual([both, both, both])
 
+      vi.stubEnv('LEAD_NOTIFY_CC', 'not-an-email,cc1@example.test')
+      const one = ['cc1@example.test']
+      expect(await sendAll()).toEqual([one, one, one])
+
+      vi.stubEnv('LEAD_NOTIFY_CC', 'cc1@example.test,CC1@example.test')
+      expect(await sendAll()).toEqual([one, one, one])
+
       vi.stubEnv('LEAD_NOTIFY_CC', 'Lead@X.org,cc2@example.test')
       expect(await sendAll()).toEqual([
         ['cc2@example.test'],

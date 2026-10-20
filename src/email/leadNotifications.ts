@@ -28,12 +28,13 @@ import type { RecaptchaOutcome } from '@/utilities/recaptcha'
 // (PRD §8.2 names info@flowlyst.io for contact).
 const DEFAULT_INTERNAL_TO = 'info@flowlyst.io'
 
-/** LEAD_NOTIFY_CC as a clean list, minus anything already in `to`; undefined when nothing is left. */
+/** LEAD_NOTIFY_CC as a clean list, minus non-addresses, duplicates and anything already in `to`; undefined when nothing is left. */
 function ccFor(to: string): string[] | undefined {
   const cc = (envValue('LEAD_NOTIFY_CC') ?? '')
     .split(',')
     .map((a) => a.trim())
-    .filter((a) => a && a.toLowerCase() !== to.toLowerCase())
+    .filter((a) => a.includes('@') && a.toLowerCase() !== to.toLowerCase())
+    .filter((a, i, all) => all.findIndex((b) => b.toLowerCase() === a.toLowerCase()) === i)
   return cc.length ? cc : undefined
 }
 
