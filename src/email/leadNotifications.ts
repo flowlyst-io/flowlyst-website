@@ -28,14 +28,14 @@ import type { RecaptchaOutcome } from '@/utilities/recaptcha'
 // (PRD §8.2 names info@flowlyst.io for contact).
 const DEFAULT_INTERNAL_TO = 'info@flowlyst.io'
 
-/** LEAD_NOTIFY_CC as a clean list, minus non-addresses, duplicates and anything already in `to`; undefined when nothing is left. */
-function ccFor(to: string): string[] | undefined {
-  const cc = (envValue('LEAD_NOTIFY_CC') ?? '')
+/** LEAD_NOTIFY_BCC as a clean list, minus non-addresses, duplicates and anything already in `to`; undefined when nothing is left. */
+function bccFor(to: string): string[] | undefined {
+  const bcc = (envValue('LEAD_NOTIFY_BCC') ?? '')
     .split(',')
     .map((a) => a.trim())
     .filter((a) => a.includes('@') && a.toLowerCase() !== to.toLowerCase())
     .filter((a, i, all) => all.findIndex((b) => b.toLowerCase() === a.toLowerCase()) === i)
-  return cc.length ? cc : undefined
+  return bcc.length ? bcc : undefined
 }
 
 const emailConfigured = (): boolean => Boolean(envValue('RESEND_API_KEY'))
@@ -58,15 +58,15 @@ async function trySend(
   payload: Payload,
   args: {
     to: string
-    cc?: string[]
+    bcc?: string[]
     replyTo?: string
     subject: string
     text: string
     purpose: string
   },
 ): Promise<void> {
-  const { to, cc, replyTo, subject, text, purpose } = args
-  const recipients = cc ? `${to} (cc ${cc.join(', ')})` : to
+  const { to, bcc, replyTo, subject, text, purpose } = args
+  const recipients = bcc ? `${to} (bcc ${bcc.join(', ')})` : to
   if (!emailConfigured()) {
     payload.logger.info(`[email] skipped (RESEND_API_KEY unset): ${purpose} → ${recipients}`)
     return
@@ -75,7 +75,7 @@ async function trySend(
   try {
     // `from` is omitted deliberately — the Resend adapter supplies
     // defaultFromAddress (EMAIL_FROM).
-    const sent = Promise.resolve(payload.sendEmail({ to, cc, replyTo, subject, text })).then(
+    const sent = Promise.resolve(payload.sendEmail({ to, bcc, replyTo, subject, text })).then(
       () => 'sent' as const,
     )
     const timedOut = new Promise<'timeout'>((resolve) => {
@@ -144,7 +144,7 @@ export async function notifyDemoRequest(
   const { subject, text } = markUnverified(outcome, `New demo request — ${doc.fullName}`, lines)
   await trySend(payload, {
     to,
-    cc: ccFor(to),
+    bcc: bccFor(to),
     replyTo: doc.workEmail,
     subject,
     text,
@@ -169,7 +169,7 @@ export async function notifyContactMessage(
   const { subject, text } = markUnverified(outcome, `New contact message — ${doc.name}`, lines)
   await trySend(payload, {
     to,
-    cc: ccFor(to),
+    bcc: bccFor(to),
     replyTo: doc.email,
     subject,
     text,
@@ -206,7 +206,7 @@ export async function notifySpeakingRequest(
   )
   await trySend(payload, {
     to,
-    cc: ccFor(to),
+    bcc: bccFor(to),
     replyTo: doc.email,
     subject,
     text,
