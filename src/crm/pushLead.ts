@@ -7,8 +7,8 @@ import { biginConfig, type BiginKind } from './biginConfig'
 import {
   biginTiming,
   createDeal,
-  upsertAccount,
-  upsertContact,
+  findOrCreateAccount,
+  findOrCreateContact,
   type BiginContext,
   type BiginLogger,
 } from './biginClient'
@@ -19,7 +19,7 @@ type DocFor = { demo: DemoRequest; contact: ContactMessage; speaking: SpeakingRe
 export type PushResult = { ok: true; dealId: string } | { ok: false; error: string }
 
 /**
- * Account (when the lead names an organization), then contact, then a new deal for
+ * Account (when the lead names an organization) and contact are looked up and reused untouched, or inserted; then a new deal for
  * every request. One deadline bounds every call, token requests included. Never
  * throws: the caller runs after the lead is saved.
  */
@@ -35,8 +35,10 @@ export async function pushLead<K extends BiginKind>(
     const lead = toBiginLead(kind, doc, config, new Date())
     const ctx: BiginContext = { config, deadline: AbortSignal.timeout(biginTiming.budgetMs), log }
 
-    const accountId = lead.accountName ? await upsertAccount(ctx, lead.accountName) : undefined
-    const contactId = await upsertContact(ctx, {
+    const accountId = lead.accountName
+      ? await findOrCreateAccount(ctx, lead.accountName)
+      : undefined
+    const contactId = await findOrCreateContact(ctx, {
       ...lead.contact,
       ...(accountId ? { Account_Name: { id: accountId } } : {}),
     })

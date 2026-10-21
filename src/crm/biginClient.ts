@@ -105,12 +105,22 @@ async function getToken(
 type BiginResponse = {
   code?: string
   message?: string
-  data?: Array<{ code?: string; message?: string; details?: { id?: string } }>
+  data?: Array<{ id?: string; code?: string; message?: string; details?: { id?: string } }>
 }
 
-/** POSTs `body` to `/bigin/v2/<path>` and returns the new or matched record id. */
-async function biginRequest(ctx: BiginContext, path: string, body: unknown): Promise<string> {
+/**
+ * One call to `/bigin/v2/<path>` with the retry rules (401 once with a fresh token,
+ * 429/5xx/network once after a pause). Returns the final status and parsed body;
+ * interpreting it is the caller's job.
+ */
+async function biginCall(
+  ctx: BiginContext,
+  method: 'GET' | 'POST',
+  path: string,
+  body?: unknown,
+): Promise<{ status: number; parsed: BiginResponse }> {
   const { config, deadline, log } = ctx
+  const label = path.split('?')[0]
   let authRetried = false
   let transientRetried = false
 
@@ -124,20 +134,20 @@ async function biginRequest(ctx: BiginContext, path: string, body: unknown): Pro
     try {
       res = await abortable(
         fetch(`${base.replace(/\/+$/, '')}/bigin/v2/${path}`, {
-          method: 'POST',
+          method,
           headers: {
             Authorization: `Zoho-oauthtoken ${token}`,
-            'content-type': 'application/json',
+            ...(body === undefined ? {} : { 'content-type': 'application/json' }),
           },
-          body: JSON.stringify(body),
+          ...(body === undefined ? {} : { body: JSON.stringify(body) }),
           signal,
         }),
         signal,
       )
     } catch {
       if (deadline.aborted || transientRetried) {
-        log?.warn(`[bigin] ${path}: network error or timeout`)
-        throw new BiginError(`${path}: network error or timeout`)
+        log?.warn(`[bigin] ${label}: network error or timeout`)
+        throw new BiginError(`${label}: network error or timeout`)
       }
       transientRetried = true
       await pause(biginTiming.retryDelayMs, deadline)
@@ -159,32 +169,72 @@ async function biginRequest(ctx: BiginContext, path: string, body: unknown): Pro
     try {
       parsed = (await abortable(res.json(), signal)) as BiginResponse
     } catch {
-      // A non-JSON error page: the status alone is reported.
+      // 204 or a non-JSON error page: the status alone is reported.
     }
-    const first = parsed.data?.[0]
-    if (res.ok && first?.code === 'SUCCESS' && first.details?.id) return first.details.id
-
-    const code = first?.code ?? parsed.code ?? 'UNKNOWN'
-    const message = first?.message ?? parsed.message ?? ''
-    log?.warn(`[bigin] ${path}: HTTP ${res.status} ${code}`)
-    throw new BiginError(
-      `${path}: HTTP ${res.status} ${code}${message ? `: ${message}` : ''}`,
-      res.status,
-    )
+    return { status: res.status, parsed }
   }
 }
 
-export const upsertAccount = (ctx: BiginContext, name: string): Promise<string> =>
-  biginRequest(ctx, 'Accounts/upsert', {
-    data: [{ Account_Name: name }],
-    duplicate_check_fields: ['Account_Name'],
-  })
-
-export const upsertContact = (
+function failure(
   ctx: BiginContext,
-  fields: Record<string, unknown>,
-): Promise<string> =>
-  biginRequest(ctx, 'Contacts/upsert', { data: [fields], duplicate_check_fields: ['Email'] })
+  path: string,
+  status: number,
+  parsed: BiginResponse,
+): BiginError {
+  const first = parsed.data?.[0]
+  const code = first?.code ?? parsed.code ?? 'UNKNOWN'
+  const message = first?.message ?? parsed.message ?? ''
+  ctx.log?.warn(`[bigin] ${path}: HTTP ${status} ${code}`)
+  return new BiginError(`${path}: HTTP ${status} ${code}${message ? `: ${message}` : ''}`, status)
+}
+
+/** Inserts one record and returns its id. Success only when `data[0].code === 'SUCCESS'`. */
+async function insertRecord(ctx: BiginContext, path: string, body: unknown): Promise<string> {
+  const { status, parsed } = await biginCall(ctx, 'POST', path, body)
+  const first = parsed.data?.[0]
+  if (status >= 200 && status < 300 && first?.code === 'SUCCESS' && first.details?.id)
+    return first.details.id
+  throw failure(ctx, path, status, parsed)
+}
+
+/**
+ * Looks a record up and returns the id of the first match, or undefined for none
+ * (Bigin answers 204 with no body). A match is only ever linked, never written to.
+ */
+async function findId(ctx: BiginContext, path: string): Promise<string | undefined> {
+  const { status, parsed } = await biginCall(ctx, 'GET', path)
+  if (status === 204) return undefined
+  const id = parsed.data?.[0]?.id
+  if (status === 200 && id) return id
+  if (status === 200) return undefined
+  throw failure(ctx, path.split('?')[0], status, parsed)
+}
+
+// Zoho criteria values escape these characters with a backslash.
+const escapeCriteria = (value: string) => value.replace(/([\\():,])/g, '\\$1')
+
+/** An existing account is reused untouched; a new name is inserted. */
+export async function findOrCreateAccount(ctx: BiginContext, name: string): Promise<string> {
+  const criteria = encodeURIComponent(`(Account_Name:equals:${escapeCriteria(name)})`)
+  return (
+    (await findId(ctx, `Accounts/search?criteria=${criteria}`)) ??
+    (await insertRecord(ctx, 'Accounts', { data: [{ Account_Name: name }] }))
+  )
+}
+
+/**
+ * An existing contact is reused with its fields untouched, so a form can never rewrite
+ * someone else's record by typing their email; a new email is inserted.
+ */
+export async function findOrCreateContact(
+  ctx: BiginContext,
+  fields: Record<string, unknown> & { Email: string },
+): Promise<string> {
+  return (
+    (await findId(ctx, `Contacts/search?email=${encodeURIComponent(fields.Email)}`)) ??
+    (await insertRecord(ctx, 'Contacts', { data: [fields] }))
+  )
+}
 
 export const createDeal = (ctx: BiginContext, fields: Record<string, unknown>): Promise<string> =>
-  biginRequest(ctx, 'Pipelines', { data: [fields], trigger: ['workflow'] })
+  insertRecord(ctx, 'Pipelines', { data: [fields], trigger: ['workflow'] })

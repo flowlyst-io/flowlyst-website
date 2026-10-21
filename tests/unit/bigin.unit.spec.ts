@@ -34,8 +34,10 @@ const ok = (id: string) => json({ data: [{ code: 'SUCCESS', details: { id } }] }
 function happyRoute({ url }: Call): Response {
   if (url.endsWith('/oauth/v2/token'))
     return json({ access_token: `tok-${++tokenCount}`, api_domain: 'https://api.bigin.test' })
-  if (url.endsWith('/Accounts/upsert')) return ok('acc-1')
-  if (url.endsWith('/Contacts/upsert')) return ok('con-1')
+  if (url.includes('/Accounts/search') || url.includes('/Contacts/search'))
+    return new Response(null, { status: 204 })
+  if (url.endsWith('/Accounts')) return ok('acc-1')
+  if (url.endsWith('/Contacts')) return ok('con-1')
   if (url.endsWith('/Pipelines')) return ok('deal-1')
   return json({}, 404)
 }
@@ -156,7 +158,7 @@ describe('pushLead', () => {
       refresh_token: REFRESH,
     })
     const api = calls.filter((c) => c.url.startsWith('https://api.bigin.test/bigin/v2/'))
-    expect(api).toHaveLength(6)
+    expect(api).toHaveLength(10)
     for (const c of api)
       expect((c.init?.headers as Record<string, string>).Authorization).toBe(
         'Zoho-oauthtoken tok-1',
@@ -167,7 +169,7 @@ describe('pushLead', () => {
   it('refreshes the token once on a 401 and retries the call with the new one', async () => {
     let first = true
     route = (call) => {
-      if (call.url.endsWith('/Contacts/upsert') && first) {
+      if (call.url.includes('/Contacts/search') && first) {
         first = false
         return json({ code: 'INVALID_TOKEN', message: 'expired', status: 'error' }, 401)
       }
@@ -175,7 +177,7 @@ describe('pushLead', () => {
     }
     expect(await pushLead('demo', demo, log)).toEqual({ ok: true, dealId: 'deal-1' })
     expect(callsTo('/oauth/v2/token')).toHaveLength(2)
-    const contacts = callsTo('/Contacts/upsert')
+    const contacts = calls.filter((c) => c.url.includes('/Contacts/search'))
     expect(contacts).toHaveLength(2)
     expect((contacts[1].init?.headers as Record<string, string>).Authorization).toBe(
       'Zoho-oauthtoken tok-2',
@@ -215,7 +217,7 @@ describe('pushLead', () => {
 
   it('is not a success when a 200 carries a non-SUCCESS code', async () => {
     route = (call) =>
-      call.url.endsWith('/Contacts/upsert')
+      call.url.endsWith('/Contacts')
         ? json({ data: [{ code: 'MANDATORY_NOT_FOUND', message: 'Last_Name' }] })
         : happyRoute(call)
     const result = await pushLead('demo', demo, log)
@@ -247,6 +249,44 @@ describe('pushLead', () => {
       error: 'Bigin is not configured',
     })
     expect(calls).toHaveLength(0)
+  })
+
+  it('links an existing contact and account without writing to them', async () => {
+    route = (call) => {
+      if (call.url.includes('/Accounts/search'))
+        return json({ data: [{ id: 'acc-old', Account_Name: 'x' }] })
+      if (call.url.includes('/Contacts/search'))
+        return json({ data: [{ id: 'con-old', Email: 'jordan@district.test' }] })
+      return happyRoute(call)
+    }
+    expect(await pushLead('demo', demo, log)).toEqual({ ok: true, dealId: 'deal-1' })
+
+    const api = calls.filter((c) => c.url.startsWith('https://api.bigin.test/'))
+    expect(api.filter((c) => c.init?.method === 'POST').map((c) => c.url)).toEqual([
+      'https://api.bigin.test/bigin/v2/Pipelines',
+    ])
+    expect(calls.some((c) => /upsert|PUT/.test(c.url + (c.init?.method ?? '')))).toBe(false)
+    expect(decodeURIComponent(api[0].url)).toContain(
+      'Accounts/search?criteria=(Account_Name:equals:Sample Unified School District)',
+    )
+    expect(api[1].url).toContain('Contacts/search?email=jordan%40district.test')
+    const deal = bodyOf(callsTo('/Pipelines')[0]).data[0]
+    expect(deal.Contact_Name).toEqual({ id: 'con-old' })
+    expect(deal.Account_Name).toEqual({ id: 'acc-old' })
+  })
+
+  it('inserts the account and contact when the search finds nothing', async () => {
+    expect(await pushLead('demo', demo, log)).toEqual({ ok: true, dealId: 'deal-1' })
+    expect(bodyOf(callsTo('/Accounts')[0])).toEqual({
+      data: [{ Account_Name: 'Sample Unified School District' }],
+    })
+    const contact = bodyOf(callsTo('/Contacts')[0]).data[0]
+    expect(contact).toMatchObject({
+      First_Name: 'Jordan',
+      Last_Name: 'Rivera',
+      Email: 'jordan@district.test',
+      Account_Name: { id: 'acc-1' },
+    })
   })
 
   it('never logs a secret, a refresh token or an access token', async () => {
