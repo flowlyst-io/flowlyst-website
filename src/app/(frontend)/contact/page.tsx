@@ -54,7 +54,12 @@ export const metadata: Metadata = {
 type ContactLink = { label: string; text: string; href: string; internal: boolean }
 
 const CONTACT_LINKS: ContactLink[] = [
-  { label: 'Email', text: 'info@flowlyst.io', href: 'mailto:info@flowlyst.io', internal: false },
+  {
+    label: 'Email',
+    text: 'inquiries@flowlyst.io',
+    href: 'mailto:inquiries@flowlyst.io',
+    internal: false,
+  },
   { label: 'Demo requests', text: 'Request a demo', href: '/request-demo', internal: true },
   { label: 'Speaking inquiries', text: 'Keynotes', href: '/solutions/keynotes', internal: true },
 ]

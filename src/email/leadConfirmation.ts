@@ -149,7 +149,7 @@ export function renderLeadConfirmation(input: {
     paragraph('Talk soon,<br>The flowlyst team'),
     recapHtml,
     `<tr><td style="padding: 8px 0 0 0; font-size: 13px; line-height: 1.5; color: ${MUTED};">` +
-      `<div style="padding-bottom: 6px;"><a href="https://flowlyst.io" style="color: ${LINK};">flowlyst.io</a> · <a href="mailto:info@flowlyst.io" style="color: ${LINK};">info@flowlyst.io</a></div>` +
+      `<div style="padding-bottom: 6px;"><a href="https://flowlyst.io" style="color: ${LINK};">flowlyst.io</a> · <a href="mailto:inquiries@flowlyst.io" style="color: ${LINK};">inquiries@flowlyst.io</a></div>` +
       `<div>${escapeHtml(FOOTER_REASON)}</div></td></tr>`,
     '</table>',
     '</td></tr></table>',
@@ -169,7 +169,7 @@ export function renderLeadConfirmation(input: {
     'The flowlyst team',
     ...(recap.length ? ['', 'Your request', ...recap] : []),
     '',
-    'flowlyst.io · info@flowlyst.io',
+    'flowlyst.io · inquiries@flowlyst.io',
     FOOTER_REASON,
   ].join('\n')
 

@@ -317,7 +317,7 @@ export function ContactForm({ initialReason }: { initialReason?: ContactReason }
           data-testid="contact-form-error"
         >
           Something went wrong sending your message. Please try again, or email us directly at
-          info@flowlyst.io.
+          inquiries@flowlyst.io.
         </p>
       )}
 
