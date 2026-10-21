@@ -27,8 +27,8 @@ import { confirmationContent, renderLeadConfirmation, type LeadKind } from './le
  */
 
 // Last-resort recipient when neither the per-form override nor LEAD_NOTIFY_TO is set
-// (PRD §8.2 names info@flowlyst.io for contact).
-const DEFAULT_INTERNAL_TO = 'info@flowlyst.io'
+// Tural switched the lead inbox from info@ to inquiries@ on 2026-10-21.
+const DEFAULT_INTERNAL_TO = 'inquiries@flowlyst.io'
 
 /** LEAD_NOTIFY_BCC as a clean list, minus non-addresses, duplicates and anything already in `to`; undefined when nothing is left. */
 function bccFor(to: string): string[] | undefined {

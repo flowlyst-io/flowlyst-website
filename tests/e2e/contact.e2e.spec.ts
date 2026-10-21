@@ -218,8 +218,8 @@ test.describe('Contact page — server-rendered content (raw HTML, no JS)', () =
 
     // Email → mailto: link with the PRD/Organization address.
     expect(section, 'Email row label').toContain('Email')
-    expect(section, 'mailto link with the info@ address').toMatch(
-      /<a\b[^>]*href="mailto:info@flowlyst\.io"[^>]*>\s*info@flowlyst\.io/i,
+    expect(section, 'mailto link with the inquiries@ address').toMatch(
+      /<a\b[^>]*href="mailto:inquiries@flowlyst\.io"[^>]*>\s*inquiries@flowlyst\.io/i,
     )
     // Demo requests → internal /request-demo anchor (next/link renders a real <a>).
     expect(section, 'Demo requests row label').toContain('Demo requests')
@@ -720,7 +720,7 @@ test.describe('Contact page — responsive & accessibility smoke', () => {
     // Scope to the contact panel so the nav's own "Request a demo" CTA is excluded.
     const panel = page.locator('[data-testid="contact-page"]')
     const cases: Array<{ name: RegExp; href: string }> = [
-      { name: /info@flowlyst\.io/i, href: 'mailto:info@flowlyst.io' },
+      { name: /inquiries@flowlyst\.io/i, href: 'mailto:inquiries@flowlyst.io' },
       { name: /request a demo/i, href: '/request-demo' },
       { name: /keynotes/i, href: '/solutions/keynotes' },
     ]

@@ -513,7 +513,7 @@ describe('Lead notifier — a mail problem never throws / never fails persistenc
     }
   })
 
-  it('routes to the per-form override, else LEAD_NOTIFY_TO, else info@flowlyst.io', async () => {
+  it('routes to the per-form override, else LEAD_NOTIFY_TO, else inquiries@flowlyst.io', async () => {
     vi.stubEnv('RESEND_API_KEY', 'test-key-int')
     const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
     const speakingDoc = { eventName: 'S', eventDate: 'd', email: 'a@b.org' } as SpeakingRequest
@@ -527,7 +527,11 @@ describe('Lead notifier — a mail problem never throws / never fails persistenc
     try {
       for (const k of ['SALES', 'CONTACT', 'SPEAKING']) vi.stubEnv(`${k}_NOTIFY_TO`, '')
       vi.stubEnv('LEAD_NOTIFY_TO', '')
-      expect(await sendAll()).toEqual(['info@flowlyst.io', 'info@flowlyst.io', 'info@flowlyst.io'])
+      expect(await sendAll()).toEqual([
+        'inquiries@flowlyst.io',
+        'inquiries@flowlyst.io',
+        'inquiries@flowlyst.io',
+      ])
 
       vi.stubEnv('LEAD_NOTIFY_TO', 'lead@x.org')
       expect(await sendAll()).toEqual(['lead@x.org', 'lead@x.org', 'lead@x.org'])
@@ -565,7 +569,7 @@ describe('Lead notifier — a mail problem never throws / never fails persistenc
       send.mockClear()
       vi.stubEnv('LEAD_NOTIFY_TO', '  ')
       await notifyContactMessage(payload, contactDoc)
-      expect(send.mock.calls[0][0].to).toBe('info@flowlyst.io')
+      expect(send.mock.calls[0][0].to).toBe('inquiries@flowlyst.io')
     } finally {
       send.mockRestore()
       vi.unstubAllEnvs()

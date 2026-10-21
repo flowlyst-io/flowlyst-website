@@ -342,7 +342,7 @@ export function SpeakingRequestForm() {
           data-testid="keynotes-form-error"
         >
           Something went wrong sending your request. Please try again, or email us at
-          info@flowlyst.io.
+          inquiries@flowlyst.io.
         </p>
       )}
 

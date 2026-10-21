@@ -45,7 +45,7 @@ describe('demo confirmation', () => {
       'Budget Software, AI Training · Weekday afternoons',
       'Sample Unified School District',
       'https://flowlyst.io',
-      'mailto:info@flowlyst.io',
+      'mailto:inquiries@flowlyst.io',
     ]) {
       expect(html).toContain(part)
     }

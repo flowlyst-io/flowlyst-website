@@ -7,7 +7,7 @@
 
 - `payload.config.ts` wires the Resend adapter **only when `RESEND_API_KEY` is set**. Unset → Payload logs email to the console; the notifier helpers (`src/email/leadNotifications.ts`) skip-and-log before attempting a send.
 - Email failure can **never** fail a form submission: notifiers run in `afterChange` (after the DB write) and never throw.
-- `from` is `EMAIL_FROM` (must be a Resend-verified sender). The confirmation email to the person who filled in a form is sent only when reCAPTCHA passed, and its reply-to is the same per-form `*_NOTIFY_TO` inbox as that form's team email. Recipients come from `LEAD_NOTIFY_TO` (set this one); the per-form `*_NOTIFY_TO` vars below are optional overrides (final default `info@flowlyst.io`).
+- `from` is `EMAIL_FROM` (must be a Resend-verified sender). The confirmation email to the person who filled in a form is sent only when reCAPTCHA passed, and its reply-to is the same per-form `*_NOTIFY_TO` inbox as that form's team email. Recipients come from `LEAD_NOTIFY_TO` (set this one); the per-form `*_NOTIFY_TO` vars below are optional overrides (final default `inquiries@flowlyst.io`).
 
 ## Steps
 
@@ -32,13 +32,15 @@ Project → **Settings → Environment Variables** (Production, and Preview if y
 | -------------------- | ------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------ |
 | `RESEND_API_KEY`     | `re_...` from step 1                 | **Yes**                | Enables sending. Unset = skip-and-log.                                                                 |
 | `EMAIL_FROM`         | `noreply@flowlyst.io`                | **Yes**                | Verified sender (step 2). Defaults to `noreply@flowlyst.io` if unset, but that must still be verified. |
-| `LEAD_NOTIFY_TO`     | e.g. `leads@flowlyst.io`             | **Yes** (set this one) | Default recipient for demo, contact and speaking notifications. Default `info@flowlyst.io`.            |
+| `LEAD_NOTIFY_TO`     | e.g. `leads@flowlyst.io`             | **Yes** (set this one) | Default recipient for demo, contact and speaking notifications. Default `inquiries@flowlyst.io`.       |
 | `LEAD_NOTIFY_BCC`    | `tural@flowlyst.io,aziz@flowlyst.io` | No (not secret)        | BCCs demo, contact and speaking notifications; unset = no BCC.                                         |
 | `SALES_NOTIFY_TO`    | e.g. `sales@flowlyst.io`             | No                     | Optional override: demo-request notifications. Default `LEAD_NOTIFY_TO`.                               |
-| `CONTACT_NOTIFY_TO`  | e.g. `info@flowlyst.io`              | No                     | Optional override: contact-form notifications (PRD §8.2). Default `LEAD_NOTIFY_TO`.                    |
+| `CONTACT_NOTIFY_TO`  | e.g. `inquiries@flowlyst.io`         | No                     | Optional override: contact-form notifications. Default `LEAD_NOTIFY_TO`.                               |
 | `SPEAKING_NOTIFY_TO` | e.g. `speaking@flowlyst.io`          | No                     | Optional override: speaking requests. Default → `SALES_NOTIFY_TO` → `LEAD_NOTIFY_TO`.                  |
 
 Redeploy (or let the next deploy pick them up).
+
+All lead notifications go to `inquiries@flowlyst.io`, a group address that reaches the team (Tural, Aziz and Sama). Keep `LEAD_NOTIFY_BCC` unset, since the group already delivers to everyone.
 
 ### 4. Observe delivery (verification checklist)
 
