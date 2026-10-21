@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
 import { notifyDemoRequest } from '@/email/leadNotifications'
 import type { DemoRequest } from '@/payload-types'
+import { DEMO_INTERESTS } from '@/utilities/demoInterestsShared'
 import { recaptchaGuard, recaptchaOutcomeOf } from '@/utilities/recaptcha'
 
 /**
@@ -86,12 +87,7 @@ export const DemoRequests: CollectionConfig = {
       name: 'interests',
       type: 'select',
       hasMany: true,
-      options: [
-        { label: 'AI Training', value: 'ai-training' },
-        { label: 'Budget Software', value: 'budget-software' },
-        { label: 'Consulting', value: 'consulting' },
-        { label: 'Keynotes', value: 'keynotes' },
-      ],
+      options: DEMO_INTERESTS.map(({ label, value }) => ({ label, value })),
     },
     {
       name: 'datePreference',
