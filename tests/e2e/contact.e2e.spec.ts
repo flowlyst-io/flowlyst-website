@@ -286,6 +286,7 @@ test.describe('Contact form — delivery path (invariant d)', () => {
     const success = page.getByTestId('contact-form-success')
     await expect(success).toBeVisible()
     await expect(success).toContainText(/Message received/i)
+    await expect(success).toContainText('within 1–2 business days')
 
     // Prove persistence through the real HTTP surface, authenticated as Admin.
     const ctx = await adminContext()

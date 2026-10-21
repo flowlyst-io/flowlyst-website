@@ -168,8 +168,8 @@ export function ContactForm({ initialReason }: { initialReason?: ContactReason }
           Message received.
         </h2>
         <p className="p" style={{ fontSize: 16 }}>
-          Thanks — your message is in. We read every note and reply to real inquiries, usually
-          within a couple of business days.
+          Thanks — your message is in. A person from our team will reach out within 1–2 business
+          days.
         </p>
       </div>
     )

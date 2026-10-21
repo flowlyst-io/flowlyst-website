@@ -176,8 +176,8 @@ export function SpeakingRequestForm() {
           Request received.
         </h3>
         <p className="p" style={{ fontSize: 16 }}>
-          Thanks — your speaking request is in. We’ll get back to you, usually within 3 business
-          days.
+          Thanks — your speaking request is in. A person from our team will reach out within 1–2
+          business days.
         </p>
       </div>
     )

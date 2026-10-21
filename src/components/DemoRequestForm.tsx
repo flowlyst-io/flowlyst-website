@@ -236,7 +236,8 @@ export function DemoRequestForm() {
           Request received.
         </h2>
         <p className="p" style={{ fontSize: 16 }}>
-          Thanks — we’ll be in touch, usually the same business day, to schedule your walkthrough.
+          Thanks — a person from our team will reach out within 1–2 business days to schedule your
+          walkthrough.
         </p>
       </div>
     )
