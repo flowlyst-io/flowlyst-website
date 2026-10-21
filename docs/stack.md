@@ -24,6 +24,7 @@ The decisions before this record existed were logged on issue #1 (Architecture d
 | Vercel Web Analytics                            | `@vercel/analytics`          | 2026-10-09, [ADR 0001](./adr/0001-vercel-web-analytics.md)  | Tural                                                               |
 | Google reCAPTCHA v3                             | service, no package          | 2026-10-11, [ADR 0002](./adr/0002-google-recaptcha.md)      | Tural                                                               |
 | Vercel Speed Insights (free tier)               | `@vercel/speed-insights`     | 2026-10-14, [ADR 0003](./adr/0003-vercel-speed-insights.md) | Tural                                                               |
+| Zoho Bigin CRM (lead push)                      | service, no package          | 2026-10-20, [ADR 0004](./adr/0004-zoho-bigin-crm.md)        | Tural                                                               |
 
 Configuration within the decided Next.js: `experimental.globalNotFound` (Next 16) is on because the frontend and Payload route groups each own a root layout, so unmatched URLs have no layout to build the branded 404 from; `src/app/global-not-found.tsx` supplies it.
 

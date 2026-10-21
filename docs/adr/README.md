@@ -28,6 +28,7 @@ Decisions taken before this record existed live on issue #1 (Architecture decisi
 | 0001 | [Vercel Web Analytics](./0001-vercel-web-analytics.md)   | Accepted |
 | 0002 | [Google reCAPTCHA v3](./0002-google-recaptcha.md)        | Accepted |
 | 0003 | [Vercel Speed Insights](./0003-vercel-speed-insights.md) | Accepted |
+| 0004 | [Zoho Bigin CRM (lead push)](./0004-zoho-bigin-crm.md)   | Accepted |
 
 ---
 

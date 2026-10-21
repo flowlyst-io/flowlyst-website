@@ -7,7 +7,7 @@
 
 - `payload.config.ts` wires the Resend adapter **only when `RESEND_API_KEY` is set**. Unset → Payload logs email to the console; the notifier helpers (`src/email/leadNotifications.ts`) skip-and-log before attempting a send.
 - Email failure can **never** fail a form submission: notifiers run in `afterChange` (after the DB write) and never throw.
-- `from` is `EMAIL_FROM` (must be a Resend-verified sender). Recipients come from `LEAD_NOTIFY_TO` (set this one); the per-form `*_NOTIFY_TO` vars below are optional overrides (final default `info@flowlyst.io`).
+- `from` is `EMAIL_FROM` (must be a Resend-verified sender). The confirmation email to the person who filled in a form is sent only when reCAPTCHA passed, and its reply-to is the same per-form `*_NOTIFY_TO` inbox as that form's team email. Recipients come from `LEAD_NOTIFY_TO` (set this one); the per-form `*_NOTIFY_TO` vars below are optional overrides (final default `info@flowlyst.io`).
 
 ## Steps
 

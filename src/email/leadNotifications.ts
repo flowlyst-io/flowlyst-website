@@ -5,6 +5,8 @@ import { envValue } from '@/utilities/envValue'
 import { CONTACT_REASONS } from '@/utilities/contactReasonsShared'
 import type { RecaptchaOutcome } from '@/utilities/recaptcha'
 
+import { confirmationContent, renderLeadConfirmation, type LeadKind } from './leadConfirmation'
+
 /**
  * Lead-capture email notifications (PRD §8). One place that owns the "a lead
  * landed → tell someone" side effect for every lead collection, wired from each
@@ -38,6 +40,20 @@ function bccFor(to: string): string[] | undefined {
   return bcc.length ? bcc : undefined
 }
 
+/** Where a form's team email goes; also the reply-to of that form's confirmation email. */
+export function teamInboxFor(kind: LeadKind): string {
+  if (kind === 'demo')
+    return envValue('SALES_NOTIFY_TO') || envValue('LEAD_NOTIFY_TO') || DEFAULT_INTERNAL_TO
+  if (kind === 'contact')
+    return envValue('CONTACT_NOTIFY_TO') || envValue('LEAD_NOTIFY_TO') || DEFAULT_INTERNAL_TO
+  return (
+    envValue('SPEAKING_NOTIFY_TO') ||
+    envValue('SALES_NOTIFY_TO') ||
+    envValue('LEAD_NOTIFY_TO') ||
+    DEFAULT_INTERNAL_TO
+  )
+}
+
 const emailConfigured = (): boolean => Boolean(envValue('RESEND_API_KEY'))
 
 /** Mutable only so tests can lower it; production always uses the default. */
@@ -62,11 +78,14 @@ async function trySend(
     replyTo?: string
     subject: string
     text: string
+    html?: string
     purpose: string
+    /** Stands in for the address in log lines, so a submitter's address never reaches the log. */
+    logTo?: string
   },
 ): Promise<void> {
-  const { to, bcc, replyTo, subject, text, purpose } = args
-  const recipients = bcc ? `${to} (bcc ${bcc.join(', ')})` : to
+  const { to, bcc, replyTo, subject, text, html, purpose, logTo } = args
+  const recipients = logTo ?? (bcc ? `${to} (bcc ${bcc.join(', ')})` : to)
   if (!emailConfigured()) {
     payload.logger.info(`[email] skipped (RESEND_API_KEY unset): ${purpose} → ${recipients}`)
     return
@@ -75,9 +94,9 @@ async function trySend(
   try {
     // `from` is omitted deliberately — the Resend adapter supplies
     // defaultFromAddress (EMAIL_FROM).
-    const sent = Promise.resolve(payload.sendEmail({ to, bcc, replyTo, subject, text })).then(
-      () => 'sent' as const,
-    )
+    const sent = Promise.resolve(
+      payload.sendEmail({ to, bcc, replyTo, subject, text, ...(html ? { html } : {}) }),
+    ).then(() => 'sent' as const)
     const timedOut = new Promise<'timeout'>((resolve) => {
       timer = setTimeout(() => resolve('timeout'), sendTimeout.ms)
     })
@@ -119,15 +138,9 @@ function markUnverified(
   return { subject: `[Unverified] ${subject}`, text: [UNVERIFIED_LINE, '', ...lines].join('\n') }
 }
 
-/** Sales notification when a demo request is created (PRD §8.1). */
-export async function notifyDemoRequest(
-  payload: Payload,
-  doc: DemoRequest,
-  outcome?: RecaptchaOutcome,
-): Promise<void> {
-  const to = envValue('SALES_NOTIFY_TO') || envValue('LEAD_NOTIFY_TO') || DEFAULT_INTERNAL_TO
+export function demoRequestLines(doc: DemoRequest): string[] {
   const interests = Array.isArray(doc.interests) ? doc.interests.join(', ') : ''
-  const lines = [
+  return [
     `New demo request from ${doc.fullName}${doc.title ? `, ${doc.title}` : ''}.`,
     '',
     `District/org: ${doc.district || '—'}`,
@@ -141,7 +154,44 @@ export async function notifyDemoRequest(
     `Message: ${doc.message || '—'}`,
     `Anything else: ${doc.anythingElse || '—'}`,
   ]
-  const { subject, text } = markUnverified(outcome, `New demo request — ${doc.fullName}`, lines)
+}
+
+export function contactMessageLines(doc: ContactMessage): string[] {
+  return [
+    `New contact message from ${doc.name} (${doc.email}).`,
+    `Reason: ${CONTACT_REASONS.find((r) => r.value === doc.reason)?.label ?? doc.reason ?? '—'}`,
+    '',
+    `Message:`,
+    doc.message,
+  ]
+}
+
+export function speakingRequestLines(doc: SpeakingRequest): string[] {
+  return [
+    `New speaking request for "${doc.eventName}" (${doc.eventDate}).`,
+    '',
+    `Contact:      ${doc.contactName} (${doc.email})`,
+    `Organization: ${doc.organization || '—'}`,
+    `Audience size: ${doc.audienceSize || '—'}`,
+    `Budget range: ${doc.budgetRange || '—'}`,
+    `Topic:        ${doc.topicInterest || '—'}`,
+    '',
+    `Message: ${doc.message || '—'}`,
+  ]
+}
+
+/** Sales notification when a demo request is created (PRD §8.1). */
+export async function notifyDemoRequest(
+  payload: Payload,
+  doc: DemoRequest,
+  outcome?: RecaptchaOutcome,
+): Promise<void> {
+  const to = teamInboxFor('demo')
+  const { subject, text } = markUnverified(
+    outcome,
+    `New demo request — ${doc.fullName}`,
+    demoRequestLines(doc),
+  )
   await trySend(payload, {
     to,
     bcc: bccFor(to),
@@ -158,15 +208,12 @@ export async function notifyContactMessage(
   doc: ContactMessage,
   outcome?: RecaptchaOutcome,
 ): Promise<void> {
-  const to = envValue('CONTACT_NOTIFY_TO') || envValue('LEAD_NOTIFY_TO') || DEFAULT_INTERNAL_TO
-  const lines = [
-    `New contact message from ${doc.name} (${doc.email}).`,
-    `Reason: ${CONTACT_REASONS.find((r) => r.value === doc.reason)?.label ?? doc.reason ?? '—'}`,
-    '',
-    `Message:`,
-    doc.message,
-  ]
-  const { subject, text } = markUnverified(outcome, `New contact message — ${doc.name}`, lines)
+  const to = teamInboxFor('contact')
+  const { subject, text } = markUnverified(
+    outcome,
+    `New contact message — ${doc.name}`,
+    contactMessageLines(doc),
+  )
   await trySend(payload, {
     to,
     bcc: bccFor(to),
@@ -183,26 +230,11 @@ export async function notifySpeakingRequest(
   doc: SpeakingRequest,
   outcome?: RecaptchaOutcome,
 ): Promise<void> {
-  const to =
-    envValue('SPEAKING_NOTIFY_TO') ||
-    envValue('SALES_NOTIFY_TO') ||
-    envValue('LEAD_NOTIFY_TO') ||
-    DEFAULT_INTERNAL_TO
-  const lines = [
-    `New speaking request for "${doc.eventName}" (${doc.eventDate}).`,
-    '',
-    `Contact:      ${doc.contactName} (${doc.email})`,
-    `Organization: ${doc.organization || '—'}`,
-    `Audience size: ${doc.audienceSize || '—'}`,
-    `Budget range: ${doc.budgetRange || '—'}`,
-    `Topic:        ${doc.topicInterest || '—'}`,
-    '',
-    `Message: ${doc.message || '—'}`,
-  ]
+  const to = teamInboxFor('speaking')
   const { subject, text } = markUnverified(
     outcome,
     `New speaking request — ${doc.eventName}`,
-    lines,
+    speakingRequestLines(doc),
   )
   await trySend(payload, {
     to,
@@ -228,4 +260,39 @@ export async function sendNewsletterConfirmation(payload: Payload, email: string
     text,
     purpose: 'newsletter-confirmation',
   })
+}
+
+type ConfirmableDoc = {
+  demo: DemoRequest
+  contact: ContactMessage
+  speaking: SpeakingRequest
+}
+
+/**
+ * "We got your request" to the submitter, sent only after reCAPTCHA passed. Replies
+ * land in the form's team inbox; no BCC. Never throws: it runs after the lead is saved.
+ */
+export async function sendLeadConfirmation<K extends LeadKind>(
+  payload: Payload,
+  kind: K,
+  doc: ConfirmableDoc[K],
+): Promise<void> {
+  try {
+    const to = kind === 'demo' ? (doc as DemoRequest).workEmail : (doc as ContactMessage).email
+    const content = confirmationContent(kind, doc as never)
+    const { html, text } = renderLeadConfirmation({ kind, ...content })
+    await trySend(payload, {
+      to,
+      replyTo: teamInboxFor(kind),
+      subject: content.subject,
+      text,
+      html,
+      purpose: `${kind}-confirmation`,
+      logTo: 'submitter',
+    })
+  } catch (err) {
+    payload.logger.error(
+      `[email] confirmation not built (${kind}) — persistence unaffected: ${err instanceof Error ? err.message : String(err)}`,
+    )
+  }
 }

@@ -1,9 +1,9 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
-import { notifySpeakingRequest } from '@/email/leadNotifications'
-import type { SpeakingRequest } from '@/payload-types'
-import { recaptchaGuard, recaptchaOutcomeOf } from '@/utilities/recaptcha'
+import { afterLeadCreate } from '@/leads/afterLeadCreate'
+import { crmFields } from '@/fields/crmFields'
+import { recaptchaGuard } from '@/utilities/recaptcha'
 
 /**
  * Speaking requests inbox (PRD §4.4, §8, §9). Event organizers ask Aziz to keynote
@@ -31,7 +31,14 @@ export const SpeakingRequests: CollectionConfig = {
   labels: { singular: 'Speaking Request', plural: 'Speaking Requests' },
   admin: {
     useAsTitle: 'eventName',
-    defaultColumns: ['eventName', 'contactName', 'organization', 'status', 'createdAt'],
+    defaultColumns: [
+      'eventName',
+      'contactName',
+      'organization',
+      'status',
+      'crmStatus',
+      'createdAt',
+    ],
     listSearchableFields: ['eventName', 'contactName', 'organization', 'email'],
     group: 'Leads',
   },
@@ -43,20 +50,9 @@ export const SpeakingRequests: CollectionConfig = {
   },
   hooks: {
     beforeChange: [recaptchaGuard('speaking_request')],
-    // Notify on a new speaking request (Phase 3 foundation wired this collection
-    // into the shared notifier — the "#14 wires the notifier" note above). After-
-    // write, non-throwing, skips when email is unconfigured — never fails
-    // persistence (invariant d).
-    afterChange: [
-      async ({ doc, operation, req }) => {
-        if (operation === 'create')
-          await notifySpeakingRequest(
-            req.payload,
-            doc as SpeakingRequest,
-            recaptchaOutcomeOf(req.context),
-          )
-      },
-    ],
+    // Team email, the submitter's confirmation and the Bigin push; the row is
+    // committed before any of them and none can fail it (invariant d).
+    afterChange: [afterLeadCreate('speaking')],
   },
   fields: [
     // --- Internal triage (sidebar) ---
@@ -132,5 +128,6 @@ export const SpeakingRequests: CollectionConfig = {
       // means a bot completed a field no human can see → reject.
       validate: (value: unknown) => (value ? 'This submission was flagged as spam.' : true),
     },
+    ...crmFields,
   ],
 }

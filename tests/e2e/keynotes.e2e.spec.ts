@@ -301,7 +301,7 @@ test.describe('Keynotes page — server-rendered content (raw HTML, no JS)', () 
     // Heading + lead live in page.tsx (server component) around the client form.
     expect(html, 'request section eyebrow').toContain('Request a keynote')
     expect(html, 'request section heading').toContain('Tell us about')
-    expect(html, 'request section lead').toContain('come back within 3 business days')
+    expect(html, 'request section lead').toContain('reach out within 1–2 business days')
     // The client island itself server-renders its initial markup too: the submit
     // button label and the field labels are in the crawlable HTML.
     expect(html, 'form submit button label (island SSR)').toContain('Submit speaking request')
@@ -351,6 +351,7 @@ test.describe('Keynotes speaking-request form — delivery path (invariant d)', 
     const success = page.getByTestId('keynotes-form-success')
     await expect(success).toBeVisible()
     await expect(success).toContainText(/Request received/i)
+    await expect(success).toContainText('within 1–2 business days')
 
     // Prove persistence through the real HTTP surface, authenticated as Admin.
     const ctx = await adminContext()

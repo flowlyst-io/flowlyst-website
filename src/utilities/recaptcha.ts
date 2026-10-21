@@ -17,7 +17,7 @@ export type RecaptchaOutcome = 'skipped' | 'missing' | 'pass' | 'fail' | 'error'
 
 export type RecaptchaResult = { outcome: RecaptchaOutcome; score?: number; codes?: string[] }
 
-const SITEVERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
+const GOOGLE_SITEVERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
 const DEFAULT_MIN_SCORE = 0.3
 // `invalid-input-response` is also what Google returns when site and secret keys
 // are crossed, so it counts as a misconfiguration, not proof of a bad token.
@@ -29,6 +29,15 @@ type SiteverifyResponse = {
   score?: number
   action?: string
   'error-codes'?: string[]
+}
+
+/**
+ * Testing seam for the local fake (`RECAPTCHA_SITEVERIFY_URL`). Read at call time and
+ * ignored in production builds, where Next inlines `NODE_ENV`.
+ */
+function siteverifyUrl(): string {
+  if (process.env.NODE_ENV === 'production') return GOOGLE_SITEVERIFY_URL
+  return envValue('RECAPTCHA_SITEVERIFY_URL') || GOOGLE_SITEVERIFY_URL
 }
 
 const enabled = (): boolean =>
@@ -49,7 +58,7 @@ export async function verifyRecaptcha(
 
   let body: SiteverifyResponse
   try {
-    const res = await fetch(SITEVERIFY_URL, {
+    const res = await fetch(siteverifyUrl(), {
       method: 'POST',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -89,7 +98,8 @@ export function recaptchaOutcomeOf(context: unknown): RecaptchaOutcome | undefin
  * Anonymous REST and GraphQL creates only: the Local API (seeds, int tests,
  * `/subscribe`'s own `payload.create`) and the admin UI are never gated. A filled
  * honeypot returns early because the field validator rejects it without Google.
- * The mark in `req.context` is how `afterChange` learns to flag the notification.
+ * The mark in `req.context` is how `afterChange` learns the outcome: every non-fail
+ * outcome is marked, so an unmarked create is Local API, signed-in or honeypot.
  */
 export function recaptchaGuard(action: RecaptchaAction): CollectionBeforeChangeHook {
   return async ({ data, operation, req }) => {
@@ -105,8 +115,8 @@ export function recaptchaGuard(action: RecaptchaAction): CollectionBeforeChangeH
     }
     if (result.outcome === 'missing' || result.outcome === 'error') {
       req.payload.logger.warn(`[recaptcha] accepted unverified: ${detail}`)
-      req.context.recaptcha = { outcome: result.outcome, score: result.score }
     }
+    req.context.recaptcha = { outcome: result.outcome, score: result.score }
     return data
   }
 }

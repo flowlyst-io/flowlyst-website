@@ -167,6 +167,37 @@ integration injects) — migrations run against that string, not the pooled runt
 > schema — add columns/tables in one deploy and only drop or rename the old ones in
 > a later deploy, once nothing live references them.
 
+### Trying the Bigin push locally
+
+`pnpm fake:bigin` starts a stand-in for Zoho OAuth, Bigin and Google reCAPTCHA on
+`http://localhost:4555` (`FAKE_BIGIN_PORT` changes it). It accepts any credentials, remembers
+contacts and accounts it was given (so a repeat email or district is found, not inserted),
+and never reaches a real account. Its `GET /__requests` lists what the site sent
+(authorization redacted), `POST /__mode` with `{"fail":"deal-503"}` makes deal creation
+fail (`"none"` restores it), and `POST /__reset` clears everything.
+
+Start the site with the fake values **inline on the command line, never in `.env`**
+(the int and e2e tests load `.env`, and fake reCAPTCHA or Bigin values there would break them):
+
+```bash
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=fake-site RECAPTCHA_SECRET_KEY=fake-secret \
+RECAPTCHA_SITEVERIFY_URL=http://localhost:4555/recaptcha/api/siteverify \
+BIGIN_CLIENT_ID=fake BIGIN_CLIENT_SECRET=fake BIGIN_REFRESH_TOKEN=fake \
+BIGIN_ACCOUNTS_URL=http://localhost:4555 pnpm dev
+```
+
+In a browser tool, route `https://www.google.com/recaptcha/api.js*` to
+`http://localhost:4555/recaptcha/api.js` (it hands out the token `fake:<action>`); aborting that
+route instead gives a submission with no token, which is saved as unverified and never pushed.
+Then submit a form and read `/__requests`; /admin shows the Bigin column on each lead list.
+A failed push leaves a `biginRetry` job; set the mode back to `none` and run
+`/api/payload-jobs/run` as an admin to retry it. Email stays off (no `RESEND_API_KEY`), so the
+server log shows `[email] skipped …` lines instead of sending.
+
+This works only under `pnpm dev`. A built app (`pnpm start`, CI's e2e server, Vercel) has
+`NODE_ENV=production`, so the siteverify override is ignored there by design; CI e2e runs
+without reCAPTCHA keys, so its leads count as unverified and are never pushed.
+
 ### Resetting the local database
 
 ```bash

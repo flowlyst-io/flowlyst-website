@@ -768,6 +768,10 @@ describe('Lead hooks — the send settles before create resolves, and never fail
       data: c.data(tag) as never,
       // Newsletter create is admin-only; the public path is the /subscribe endpoint.
       overrideAccess: c.collection === 'newsletter-subscribers',
+      // The newsletter confirmation is sent only for a reCAPTCHA pass, which /subscribe marks.
+      ...(c.collection === 'newsletter-subscribers'
+        ? { context: { recaptcha: { outcome: 'pass' } } }
+        : {}),
     })
   }
 

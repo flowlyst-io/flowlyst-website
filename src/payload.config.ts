@@ -12,6 +12,7 @@ import { isAdmin } from './access'
 import { getServerURL } from './utilities/serverURL'
 import { envValue } from './utilities/envValue'
 import { Users } from './collections/Users'
+import { biginRetryTask } from './crm/biginRetryTask'
 
 /**
  * Wrap a collection's custom endpoints with an Admin-only guard.
@@ -119,6 +120,7 @@ export default buildConfig({
   // are processed when something hits GET /api/payload-jobs/run — in production
   // a Vercel Cron (see vercel.json) authenticated with CRON_SECRET.
   jobs: {
+    tasks: [biginRetryTask],
     access: {
       run: ({ req }) => {
         if (req.user?.role === 'admin') return true

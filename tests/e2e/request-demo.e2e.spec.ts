@@ -182,7 +182,7 @@ test.describe('Request-demo page — server-rendered content (raw HTML, no JS)',
       expect(html, `bullet "${bullet}"`).toContain(bullet)
     }
     expect(html, 'response note eyebrow').toContain('Average response')
-    expect(html, 'response note body').toContain('Same business day')
+    expect(html, 'response note body').toContain('Within 1–2 business days')
   })
 
   test('the form island server-renders its labels and controls (crawlable)', async ({
@@ -231,6 +231,7 @@ test.describe('Request-demo form — delivery path (invariant d)', () => {
     const success = page.getByTestId('demo-form-success')
     await expect(success).toBeVisible()
     await expect(success).toContainText(/Request received/i)
+    await expect(success).toContainText('within 1–2 business days')
 
     const ctx = await adminContext()
     try {

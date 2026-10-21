@@ -14,6 +14,8 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "typecheck": "cross-env NODE_OPTIONS=--no-deprecation tsc --noEmit",
+    "email:preview": "tsx scripts/email-preview.ts",
+    "fake:bigin": "tsx tests/fakes/fake-bigin.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",

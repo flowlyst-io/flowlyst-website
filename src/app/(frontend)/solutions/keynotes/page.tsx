@@ -136,7 +136,7 @@ export default function KeynotesPage() {
         primaryHref="#request"
         secondaryCta="Meet Aziz"
         secondaryHref="/about"
-        badges={['ASBO International', 'NJASBO · CPS', '3-business-day response']}
+        badges={['ASBO International', 'NJASBO · CPS', '1–2 business-day response']}
         visual={<KeynoteHeroArt />}
       />
 
@@ -254,7 +254,8 @@ export default function KeynotesPage() {
                 Tell us about <em>your event.</em>
               </h2>
               <p className="lead">
-                We’ll come back within 3 business days with availability and topic-fit.
+                A person from our team will reach out within 1–2 business days with availability and
+                topic-fit.
               </p>
             </div>
             <SpeakingRequestForm />

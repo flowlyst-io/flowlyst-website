@@ -62,6 +62,13 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: `afterChange: [async ({ doc, operation, req }) => { if (operation === 'create') await notifyDemoRequest(req.payload, doc, …) }]`, where `notifyDemoRequest` sends through `trySend`, which catches every send error.
 4. **Gotcha**: once awaited, an exception that escapes the callee fails the request and can roll back the write it follows. The callee must never throw, and that includes the code that runs before its own `try`. `afterChange` runs inside the still-open write transaction, so an unbounded remote call holds the row hostage: if the function is killed, the lead is lost. A send can also go out for a row whose commit then fails (acceptable: the lead still reaches the inbox).
 
+### A lead's afterChange commits before its network side effects
+
+1. **Rule**: a lead collection's `afterChange` (`src/leads/afterLeadCreate.ts`) calls `commitTransaction(req)` first, only when `req.payloadAPI === 'REST' && !req.user && req.transactionID`. Everything after it (team email, confirmation, Bigin push, queueing a retry) never throws, and later writes use a standalone `payload.update` with no `req`.
+2. **Why**: Payload runs `afterChange` inside the open transaction and commits after `afterOperation`, and nothing in a hook runs after the commit. Without the early commit the row is invisible to other connections while Bigin and email calls run (up to ~13 s), and a throw or a killed function loses the lead. `commitTransaction` deletes `req.transactionID`, so Payload's own commit afterwards is a no-op.
+3. **Minimal example**: `const external = req.payloadAPI === 'REST' && !req.user; if (external && req.transactionID) await commitTransaction(req)`, then `try { await Promise.allSettled([...]) } catch { log }`.
+4. **Gotcha**: a hook cannot see whether its operation owns the transaction, so never early-commit on the Local API path, where a caller may pass an outer `req` and expects to roll back. The status write must pass `context: { leadEffects: 'skip' }` so it cannot re-enter the hook.
+
 ### One-off production data fixes are dry-by-default `scripts/*.ts` runs
 
 1. **Rule**: a one-off production data fix is a `scripts/*.ts` run only through a `package.json` script (`cross-env CI=true NODE_OPTIONS=--no-deprecation tsx ...`). It runs dry by default and writes only with `--apply`. It is idempotent: it re-reads state, so a re-run reports 0 changes. It writes with `overrideAccess: true` and `context: { disableRevalidate: true }`. It checks any precondition that would make a write unsafe, such as a missing Blob token, before the first write. It has a runbook section with the env vars, dry-run, apply and confirm commands, and the expected output.
