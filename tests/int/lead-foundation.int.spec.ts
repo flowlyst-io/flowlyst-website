@@ -26,6 +26,7 @@ import {
   notifyContactMessage,
   notifyDemoRequest,
   notifySpeakingRequest,
+  sendNewsletterConfirmation,
   sendTimeout,
 } from '@/email/leadNotifications'
 
@@ -565,6 +566,60 @@ describe('Lead notifier — a mail problem never throws / never fails persistenc
       vi.stubEnv('LEAD_NOTIFY_TO', '  ')
       await notifyContactMessage(payload, contactDoc)
       expect(send.mock.calls[0][0].to).toBe('info@flowlyst.io')
+    } finally {
+      send.mockRestore()
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('BCCs the internal notifications from LEAD_NOTIFY_BCC, never the newsletter confirmation', async () => {
+    vi.stubEnv('RESEND_API_KEY', 'test-key-int')
+    const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
+    const speakingDoc = { eventName: 'S', eventDate: 'd', email: 'a@b.org' } as SpeakingRequest
+    const sendAll = async () => {
+      send.mockClear()
+      await notifyDemoRequest(payload, demoDoc)
+      await notifyContactMessage(payload, contactDoc)
+      await notifySpeakingRequest(payload, speakingDoc)
+      return send.mock.calls.map(([m]) => m.bcc)
+    }
+    try {
+      for (const k of ['SALES', 'CONTACT', 'SPEAKING']) vi.stubEnv(`${k}_NOTIFY_TO`, '')
+      vi.stubEnv('LEAD_NOTIFY_TO', 'lead@x.org')
+
+      vi.stubEnv('LEAD_NOTIFY_BCC', '')
+      expect(await sendAll()).toEqual([undefined, undefined, undefined])
+
+      vi.stubEnv('LEAD_NOTIFY_BCC', 'bcc1@example.test,bcc2@example.test')
+      const both = ['bcc1@example.test', 'bcc2@example.test']
+      expect(await sendAll()).toEqual([both, both, both])
+
+      vi.stubEnv('LEAD_NOTIFY_BCC', ' bcc1@example.test , ,bcc2@example.test,, ')
+      expect(await sendAll()).toEqual([both, both, both])
+
+      vi.stubEnv('LEAD_NOTIFY_BCC', 'not-an-email,bcc1@example.test')
+      const one = ['bcc1@example.test']
+      expect(await sendAll()).toEqual([one, one, one])
+
+      vi.stubEnv('LEAD_NOTIFY_BCC', 'bcc1@example.test,BCC1@example.test')
+      expect(await sendAll()).toEqual([one, one, one])
+
+      vi.stubEnv('LEAD_NOTIFY_BCC', 'Lead@X.org,bcc2@example.test')
+      expect(await sendAll()).toEqual([
+        ['bcc2@example.test'],
+        ['bcc2@example.test'],
+        ['bcc2@example.test'],
+      ])
+
+      vi.stubEnv('LEAD_NOTIFY_BCC', 'lead@x.org')
+      expect(await sendAll()).toEqual([undefined, undefined, undefined])
+
+      vi.stubEnv('LEAD_NOTIFY_BCC', 'bcc1@example.test,bcc2@example.test')
+      send.mockClear()
+      await sendNewsletterConfirmation(payload, 'sub@example.test')
+      expect(send).toHaveBeenCalledTimes(1)
+      expect(send.mock.calls[0][0].to).toBe('sub@example.test')
+      expect(send.mock.calls[0][0].bcc).toBeUndefined()
     } finally {
       send.mockRestore()
       vi.unstubAllEnvs()
