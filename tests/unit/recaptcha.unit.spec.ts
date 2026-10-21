@@ -15,6 +15,7 @@ beforeEach(() => {
   vi.stubEnv('RECAPTCHA_SECRET_KEY', 'secret')
   vi.stubEnv('NEXT_PUBLIC_RECAPTCHA_SITE_KEY', 'site')
   vi.stubEnv('RECAPTCHA_MIN_SCORE', '')
+  vi.stubEnv('RECAPTCHA_SITEVERIFY_URL', '')
 })
 
 afterEach(() => {
@@ -53,6 +54,19 @@ describe('verifyRecaptcha', () => {
     const sent = new URLSearchParams(init.body as URLSearchParams)
     expect(sent.get('secret')).toBe('secret')
     expect(sent.get('response')).toBe('tok')
+  })
+
+  it('posts to RECAPTCHA_SITEVERIFY_URL outside production and ignores it in production', async () => {
+    vi.stubEnv('RECAPTCHA_SITEVERIFY_URL', 'http://fake.test/sv')
+    vi.stubEnv('NODE_ENV', 'test')
+    siteverify({ success: true, score: 0.9, action: 'contact' })
+    await verifyRecaptcha('tok', 'contact')
+    expect(fetchMock.mock.calls[0][0]).toBe('http://fake.test/sv')
+
+    vi.stubEnv('NODE_ENV', 'production')
+    siteverify({ success: true, score: 0.9, action: 'contact' })
+    await verifyRecaptcha('tok', 'contact')
+    expect(fetchMock.mock.calls[1][0]).toBe('https://www.google.com/recaptcha/api/siteverify')
   })
 
   it('fails a low score', async () => {
@@ -163,11 +177,21 @@ describe('recaptchaGuard', () => {
     expect(logger.warn).toHaveBeenCalledTimes(2)
   })
 
-  it('leaves the context unset on pass', async () => {
+  it('marks the context on pass', async () => {
     siteverify({ success: true, score: 0.9, action: 'contact' })
     const passed = run({ token: 'tok' })
     await passed.result
-    expect(passed.req.context.recaptcha).toBeUndefined()
+    expect(passed.req.context.recaptcha).toMatchObject({ outcome: 'pass', score: 0.9 })
+    expect(logger.warn).not.toHaveBeenCalled()
+  })
+
+  it('marks the context skipped when no keys are set, without calling Google', async () => {
+    vi.stubEnv('RECAPTCHA_SECRET_KEY', '')
+    vi.stubEnv('NEXT_PUBLIC_RECAPTCHA_SITE_KEY', '')
+    const skipped = run({ token: 'tok' })
+    await skipped.result
+    expect(skipped.req.context.recaptcha).toMatchObject({ outcome: 'skipped' })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('skips Google when the honeypot is filled', async () => {
