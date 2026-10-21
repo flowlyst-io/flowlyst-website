@@ -41,7 +41,7 @@ export function afterLeadCreate(kind: LeadKind): CollectionAfterChangeHook {
         else await notifySpeakingRequest(payload, doc as SpeakingRequest, outcome)
       }
       const confirmation = async () => {
-        if (verified) await sendLeadConfirmation(payload, kind, doc as never)
+        if (verified && external) await sendLeadConfirmation(payload, kind, doc as never)
       }
       const crm = async () => {
         if (external) await syncLeadToBigin(payload, kind, doc as never, { verified })

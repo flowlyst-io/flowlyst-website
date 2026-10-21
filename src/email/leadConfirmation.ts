@@ -135,7 +135,7 @@ export function renderLeadConfirmation(input: {
     `<body style="margin: 0; padding: 0; background: #FFFFFF;">`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #FFFFFF;"><tr><td align="center">`,
     `<table role="presentation" width="680" cellpadding="0" cellspacing="0" border="0" style="width: 680px; max-width: 100%; background: #FFFFFF;"><tr><td style="padding: 40px; font-family: ${FONT}; color: ${TEXT}; font-size: 16px; line-height: 1.65;">`,
-    `<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 600px; max-width: 100%;">`,
+    `<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px;">`,
     block(
       `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>` +
         `<td style="padding: 0 8px 0 0; vertical-align: middle;"><img src="${getServerURL()}/email/flowlyst-mark.png" width="28" height="20" alt="" style="display: block; border: 0;"></td>` +

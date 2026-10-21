@@ -358,6 +358,23 @@ describe('Bigin trouble never loses the lead', () => {
   })
 })
 
+describe('a stranded push is still retried', () => {
+  it('retries a row left not-sent when the failed-status write was lost', async () => {
+    dealStatus = 503
+    vi.spyOn(payload, 'update').mockRejectedValueOnce(new Error('db write failed'))
+    const created = await createRest('demo-requests', demoData('strand'))
+    expect((await row('demo-requests', created.id)).crmStatus).toBe('not-sent')
+    expect(await retryJobs()).toMatchObject({ totalDocs: 1 })
+
+    dealStatus = 'ok'
+    await payload.jobs.run()
+    expect(await row('demo-requests', created.id)).toMatchObject({
+      crmStatus: 'sent',
+      crmDealId: 'deal-1',
+    })
+  })
+})
+
 describe('only a reCAPTCHA pass reaches Bigin and the submitter', () => {
   it('no token: saved, flagged unverified, nothing sent to Bigin, only the team email', async () => {
     const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
@@ -389,6 +406,21 @@ describe('only a reCAPTCHA pass reaches Bigin and the submitter', () => {
     expect((await row('demo-requests', created.id)).crmStatus).toBe('off')
     expect(send).toHaveBeenCalledTimes(2)
     expect(mailTo(send, email('off'))).toHaveLength(1)
+    expect(mailTo(send, 'sales@team.test')).toHaveLength(1)
+  })
+
+  it('an anonymous GraphQL create gets neither a confirmation nor a push', async () => {
+    const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
+    const headers = new Headers({ [RECAPTCHA_HEADER]: 'fake:demo_request' })
+    await payload.create({
+      collection: 'demo-requests',
+      data: demoData('gql') as never,
+      overrideAccess: false,
+      req: { payloadAPI: 'GraphQL', headers } as never,
+    })
+
+    expect(biginCalls).toHaveLength(0)
+    expect(mailTo(send, email('gql'))).toHaveLength(0)
     expect(mailTo(send, 'sales@team.test')).toHaveLength(1)
   })
 

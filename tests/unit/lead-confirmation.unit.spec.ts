@@ -59,6 +59,12 @@ describe('demo confirmation', () => {
     expect(html).not.toMatch(/display:\s*flex/)
   })
 
+  it('shrinks the 600px content table on a narrow screen', () => {
+    const { html } = renderDemo()
+    expect(html).toContain('width="600"')
+    expect(html).toContain('style="width: 100%; max-width: 600px;"')
+  })
+
   it('has a plain-text part with the greeting and recap and no markup', () => {
     const { text } = renderDemo()
     expect(text).toContain('Hi Jordan,')

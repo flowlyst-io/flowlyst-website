@@ -30,8 +30,9 @@ export const biginRetryTask: TaskConfig<'biginRetry'> = {
         overrideAccess: true,
         disableErrors: true,
       })
-      // Only verified leads are ever marked failed, so a retry is always verified.
-      if (doc && doc.crmStatus === 'failed') {
+      // Only verified leads are ever marked failed, so a retry is always verified. A row
+      // still `not-sent` is one whose failed-status write was lost, so its push is retried too.
+      if (doc && (doc.crmStatus === 'failed' || doc.crmStatus === 'not-sent')) {
         await syncLeadToBigin(payload, kind, doc as never, {
           verified: true,
           requeueDelayMs: REQUEUE_DELAY_MS,
