@@ -28,19 +28,28 @@
 
 Project → **Settings → Environment Variables** (Production, and Preview if you want staging email). Add:
 
-| Variable             | Value                                | Required               | Notes                                                                                                  |
-| -------------------- | ------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------ |
-| `RESEND_API_KEY`     | `re_...` from step 1                 | **Yes**                | Enables sending. Unset = skip-and-log.                                                                 |
-| `EMAIL_FROM`         | `noreply@flowlyst.io`                | **Yes**                | Verified sender (step 2). Defaults to `noreply@flowlyst.io` if unset, but that must still be verified. |
-| `LEAD_NOTIFY_TO`     | e.g. `leads@flowlyst.io`             | **Yes** (set this one) | Default recipient for demo, contact and speaking notifications. Default `inquiries@flowlyst.io`.       |
-| `LEAD_NOTIFY_BCC`    | `tural@flowlyst.io,aziz@flowlyst.io` | No (not secret)        | BCCs demo, contact and speaking notifications; unset = no BCC.                                         |
-| `SALES_NOTIFY_TO`    | e.g. `sales@flowlyst.io`             | No                     | Optional override: demo-request notifications. Default `LEAD_NOTIFY_TO`.                               |
-| `CONTACT_NOTIFY_TO`  | e.g. `inquiries@flowlyst.io`         | No                     | Optional override: contact-form notifications. Default `LEAD_NOTIFY_TO`.                               |
-| `SPEAKING_NOTIFY_TO` | e.g. `speaking@flowlyst.io`          | No                     | Optional override: speaking requests. Default → `SALES_NOTIFY_TO` → `LEAD_NOTIFY_TO`.                  |
+| Variable             | Value                   | Required               | Notes                                                                                                  |
+| -------------------- | ----------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| `RESEND_API_KEY`     | `re_...` from step 1    | **Yes**                | Enables sending. Unset = skip-and-log.                                                                 |
+| `EMAIL_FROM`         | `noreply@flowlyst.io`   | **Yes**                | Verified sender (step 2). Defaults to `noreply@flowlyst.io` if unset, but that must still be verified. |
+| `LEAD_NOTIFY_TO`     | `inquiries@flowlyst.io` | **Yes** (set this one) | Default recipient for demo, contact and speaking notifications. Default `inquiries@flowlyst.io`.       |
+| `LEAD_NOTIFY_BCC`    | (no value)              | No                     | Leave unset; inquiries@ already reaches the team.                                                      |
+| `SALES_NOTIFY_TO`    | normally unset          | No                     | Optional override: demo-request notifications. Default `LEAD_NOTIFY_TO`.                               |
+| `CONTACT_NOTIFY_TO`  | normally unset          | No                     | Optional override: contact-form notifications. Default `LEAD_NOTIFY_TO`.                               |
+| `SPEAKING_NOTIFY_TO` | normally unset          | No                     | Optional override: speaking requests. Default → `SALES_NOTIFY_TO` → `LEAD_NOTIFY_TO`.                  |
 
 Redeploy (or let the next deploy pick them up).
 
 All lead notifications go to `inquiries@flowlyst.io`, a group address that reaches the team (Tural, Aziz and Sama). Keep `LEAD_NOTIFY_BCC` unset, since the group already delivers to everyone.
+
+### Switching lead email to inquiries@ (2026-10-21)
+
+A Vercel step for Tural, on the Production environment:
+
+1. Set `LEAD_NOTIFY_TO=inquiries@flowlyst.io`.
+2. Delete `SALES_NOTIFY_TO`, `CONTACT_NOTIFY_TO`, `SPEAKING_NOTIFY_TO` and `LEAD_NOTIFY_BCC` if present, or set the three `*_NOTIFY_TO` to `inquiries@flowlyst.io`.
+3. Redeploy.
+4. Check: submit `/contact` from a private window; the team email arrives at inquiries@ for all three people.
 
 ### 4. Observe delivery (verification checklist)
 
