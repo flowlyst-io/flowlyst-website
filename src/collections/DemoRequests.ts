@@ -1,10 +1,10 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
-import { notifyDemoRequest } from '@/email/leadNotifications'
-import type { DemoRequest } from '@/payload-types'
+import { afterLeadCreate } from '@/leads/afterLeadCreate'
+import { crmFields } from '@/fields/crmFields'
 import { DEMO_INTERESTS } from '@/utilities/demoInterestsShared'
-import { recaptchaGuard, recaptchaOutcomeOf } from '@/utilities/recaptcha'
+import { recaptchaGuard } from '@/utilities/recaptcha'
 
 /**
  * Demo requests inbox (PRD §8.1, §9). The highest-intent lead.
@@ -26,7 +26,7 @@ export const DemoRequests: CollectionConfig = {
   labels: { singular: 'Demo Request', plural: 'Demo Requests' },
   admin: {
     useAsTitle: 'fullName',
-    defaultColumns: ['fullName', 'workEmail', 'district', 'status', 'createdAt'],
+    defaultColumns: ['fullName', 'workEmail', 'district', 'status', 'crmStatus', 'createdAt'],
     listSearchableFields: ['fullName', 'workEmail', 'district'],
     group: 'Leads',
   },
@@ -38,15 +38,9 @@ export const DemoRequests: CollectionConfig = {
   },
   hooks: {
     beforeChange: [recaptchaGuard('demo_request')],
-    // Notify sales when a demo request is created (PRD §8.1). Runs after the
-    // write, and the helper never throws / skips when email is unconfigured, so
-    // a mail problem can never fail persistence (review invariant d).
-    afterChange: [
-      async ({ doc, operation, req }) => {
-        if (operation === 'create')
-          await notifyDemoRequest(req.payload, doc as DemoRequest, recaptchaOutcomeOf(req.context))
-      },
-    ],
+    // Team email (PRD §8.1), the submitter's confirmation and the Bigin push; the
+    // row is committed before any of them and none can fail it (invariant d).
+    afterChange: [afterLeadCreate('demo')],
   },
   fields: [
     // --- Internal triage (sidebar) ---
@@ -140,5 +134,6 @@ export const DemoRequests: CollectionConfig = {
       admin: { hidden: true },
       validate: (value: unknown) => (value ? 'This submission was flagged as spam.' : true),
     },
+    ...crmFields,
   ],
 }

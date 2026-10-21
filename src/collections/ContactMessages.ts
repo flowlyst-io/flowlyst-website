@@ -1,10 +1,10 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, isAdmin, isAdminFieldLevel } from '@/access'
-import { notifyContactMessage } from '@/email/leadNotifications'
-import type { ContactMessage } from '@/payload-types'
+import { afterLeadCreate } from '@/leads/afterLeadCreate'
+import { crmFields } from '@/fields/crmFields'
 import { CONTACT_REASONS } from '@/utilities/contactReasonsShared'
-import { recaptchaGuard, recaptchaOutcomeOf } from '@/utilities/recaptcha'
+import { recaptchaGuard } from '@/utilities/recaptcha'
 
 /**
  * Contact messages (PRD §8.2). Non-demo inquiries — press, partnerships,
@@ -16,7 +16,7 @@ export const ContactMessages: CollectionConfig = {
   labels: { singular: 'Contact Message', plural: 'Contact Messages' },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'email', 'reason', 'status', 'createdAt'],
+    defaultColumns: ['name', 'email', 'reason', 'status', 'crmStatus', 'createdAt'],
     listSearchableFields: ['name', 'email'],
     group: 'Leads',
   },
@@ -28,18 +28,9 @@ export const ContactMessages: CollectionConfig = {
   },
   hooks: {
     beforeChange: [recaptchaGuard('contact')],
-    // Notify info@ when a contact message is created (PRD §8.2). After-write,
-    // non-throwing, skips when email is unconfigured — never fails persistence.
-    afterChange: [
-      async ({ doc, operation, req }) => {
-        if (operation === 'create')
-          await notifyContactMessage(
-            req.payload,
-            doc as ContactMessage,
-            recaptchaOutcomeOf(req.context),
-          )
-      },
-    ],
+    // Team email (PRD §8.2), the submitter's confirmation and the Bigin push; the
+    // row is committed before any of them and none can fail it.
+    afterChange: [afterLeadCreate('contact')],
   },
   fields: [
     {
@@ -77,5 +68,6 @@ export const ContactMessages: CollectionConfig = {
       admin: { hidden: true },
       validate: (value: unknown) => (value ? 'This submission was flagged as spam.' : true),
     },
+    ...crmFields,
   ],
 }

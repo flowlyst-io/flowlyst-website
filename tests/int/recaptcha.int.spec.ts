@@ -127,6 +127,43 @@ describe('reCAPTCHA on the lead paths', () => {
     expect((await rows(email)).docs).toHaveLength(1)
   })
 
+  describe('newsletter confirmation only on a pass', () => {
+    const pass = () =>
+      siteverify.mockResolvedValue({
+        ok: true,
+        json: async () => ({ success: true, score: 0.9, action: 'newsletter' }),
+      })
+    const toSubscriber = (send: { mock: { calls: unknown[][] } }, email: string) =>
+      send.mock.calls.filter(([m]) => (m as { to?: string }).to === email)
+
+    beforeEach(() => vi.stubEnv('RESEND_API_KEY', 'test-key-int'))
+
+    it('sends one confirmation on a pass and none without a token', async () => {
+      const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
+      const passed = `rc-nl-pass-${stamp}@district.k12.us`
+      pass()
+      await subscribe(passed, 'tok')
+      expect(toSubscriber(send, passed)).toHaveLength(1)
+
+      const bare = `rc-nl-none-${stamp}@district.k12.us`
+      await subscribe(bare)
+      expect(toSubscriber(send, bare)).toHaveLength(0)
+      expect((await rows(bare)).docs).toHaveLength(1)
+    })
+
+    it('re-subscribe confirms only on a pass', async () => {
+      const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)
+      const email = `rc-nl-resub-${stamp}@district.k12.us`
+      await subscribe(email)
+      await subscribe(email)
+      expect(toSubscriber(send, email)).toHaveLength(0)
+
+      pass()
+      await subscribe(email, 'tok')
+      expect(toSubscriber(send, email)).toHaveLength(1)
+    })
+  })
+
   it('marks the sales notification subject only for an unverified outcome', async () => {
     vi.stubEnv('RESEND_API_KEY', 'test-key-int')
     const send = vi.spyOn(payload, 'sendEmail').mockResolvedValue(undefined as never)

@@ -126,6 +126,7 @@ export interface Config {
   user: User;
   jobs: {
     tasks: {
+      biginRetry: TaskBiginRetry;
       createCollectionExport: TaskCreateCollectionExport;
       createCollectionImport: TaskCreateCollectionImport;
       schedulePublish: TaskSchedulePublish;
@@ -565,6 +566,11 @@ export interface DemoRequest {
    */
   consent?: boolean | null;
   botField?: string | null;
+  crmStatus?: ('not-sent' | 'sent' | 'failed' | 'unverified' | 'off') | null;
+  crmDealId?: string | null;
+  crmLastError?: string | null;
+  crmAttempts?: number | null;
+  crmLastAttemptAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -595,6 +601,11 @@ export interface SpeakingRequest {
   topicInterest?: ('ai-sbo' | 'automation' | 'ai-adoption' | 'custom') | null;
   message?: string | null;
   botField?: string | null;
+  crmStatus?: ('not-sent' | 'sent' | 'failed' | 'unverified' | 'off') | null;
+  crmDealId?: string | null;
+  crmLastError?: string | null;
+  crmAttempts?: number | null;
+  crmLastAttemptAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -614,6 +625,11 @@ export interface ContactMessage {
   reason?: ('press' | 'partnership' | 'training' | 'assessment' | 'pricing' | 'support' | 'other') | null;
   message: string;
   botField?: string | null;
+  crmStatus?: ('not-sent' | 'sent' | 'failed' | 'unverified' | 'off') | null;
+  crmDealId?: string | null;
+  crmLastError?: string | null;
+  crmAttempts?: number | null;
+  crmLastAttemptAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -807,7 +823,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'createCollectionExport' | 'createCollectionImport' | 'schedulePublish';
+        taskSlug: 'inline' | 'biginRetry' | 'createCollectionExport' | 'createCollectionImport' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -840,7 +856,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'createCollectionExport' | 'createCollectionImport' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'biginRetry' | 'createCollectionExport' | 'createCollectionImport' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -1169,6 +1185,11 @@ export interface DemoRequestsSelect<T extends boolean = true> {
   anythingElse?: T;
   consent?: T;
   botField?: T;
+  crmStatus?: T;
+  crmDealId?: T;
+  crmLastError?: T;
+  crmAttempts?: T;
+  crmLastAttemptAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1189,6 +1210,11 @@ export interface SpeakingRequestsSelect<T extends boolean = true> {
   topicInterest?: T;
   message?: T;
   botField?: T;
+  crmStatus?: T;
+  crmDealId?: T;
+  crmLastError?: T;
+  crmAttempts?: T;
+  crmLastAttemptAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1204,6 +1230,11 @@ export interface ContactMessagesSelect<T extends boolean = true> {
   reason?: T;
   message?: T;
   botField?: T;
+  crmStatus?: T;
+  crmDealId?: T;
+  crmLastError?: T;
+  crmAttempts?: T;
+  crmLastAttemptAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1442,6 +1473,17 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskBiginRetry".
+ */
+export interface TaskBiginRetry {
+  input: {
+    collection: string;
+    id: number;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

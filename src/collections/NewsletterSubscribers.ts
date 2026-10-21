@@ -3,7 +3,7 @@ import { addDataAndFileToRequest } from 'payload'
 
 import { isAdmin, isAdminFieldLevel } from '@/access'
 import { sendNewsletterConfirmation } from '@/email/leadNotifications'
-import { verifyRecaptcha } from '@/utilities/recaptcha'
+import { recaptchaOutcomeOf, verifyRecaptcha } from '@/utilities/recaptcha'
 import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
 
 /**
@@ -40,13 +40,14 @@ export const NewsletterSubscribers: CollectionConfig = {
     delete: isAdmin,
   },
   hooks: {
-    // Confirmation to the subscriber on first subscribe (PRD §8.3). Gated to
-    // `create` so it fires exactly once — the `/subscribe` re-subscribe branch
-    // (an update) sends its own confirmation. After-write, non-throwing, and
-    // skips when email is unconfigured — never fails persistence (invariant d).
+    // Confirmation to the subscriber on first subscribe (PRD §8.3), only when
+    // `/subscribe` marked the create as a reCAPTCHA pass. Gated to `create` so it
+    // fires exactly once — the re-subscribe branch (an update) sends its own.
+    // After-write, non-throwing, and skips when email is unconfigured — never
+    // fails persistence (invariant d).
     afterChange: [
       async ({ doc, operation, req }) => {
-        if (operation === 'create')
+        if (operation === 'create' && recaptchaOutcomeOf(req.context) === 'pass')
           await sendNewsletterConfirmation(req.payload, doc.email as string)
       },
     ],
@@ -107,7 +108,7 @@ export const NewsletterSubscribers: CollectionConfig = {
           })
           // Re-subscribe is an update; afterChange only mails on create, so send
           // the confirmation here.
-          await sendNewsletterConfirmation(req.payload, email)
+          if (check.outcome === 'pass') await sendNewsletterConfirmation(req.payload, email)
           return ok()
         }
 
@@ -115,8 +116,9 @@ export const NewsletterSubscribers: CollectionConfig = {
           collection: 'newsletter-subscribers',
           data: { email, status: 'subscribed', ...(source ? { source } : {}) },
           overrideAccess: true,
+          context: { recaptcha: { outcome: check.outcome } },
         })
-        // afterChange(create) sends the confirmation — not re-sent here.
+        // afterChange(create) sends the confirmation on a pass — not re-sent here.
         return ok()
       },
     },
