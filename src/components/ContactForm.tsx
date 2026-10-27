@@ -4,6 +4,7 @@ import React, { useId, useState } from 'react'
 
 import { RecaptchaNotice } from '@/components/RecaptchaNotice'
 import { CONTACT_REASONS, type ContactReason } from '@/utilities/contactReasonsShared'
+import { trackLead } from '@/utilities/googleAnalytics'
 import { getRecaptchaToken, loadRecaptcha } from '@/utilities/recaptchaClient'
 import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
 
@@ -128,6 +129,7 @@ export function ContactForm({ initialReason }: { initialReason?: ContactReason }
       })
       if (res.ok) {
         setState('success')
+        trackLead('contact')
         setValues(INITIAL)
       } else {
         setState('error')

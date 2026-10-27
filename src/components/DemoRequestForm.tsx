@@ -3,6 +3,7 @@
 import React, { useId, useState } from 'react'
 
 import { RecaptchaNotice } from '@/components/RecaptchaNotice'
+import { trackLead } from '@/utilities/googleAnalytics'
 import { getRecaptchaToken, loadRecaptcha } from '@/utilities/recaptchaClient'
 import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
 
@@ -196,6 +197,7 @@ export function DemoRequestForm() {
       })
       if (res.ok) {
         setState('success')
+        trackLead('demo')
         setValues(INITIAL)
       } else {
         setState('error')
