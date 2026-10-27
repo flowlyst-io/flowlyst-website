@@ -21,7 +21,7 @@ We screen the demo, contact, speaking and newsletter submissions with reCAPTCHA 
 ## Consequences
 
 - Google becomes a processor of IP address, browser and device information, and page-interaction signals on form pages. The cookie and privacy policies are updated.
-- The keys are Tural's to create and set in Vercel (see the cutover runbook). With either key absent, reCAPTCHA is off: no script, no attribution, no verification. Local, CI and e2e behave as before.
+- The keys are Tural's to create and set in Vercel (see the cutover runbook). They live in Tural's Google Cloud project `flowlyst-website` (ID `flowlyst-website-511600`), under Security → reCAPTCHA. With either key absent, reCAPTCHA is off: no script, no attribution, no verification. Local, CI and e2e behave as before.
 - Trade-off: a scripted POST that omits the token is accepted and marked `[Unverified]`, not blocked. Rejecting it would also drop leads from visitors whose ad-blocker or district filter blocks Google's script. The honeypot still catches naive bots, and rejecting `missing` is a one-line change if spam volume demands it.
 - A mistyped or crossed secret, or a token Google cannot read, is an `error` and lands as `[Unverified]`, never a reject, so a misconfiguration cannot reject every lead.
 - District web filters may depress v3 scores; `RECAPTCHA_MIN_SCORE` is the lever and every reject logs its score.
