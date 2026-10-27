@@ -6,6 +6,7 @@ import { nunito } from './fonts'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { CookieConsent } from '@/components/CookieConsent'
+import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 import { getServerURL } from '@/utilities/serverURL'
 import { OrganizationJsonLd } from '@/components/OrganizationJsonLd'
 import { getSiteSettings } from '@/utilities/siteSettings'
@@ -51,6 +52,7 @@ export default async function FrontendLayout({ children }: { children: React.Rea
         <CookieConsent />
         <Analytics />
         <SpeedInsights />
+        <GoogleAnalytics />
       </body>
     </html>
   )
