@@ -6,6 +6,8 @@ import { defineConfig, devices } from '@playwright/test'
  */
 import 'dotenv/config'
 
+import { E2E_GA_ID } from './tests/helpers/ga'
+
 const isCI = !!process.env.CI
 
 /**
@@ -39,12 +41,14 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     /*
-     * Seed an ACCEPTED cookie-consent cookie for every spec (issue #22). The consent
+     * Seed a DECLINED cookie-consent cookie for every spec (issue #22). The consent
      * banner is mounted globally in the frontend layout and, with no consent cookie,
      * renders a `position: fixed` bottom overlay on first visit. That overlay sits over
      * the footer links and the bottom of the demo/contact forms, so Playwright's
      * actionability checks would fail across the existing suite. Seeding the cookie
-     * keeps the banner hidden everywhere by default; the dedicated cookie-consent spec
+     * keeps the banner hidden everywhere by default. It is `declined` rather than
+     * `accepted` so Google Analytics (issue #139) never loads in unrelated specs; the
+     * GA spec seeds `accepted` itself. The dedicated cookie-consent spec
      * resets storageState (`test.use`) so it starts with no cookie and exercises the
      * banner. `domain: 'localhost'` matches the baseURL host; `expires: -1` is a
      * session cookie (persists for each test's context). The banner reads this via
@@ -54,7 +58,7 @@ export default defineConfig({
       cookies: [
         {
           name: 'fl_cookie_consent',
-          value: 'accepted',
+          value: 'declined',
           domain: 'localhost',
           path: '/',
           expires: -1,
@@ -85,7 +89,7 @@ export default defineConfig({
   webServer: {
     command: isCI ? 'pnpm start' : 'pnpm dev',
     url: baseURL,
-    env: { PORT: String(PORT) },
+    env: { PORT: String(PORT), NEXT_PUBLIC_GA_MEASUREMENT_ID: E2E_GA_ID },
     reuseExistingServer: !isCI,
     timeout: 120_000,
   },
