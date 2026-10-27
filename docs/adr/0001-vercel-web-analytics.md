@@ -27,3 +27,5 @@ We use Vercel Web Analytics via `@vercel/analytics`, rendering `<Analytics />` o
 | Plausible            | Cookieless, richer reporting                | Paid subscription, another vendor to manage          |
 | Google Analytics 4   | Deepest features                            | Cookies and consent banner changes, privacy exposure |
 | None                 | No change                                   | No visibility into traffic or lead-form funnel       |
+
+The Google Analytics 4 row was reversed by [ADR 0005](./0005-google-analytics-4.md) (2026-10-27); Vercel Web Analytics stays.
