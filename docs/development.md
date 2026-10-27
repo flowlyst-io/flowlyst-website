@@ -56,11 +56,12 @@ in `PAYLOAD_SECRET`.
 
 ### Environment variables
 
-| Variable                 | Required | Notes                                                                                                                              |
-| ------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`           | yes      | Postgres connection string. Local default matches `docker-compose.yml`.                                                            |
-| `PAYLOAD_SECRET`         | yes      | Secret for Payload auth/JWT. Generate with `openssl rand -hex 32`.                                                                 |
-| `NEXT_PUBLIC_SERVER_URL` | no       | Explicit override for Payload's `serverURL` — the origin used to build absolute URLs (admin meta/OG tags, email links). See below. |
+| Variable                        | Required | Notes                                                                                                                                                                                                                   |
+| ------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                  | yes      | Postgres connection string. Local default matches `docker-compose.yml`.                                                                                                                                                 |
+| `PAYLOAD_SECRET`                | yes      | Secret for Payload auth/JWT. Generate with `openssl rand -hex 32`.                                                                                                                                                      |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | no       | Google Analytics 4 ID (`G-…`). Production only; leave unset locally. The e2e uses the fake `G-E2ETEST000`, which Playwright's `webServer` passes in, so a dev server you started yourself without it fails the GA spec. |
+| `NEXT_PUBLIC_SERVER_URL`        | no       | Explicit override for Payload's `serverURL` — the origin used to build absolute URLs (admin meta/OG tags, email links). See below.                                                                                      |
 
 `NEXT_PUBLIC_SERVER_URL` is optional. When unset, `src/payload.config.ts` derives
 `serverURL` automatically:

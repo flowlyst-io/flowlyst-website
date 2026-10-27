@@ -3,6 +3,7 @@
 import React, { useId, useState } from 'react'
 
 import { RecaptchaNotice } from '@/components/RecaptchaNotice'
+import { trackLead } from '@/utilities/googleAnalytics'
 import { getRecaptchaToken, loadRecaptcha } from '@/utilities/recaptchaClient'
 import { RECAPTCHA_HEADER } from '@/utilities/recaptchaShared'
 
@@ -92,6 +93,7 @@ export function NewsletterSignup({ source }: NewsletterSignupProps) {
       // reflects.
       if (res.ok) {
         setState('success')
+        trackLead('newsletter')
         setEmail('')
       } else {
         setState('error')

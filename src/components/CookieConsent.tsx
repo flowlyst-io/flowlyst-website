@@ -3,13 +3,7 @@
 import React, { useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 
-import { getConsent, setConsent, type ConsentValue } from '@/utilities/consent'
-
-// The cookie is external browser state we only READ; consent changes only via this
-// component's own click handler (which triggers a local re-render), so there is nothing
-// to subscribe to. A no-op subscribe lets `useSyncExternalStore` read the cookie safely
-// across SSR and hydration without a setState-in-effect.
-const noopSubscribe = () => () => {}
+import { getConsent, setConsent, subscribeConsent, type ConsentValue } from '@/utilities/consent'
 
 /**
  * Cookie-consent banner (issue #22, PRD §10.4; GDPR/CCPA-ready).
@@ -20,9 +14,8 @@ const noopSubscribe = () => () => {}
  * styles.css `.cookie-consent`) it overlays the page rather than pushing content, so
  * its appearance shifts no layout — CLS stays 0 (PRD §10.2, invariant c).
  *
- * Non-essential scripts gate on `hasConsent()` (src/utilities/consent.ts). The site
- * runs none today (analytics is cookieless Vercel Web Analytics, no consent gate),
- * so the banner records the choice for whatever is added later.
+ * Non-essential scripts gate on `hasConsent()` (src/utilities/consent.ts). Google
+ * Analytics is the one today; it starts when the visitor accepts here.
  *
  * Accessibility: a labelled `role="region"` containing real <button>s — reachable in
  * tab order and operable by keyboard. It is intentionally NON-modal (a bottom bar, not
@@ -38,7 +31,7 @@ export function CookieConsent() {
   // when no decision is stored. Being position:fixed it overlays rather than pushes, so
   // this post-hydration appearance shifts no layout (CLS stays 0).
   const stored = useSyncExternalStore(
-    noopSubscribe,
+    subscribeConsent,
     () => getConsent(),
     () => 'ssr' as const,
   )
@@ -60,8 +53,8 @@ export function CookieConsent() {
     >
       <div className="cookie-consent__inner">
         <p className="cookie-consent__text">
-          We only use essential cookies, including one that remembers this choice. If we ever add
-          optional ones, none will run until you accept. Read our{' '}
+          We use essential cookies, including one that remembers this choice. If you accept, we also
+          use Google Analytics cookies to understand how the site is used. Read our{' '}
           <Link href="/cookies" className="cookie-consent__link">
             cookie policy
           </Link>

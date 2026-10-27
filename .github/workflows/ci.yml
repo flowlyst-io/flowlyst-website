@@ -38,6 +38,8 @@ jobs:
       # it to disable schema push, so the schema comes only from committed migrations.
       DATABASE_URL: postgres://flowlyst:flowlyst@localhost:5432/flowlyst
       NEXT_TELEMETRY_DISABLED: '1'
+      # Fake GA ID, must match tests/helpers/ga.ts, so the CI build inlines it for the GA e2e spec.
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: G-E2ETEST000
 
     steps:
       - name: Checkout

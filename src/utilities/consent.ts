@@ -7,9 +7,8 @@
  * the decision — no identifier — so it is itself strictly necessary and exempt from
  * the consent it records (documented on /cookies).
  *
- * There are NO non-essential scripts on the site today: analytics is cookieless
- * (Vercel Web Analytics), so it needs no consent gate. This module is the forward mechanism — any non-essential script
- * added later must gate on `hasConsent()` before it runs.
+ * Google Analytics is the one non-essential script: it gates on `hasConsent()` and starts
+ * only after the visitor accepts. Any non-essential script added later must do the same.
  */
 
 export const CONSENT_COOKIE = 'fl_cookie_consent'
@@ -29,18 +28,28 @@ export function getConsent(): ConsentValue | null {
   return match ? (match[1] as ConsentValue) : null
 }
 
+const listeners = new Set<() => void>()
+
+/** Called after every `setConsent`; lets a gated script start in the same page view. */
+export function subscribeConsent(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
 /** Persist the visitor's decision. First-party, SameSite=Lax, path=/. Client-only. */
 export function setConsent(value: ConsentValue): void {
   if (typeof document === 'undefined') return
   // Secure only over HTTPS so the cookie still sets on local http dev.
   const secure = window.location.protocol === 'https:' ? '; Secure' : ''
   document.cookie = `${CONSENT_COOKIE}=${value}; Max-Age=${MAX_AGE_SECONDS}; Path=/; SameSite=Lax${secure}`
+  listeners.forEach((listener) => listener())
 }
 
 /**
- * True only when the visitor has ACTIVELY accepted non-essential cookies. The gate any
- * future non-essential script must pass before it runs. No consumers today (the site
- * ships none); this is the documented integration point, not dead code.
+ * True only when the visitor has ACTIVELY accepted non-essential cookies. The gate every
+ * non-essential script (Google Analytics today) must pass before it runs.
  */
 export function hasConsent(): boolean {
   return getConsent() === 'accepted'
