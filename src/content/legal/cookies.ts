@@ -3,16 +3,18 @@ import type { LegalDoc } from './types'
 /**
  * Cookie policy (issue #22). Documents the cookies/storage the site ACTUALLY
  * uses today: the strictly-necessary consent cookie (`fl_cookie_consent`), the Payload
- * staff-session cookie. The site runs cookieless Vercel Web Analytics and Speed Insights; Google reCAPTCHA v3
- * protects the forms and is treated as strictly necessary (ADR 0002). Unknowns are `flag`
- * blocks. Signed off by Tural 2026-10-11; the Speed Insights sentences were added
- * by #10 (2026-10-16), after that sign-off.
+ * staff-session cookie, plus the optional Google Analytics cookies (`_ga`, `_ga_<ID>`) set
+ * only after Accept (ADR 0005). The site also runs cookieless Vercel Web Analytics and Speed
+ * Insights; Google reCAPTCHA v3 protects the forms and is treated as strictly necessary
+ * (ADR 0002). Unknowns are `flag` blocks. Signed off by Tural 2026-10-11; the Speed Insights
+ * sentences were added by #10 (2026-10-16) and the Google Analytics wording by #139
+ * (2026-10-27), both after that sign-off.
  */
 export const cookiesDoc: LegalDoc = {
   doc: 'cookies',
   title: 'Cookie policy',
   sub: 'How we use cookies and similar technologies.',
-  lastUpdated: 'October 11, 2026',
+  lastUpdated: 'October 27, 2026',
   sections: [
     {
       id: 'overview',
@@ -30,7 +32,7 @@ export const cookiesDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'We keep the site light on cookies. Strictly necessary features work by default because the site cannot function properly without them. Any non-essential cookie runs only after you accept it in the cookie banner; our analytics is cookieless (see Analytics below). You can decline, and you can change your mind later by clearing your cookies for this site, which brings the banner back.',
+          text: 'We keep the site light on cookies. Strictly necessary features work by default because the site cannot function properly without them. Any non-essential cookie runs only after you accept it in the cookie banner; Google Analytics is the only optional one (see Analytics below). You can decline, and you can change your mind later by clearing your cookies for this site, which brings the banner back.',
         },
         {
           kind: 'p',
@@ -55,11 +57,22 @@ export const cookiesDoc: LegalDoc = {
         },
         {
           kind: 'subheading',
+          text: 'Analytics (optional)',
+        },
+        {
+          kind: 'list',
+          items: [
+            '_ga — first-party — Google Analytics — tells visits apart so we can count them — kept about 2 years — set only after you accept.',
+            '_ga_<ID> — first-party — Google Analytics — keeps the state of your current session — kept about 2 years — set only after you accept.',
+          ],
+        },
+        {
+          kind: 'subheading',
           text: 'Analytics',
         },
         {
           kind: 'p',
-          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking), and Vercel Speed Insights, which is also cookieless and measures aggregated page-load performance. The site uses no advertising cookies. If we add any cookie-based analytics later, we will list it here and it will run only after you accept.',
+          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking), and Vercel Speed Insights, which is also cookieless and measures aggregated page-load performance. The site uses no advertising cookies. Google Analytics loads only after you accept in the cookie banner. It measures visits and form completions in aggregate, and Google acts as our service provider for it. Google’s use of this information is governed by the Google Privacy Policy (https://policies.google.com/privacy).',
         },
         {
           kind: 'subheading',
