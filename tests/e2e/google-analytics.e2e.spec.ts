@@ -128,7 +128,9 @@ test.describe('GA with a stored accept', () => {
     await page.goto('/admin')
     await page.waitForLoadState('networkidle')
     expect(seen.gtm).toHaveLength(0)
+    expect(seen.collect).toHaveLength(0)
     await expect(page.locator(GTAG)).toHaveCount(0)
+    expectNeverReachedGoogle(seen)
   })
 
   test('G6: the server HTML carries no GA', async ({ request }) => {
@@ -248,7 +250,36 @@ test.describe('GA with a stored accept', () => {
     expectNeverReachedGoogle(seen)
   })
 
-  test('L1: the cookie policy names Google Analytics and its cookies', async ({ page }) => {
+  test('E7: a filled honeypot shows success, posts nothing, sends no generate_lead', async ({
+    page,
+    context,
+  }) => {
+    const seen = await stubGoogle(context)
+    const posts: string[] = []
+    await page.route('**/api/demo-requests', (route) => {
+      posts.push(route.request().url())
+      return route.fulfill({ status: 201, contentType: 'application/json', body: '{}' })
+    })
+    await page.goto('/request-demo')
+    await page.getByLabel('Full name').fill('GA Bot')
+    await page.getByLabel('Work email').fill('ga-bot@district.k12.us')
+    await page.getByRole('checkbox', { name: /I agree to flowlyst/i }).check()
+    await page.locator('input[name="botField"]').fill('spam', { force: true })
+    await page
+      .getByTestId('demo-form')
+      .getByRole('button', { name: /request demo/i })
+      .click()
+    await expect(page.getByTestId('demo-form-success')).toBeVisible()
+    expect(posts).toHaveLength(0)
+    expect(await leadEvents(page)).toHaveLength(0)
+    expectNeverReachedGoogle(seen)
+  })
+
+  test('L1: the cookie policy names Google Analytics and its cookies', async ({
+    page,
+    context,
+  }) => {
+    await stubGoogle(context)
     await page.goto('/cookies')
     const text = await page.locator('main').innerText()
     expect(text).toContain('Google Analytics')
@@ -256,7 +287,8 @@ test.describe('GA with a stored accept', () => {
     expect(text).toContain('_ga_')
   })
 
-  test('L2: the privacy policy names Google Analytics', async ({ page }) => {
+  test('L2: the privacy policy names Google Analytics', async ({ page, context }) => {
+    await stubGoogle(context)
     await page.goto('/privacy')
     expect(await page.locator('main').innerText()).toContain('Google Analytics')
   })
@@ -265,7 +297,7 @@ test.describe('GA with a stored accept', () => {
 test.describe('GA after a decline', () => {
   test.use({ storageState: cookieState('declined') })
 
-  test('E7: a successful demo submit sends nothing to Google', async ({ page, context }) => {
+  test('E8: a successful demo submit sends nothing to Google', async ({ page, context }) => {
     const seen = await stubGoogle(context)
     await page.route('**/api/demo-requests', (route) =>
       route.fulfill({ status: 201, contentType: 'application/json', body: '{}' }),

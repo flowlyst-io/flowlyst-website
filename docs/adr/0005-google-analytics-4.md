@@ -5,7 +5,7 @@
 
 ## Context
 
-Tural asked for Google Analytics on every page of the website (issue #139, 2026-10-27) and answered the refinement round: GA runs "after Accept only", the `generate_lead` event is sent for all three lead forms, "You will give me instruction on how to get it", and the existing Vercel Analytics and Speed Insights stay. Google Analytics is a third-party service, so it passes the technology gate with his word. This supersedes the rejection of Google Analytics 4 in [ADR 0001](./0001-vercel-web-analytics.md), which turned it down for its cookies and consent changes.
+Tural asked for Google Analytics on every page of the website (issue #139, 2026-10-27) and answered the refinement round: GA runs "after Accept only", the `generate_lead` event is sent on his three forms (demo, contact, newsletter) and on the speaking-request form too, which is an assumed default, and "You will give me instruction on how to get it". The existing Vercel Analytics and Speed Insights stay: that is Nizam's default in issue #139, which he did not object to. Google Analytics is a third-party service, so it passes the technology gate with his word. This supersedes the rejection of Google Analytics 4 in [ADR 0001](./0001-vercel-web-analytics.md), which turned it down for its cookies and consent changes.
 
 ## Decision
 
