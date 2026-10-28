@@ -5,14 +5,11 @@
 
 ## Steps
 
-1. Go to analytics.google.com and sign in with the company Google account.
-2. Click **Admin**, then **Create**, then **Property**. Name it `flowlyst.io`, pick a US time zone and USD.
-3. Fill in the business details.
-4. Under **Data collection**, choose **Web**. URL `https://flowlyst.io`, stream name `flowlyst.io`. Leave **Enhanced measurement** on, because it records page views when visitors move between pages.
-5. Copy the **Measurement ID**. It looks like `G-XXXXXXXXXX`.
-6. In Vercel, open `flowlyst-website`, then **Settings**, then **Environment Variables**. Add `NEXT_PUBLIC_GA_MEASUREMENT_ID` with your real ID in place of the placeholder `G-XXXXXXXXXX`, and tick only **Production**.
-7. Redeploy Production. The value is read at build time, so a redeploy is required.
-8. Check: open the site in a private window, click **Accept**, and look for yourself in GA **Realtime**. In another private window click **Decline**; you should not appear.
+1. The GA4 property already exists: account `Flowlyst` (359985101), property `flowlyst.io` (495083007). Its web stream's **Measurement ID** is `G-0Z0J8DQZND` (Aziz, 2026-10-27). It is public by design, since every visitor's browser receives it.
+2. In GA, open **Admin**, then **Data streams**, then the `flowlyst.io` web stream. Confirm the ID matches and **Enhanced measurement** is on, because it records page views when visitors move between pages.
+3. In Vercel, open `flowlyst-website`, then **Settings**, then **Environment Variables**. Add `NEXT_PUBLIC_GA_MEASUREMENT_ID` = `G-0Z0J8DQZND`, and tick only **Production**.
+4. Redeploy Production. The value is read at build time, so a redeploy is required.
+5. Check: open the site in a private window, click **Accept**, and look for yourself in GA **Realtime**. In another private window click **Decline**; you should not appear.
 
 ## Good to know
 
