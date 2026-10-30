@@ -78,6 +78,8 @@ export interface Config {
     'speaking-requests': SpeakingRequest;
     'contact-messages': ContactMessage;
     'newsletter-subscribers': NewsletterSubscriber;
+    links: Link;
+    cards: Card;
     users: User;
     exports: Export;
     imports: Import;
@@ -100,6 +102,8 @@ export interface Config {
     'speaking-requests': SpeakingRequestsSelect<false> | SpeakingRequestsSelect<true>;
     'contact-messages': ContactMessagesSelect<false> | ContactMessagesSelect<true>;
     'newsletter-subscribers': NewsletterSubscribersSelect<false> | NewsletterSubscribersSelect<true>;
+    links: LinksSelect<false> | LinksSelect<true>;
+    cards: CardsSelect<false> | CardsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
@@ -651,6 +655,52 @@ export interface NewsletterSubscriber {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "links".
+ */
+export interface Link {
+  id: number;
+  name: string;
+  description?: string | null;
+  destination: string;
+  /**
+   * Off: the link shows the not-found page.
+   */
+  active?: boolean | null;
+  /**
+   * Random code. Printed QR codes use /go/<code>, so it never changes.
+   */
+  code?: string | null;
+  /**
+   * Optional readable alternative: /go/<slug>.
+   */
+  slug?: string | null;
+  scanCount?: number | null;
+  lastScannedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cards".
+ */
+export interface Card {
+  id: number;
+  name: string;
+  title?: string | null;
+  headshot?: (number | null) | Media;
+  phone?: string | null;
+  email?: string | null;
+  linkedIn?: string | null;
+  website?: string | null;
+  /**
+   * Set on creation and never changes, so a printed code keeps working.
+   */
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
@@ -913,6 +963,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'newsletter-subscribers';
         value: number | NewsletterSubscriber;
+      } | null)
+    | ({
+        relationTo: 'links';
+        value: number | Link;
+      } | null)
+    | ({
+        relationTo: 'cards';
+        value: number | Card;
       } | null)
     | ({
         relationTo: 'users';
@@ -1252,6 +1310,38 @@ export interface NewsletterSubscribersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "links_select".
+ */
+export interface LinksSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  destination?: T;
+  active?: T;
+  code?: T;
+  slug?: T;
+  scanCount?: T;
+  lastScannedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cards_select".
+ */
+export interface CardsSelect<T extends boolean = true> {
+  name?: T;
+  title?: T;
+  headshot?: T;
+  phone?: T;
+  email?: T;
+  linkedIn?: T;
+  website?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
@@ -1423,7 +1513,7 @@ export interface SiteSetting {
    */
   footerText?: string | null;
   /**
-   * The footer shows the LinkedIn entry as an icon; every entry feeds the Organization structured data. Leave empty to hide.
+   * The footer shows the LinkedIn entry as an icon; every entry feeds the Organization structured data. Leave empty to hide. The contact card shows the X, Instagram, Facebook and LinkedIn entries; a missing one is hidden.
    */
   socialLinks?:
     | {
@@ -1506,6 +1596,8 @@ export interface TaskCreateCollectionExport {
       | 'speaking-requests'
       | 'contact-messages'
       | 'newsletter-subscribers'
+      | 'links'
+      | 'cards'
       | 'users'
       | 'exports'
       | 'imports';

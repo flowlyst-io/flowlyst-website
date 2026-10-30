@@ -15,3 +15,14 @@ export const validateURL = (value: unknown): true | string => {
     return 'Enter a URL starting with http:// or https://'
   }
 }
+
+/** Like {@link validateURL} but https only: link destinations and card URLs must never be plain http. */
+export const validateHttpsURL = (value: unknown): true | string => {
+  if (value === null || value === undefined || value === '') return true
+  if (typeof value !== 'string') return 'Enter a URL starting with https://'
+  try {
+    return new URL(value).protocol === 'https:' ? true : 'Enter a URL starting with https://'
+  } catch {
+    return 'Enter a URL starting with https://'
+  }
+}
