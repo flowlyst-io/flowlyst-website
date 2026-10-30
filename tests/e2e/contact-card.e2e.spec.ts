@@ -74,10 +74,15 @@ test('card page is noindex, chrome-free, has no Person schema and a working head
   await expect(img).toHaveAttribute('alt', `Headshot of ${NAME}`)
   expect(await img.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
 
-  await expect(page.getByRole('link', { name: 'Add to contacts' })).toHaveAttribute(
-    'href',
-    `/card/${slug}/vcard`,
-  )
+  const addLink = page.getByRole('link', { name: 'Add to contacts' })
+  await expect(addLink).toHaveAttribute('href', `/card/${slug}/vcard`)
+  const vcf = await request.get((await addLink.getAttribute('href')) as string)
+  expect(vcf.status()).toBe(200)
+  expect(vcf.headers()['content-type']).toMatch(/^text\/vcard/)
+  expect(vcf.headers()['content-disposition']).toContain('.vcf')
+  const body = await vcf.text()
+  expect(body).toContain(`FN:${NAME}`)
+  expect(body.startsWith('BEGIN:VCARD\r\nVERSION:3.0\r\n')).toBe(true)
 })
 
 test('card is not in the sitemap and unknown cards 404', async ({ request, page }) => {
