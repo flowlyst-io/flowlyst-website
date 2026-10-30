@@ -20,7 +20,7 @@ import { getServerURL } from '@/utilities/serverURL'
  */
 
 // Surfaces that must never be indexed — repeated in every group (see note above).
-const DISALLOW = ['/admin', '/api', '/preview']
+const DISALLOW = ['/admin', '/api', '/preview', '/go/']
 
 // The AI crawlers PRD §10.1 names explicitly. Allowed with the same disallows as `*`.
 const AI_CRAWLERS = ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended']

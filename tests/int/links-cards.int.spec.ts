@@ -5,6 +5,7 @@ import { getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import config from '@/payload.config'
+import { findActiveLink, recordScan } from '@/links/resolveLink'
 import type { User } from '@/payload-types'
 
 let payload: Payload
@@ -181,5 +182,30 @@ describe('access', () => {
     })
     const gone = await payload.count({ collection: 'links', where: { id: { equals: ownLink.id } } })
     expect(gone.totalDocs).toBe(0)
+  })
+})
+
+describe('Link resolution', () => {
+  it('finds an active link by code, by slug and by an uppercase key', async () => {
+    const link = await makeLink({ slug: `res-${stamp}` })
+    const byCode = await findActiveLink(payload, link.code as string)
+    expect(byCode?.destination).toBe('https://example.org/x')
+    expect((await findActiveLink(payload, `res-${stamp}`))?.id).toBe(link.id)
+    expect((await findActiveLink(payload, `RES-${stamp}`))?.id).toBe(link.id)
+  })
+
+  it('returns null for an inactive link and for an unknown key', async () => {
+    const off = await makeLink({ active: false, slug: `off-${stamp}` })
+    expect(await findActiveLink(payload, off.code as string)).toBeNull()
+    expect(await findActiveLink(payload, `off-${stamp}`)).toBeNull()
+    expect(await findActiveLink(payload, `nope-${stamp}`)).toBeNull()
+  })
+
+  it('counts 5 concurrent scans exactly and stamps the last scan', async () => {
+    const link = await makeLink()
+    await Promise.all(Array.from({ length: 5 }, () => recordScan(payload, link.id)))
+    const after = await payload.findByID({ collection: 'links', id: link.id })
+    expect(after.scanCount).toBe(5)
+    expect(Date.now() - new Date(after.lastScannedAt as string).getTime()).toBeLessThan(60_000)
   })
 })

@@ -74,7 +74,7 @@ const payloadHeaders = config.headers
 // the header is kept for /admin only.
 config.headers = async () => {
   const rules = (await payloadHeaders?.()) ?? []
-  return rules.flatMap((rule) => {
+  const flattened = rules.flatMap((rule) => {
     const critical = rule.headers.filter((h) => h.key === 'Critical-CH')
     if (rule.source !== '/:path*' || critical.length === 0) return [rule]
     return [
@@ -82,6 +82,11 @@ config.headers = async () => {
       { source: '/admin/:path*', headers: critical },
     ]
   })
+  return [
+    ...flattened,
+    { source: '/go/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex' }] },
+    { source: '/card/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex' }] },
+  ]
 }
 
 export default config
