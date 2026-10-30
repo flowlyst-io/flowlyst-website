@@ -1,9 +1,10 @@
 import type { CollectionConfig, TextFieldSingleValidation } from 'payload'
 
 import { isAdminOrEditor } from '@/access'
-import { validateHttpsURL } from '@/fields/validators'
-import { formatSlug } from '@/utilities/formatSlug'
+import { isRedirectableHttpsUrl } from '@/fields/validators'
 import { randomCode } from '@/utilities/randomCode'
+
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 /**
  * Short links served at /go/<code> or /go/<slug>. Codes and slugs share one
@@ -27,8 +28,11 @@ export const Links: CollectionConfig = {
   hooks: {
     beforeValidate: [
       async ({ data, operation, req }) => {
-        if (operation !== 'create' || !data || data.code) return data
-        for (let attempt = 0; attempt < 5; attempt++) {
+        if (!data) return data
+        if (typeof data.destination === 'string') data.destination = data.destination.trim()
+        if (operation !== 'create') return data
+        // Always server-made: a client-supplied code (REST, Duplicate) is ignored.
+        for (let attempt = 0; attempt < 10; attempt++) {
           const candidate = randomCode(6)
           const { totalDocs } = await req.payload.count({
             collection: 'links',
@@ -53,7 +57,16 @@ export const Links: CollectionConfig = {
   fields: [
     { name: 'name', type: 'text', required: true },
     { name: 'description', type: 'textarea' },
-    { name: 'destination', type: 'text', required: true, validate: validateHttpsURL },
+    {
+      name: 'destination',
+      type: 'text',
+      required: true,
+      validate: ((value) => {
+        const text = typeof value === 'string' ? value.trim() : ''
+        if (!text) return 'Destination is required'
+        return isRedirectableHttpsUrl(text) ? true : 'Enter a URL starting with https://'
+      }) satisfies TextFieldSingleValidation,
+    },
     {
       name: 'active',
       type: 'checkbox',
@@ -78,15 +91,17 @@ export const Links: CollectionConfig = {
       index: true,
       admin: { position: 'sidebar', description: 'Optional readable alternative: /go/<slug>.' },
       hooks: {
+        beforeDuplicate: [() => null],
         beforeValidate: [
           ({ value }) => {
             if (typeof value !== 'string') return null
-            return formatSlug(value) || null
+            return value.trim().toLowerCase() || null
           },
         ],
       },
       validate: (async (value, { req, id }) => {
         if (typeof value !== 'string' || !value) return true
+        if (!SLUG_RE.test(value)) return 'Use lowercase letters, numbers and single hyphens only'
         const { totalDocs } = await req.payload.count({
           collection: 'links',
           where: {

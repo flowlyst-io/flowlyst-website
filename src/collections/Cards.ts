@@ -19,7 +19,8 @@ export const Cards: CollectionConfig = {
   hooks: {
     beforeValidate: [
       ({ data, operation }) => {
-        if (operation === 'create' && data && !data.slug) {
+        // Always server-made: a client-supplied slug (REST, Duplicate) is ignored.
+        if (operation === 'create' && data) {
           data.slug = `${formatSlug(String(data.name ?? '')) || 'card'}-${randomCode(6)}`
         }
         return data

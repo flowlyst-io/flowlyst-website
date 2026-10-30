@@ -8,7 +8,7 @@ export type VCardInput = {
 }
 
 const escapeValue = (value: string) =>
-  value.replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\;')
+  value.replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;')
 
 export function buildVCard(card: VCardInput): string {
   const name = card.name.trim()

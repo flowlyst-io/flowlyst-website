@@ -26,3 +26,17 @@ export const validateHttpsURL = (value: unknown): true | string => {
     return 'Enter a URL starting with https://'
   }
 }
+
+/**
+ * The one rule for a link destination, used when saving and again before redirecting:
+ * exact lowercase `https://`, a real host, no credentials, no surrounding whitespace.
+ */
+export const isRedirectableHttpsUrl = (value: string): boolean => {
+  if (value !== value.trim() || !value.startsWith('https://')) return false
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' && url.hostname !== '' && !url.username && !url.password
+  } catch {
+    return false
+  }
+}

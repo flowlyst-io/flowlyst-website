@@ -157,7 +157,8 @@ export function ContactCard({ card, settings }: Props) {
           </div>
         ) : null}
         <div className="card__tagline">
-          Budgeting software, AI training and automation for K-12 districts
+          Budgeting software, AI training and automation for{' '}
+          <span className="card__nowrap">K-12</span> districts
         </div>
       </main>
     </div>

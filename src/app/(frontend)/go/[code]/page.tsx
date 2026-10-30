@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 
+import { isRedirectableHttpsUrl } from '@/fields/validators'
 import config from '@/payload.config'
 import { findActiveLink, recordScan } from '@/links/resolveLink'
 
@@ -14,7 +15,7 @@ export default async function GoPage({ params }: { params: Promise<{ code: strin
   const payload = await getPayload({ config })
   const link = await findActiveLink(payload, decodeURIComponent(code))
   // Stored destinations are validated as https; this guards rows written around validation.
-  if (!link || !link.destination.startsWith('https://')) notFound()
+  if (!link || !isRedirectableHttpsUrl(link.destination)) notFound()
   await recordScan(payload, link.id)
   redirect(link.destination)
 }

@@ -36,8 +36,14 @@ describe('buildVCard', () => {
 
   it('escapes commas and semicolons', () => {
     expect(buildVCard({ ...card, title: 'Founder, CEO; Lead' })).toContain(
-      'TITLE:Founder\\, CEO\; Lead\r\n',
+      'TITLE:Founder\\, CEO\\; Lead\r\n',
     )
+  })
+
+  it('escapes a semicolon in the name for FN and N', () => {
+    const v = buildVCard({ name: 'Ann; Lee Smith' })
+    expect(v).toContain('FN:Ann\\; Lee Smith\r\n')
+    expect(v).toContain('N:Smith;Ann\\; Lee;;;\r\n')
   })
 
   it('omits empty fields', () => {

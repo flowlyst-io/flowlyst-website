@@ -65,8 +65,9 @@ describe('Links', () => {
     expect(ok.destination).toBe('https://example.org/x')
   })
 
-  it('formats slugs, rejects duplicates and slugs equal to another link code', async () => {
-    const first = await makeLink({ slug: 'Booth 2026' })
+  it('rejects a slug with spaces, duplicates and slugs equal to another link code', async () => {
+    await expect(makeLink({ slug: 'My Slug' })).rejects.toThrow()
+    const first = await makeLink({ slug: 'Booth-2026' })
     expect(first.slug).toBe('booth-2026')
     await expect(makeLink({ slug: 'booth-2026' })).rejects.toThrow()
     const other = await makeLink()
@@ -97,7 +98,78 @@ describe('Links', () => {
   })
 })
 
+describe('Links: server-owned codes, slugs and destinations', () => {
+  it('ignores a client-supplied code on create', async () => {
+    for (const code of ['booth', 'My Code']) {
+      const link = await makeLink({ code })
+      expect(link.code).toMatch(CODE_RE)
+      expect(link.code).not.toBe(code)
+    }
+  })
+
+  it('rejects a slug equal to another link code, and a malformed or duplicate slug', async () => {
+    const other = await makeLink()
+    await expect(makeLink({ slug: other.code })).rejects.toThrow()
+    const taken = await makeLink({ slug: `taken-${stamp}` })
+    await expect(makeLink({ slug: taken.slug })).rejects.toThrow()
+    await expect(makeLink({ slug: 'bad_slug!' })).rejects.toThrow()
+    await expect(makeLink({ slug: 'a--b' })).rejects.toThrow()
+  })
+
+  it('trims and lowercases a slug', async () => {
+    const link = await makeLink({ slug: `  My-Slug-${stamp}  ` })
+    expect(link.slug).toBe(`my-slug-${stamp}`)
+  })
+
+  it('duplicate gives a new valid code and no slug', async () => {
+    const original = await makeLink({ slug: `dup-${stamp}` })
+    const copy = await payload.duplicate({ collection: 'links', id: original.id })
+    expect(copy.code).toMatch(CODE_RE)
+    expect(copy.code).not.toBe(original.code)
+    expect(copy.slug ?? null).toBeNull()
+  })
+
+  it.each([
+    'https:evil.example',
+    'HTTPS://UPPER.example',
+    'https://user:pw@host.example',
+    'https://',
+    '',
+  ])('rejects destination %j at save', async (destination) => {
+    await expect(makeLink({ destination })).rejects.toThrow(/destination|invalid/i)
+  })
+
+  it('trims a destination at save', async () => {
+    const link = await makeLink({ destination: '  https://x.example  ' })
+    expect(link.destination).toBe('https://x.example')
+  })
+
+  it('reports an empty destination as a validation error, not a database error', async () => {
+    await expect(makeLink({ destination: '' })).rejects.toMatchObject({
+      name: 'ValidationError',
+    })
+    await expect(
+      payload.create({
+        collection: 'links',
+        data: { name: 'No dest' } as never,
+      }),
+    ).rejects.toMatchObject({ name: 'ValidationError' })
+  })
+})
+
 describe('Cards', () => {
+  it('ignores a client-supplied slug on create and on duplicate', async () => {
+    const card = await payload.create({
+      collection: 'cards',
+      data: { name: 'Pat Doe', slug: 'aziz' },
+    })
+    expect(card.slug).not.toBe('aziz')
+    expect(card.slug).toMatch(/^[a-z0-9-]+-[a-z0-9]{6}$/)
+    const copy = await payload.duplicate({ collection: 'cards', id: card.id })
+    expect(copy.slug).not.toBe(card.slug)
+    expect(copy.slug).toMatch(/^pat-doe(-copy)?-[abcdefghjkmnpqrstuvwxyz23456789]{6}$/)
+  })
+
   it('builds <name>-<random> slugs, keeps them on rename, defaults the website', async () => {
     const card = await payload.create({ collection: 'cards', data: { name: 'Aziz Aghayev' } })
     expect(card.slug).toMatch(/^aziz-aghayev-[abcdefghjkmnpqrstuvwxyz23456789]{6}$/)
