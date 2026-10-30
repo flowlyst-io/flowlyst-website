@@ -113,5 +113,14 @@ export const Links: CollectionConfig = {
       access: { create: () => false, update: () => false },
       admin: { readOnly: true, position: 'sidebar', date: { pickerAppearance: 'dayAndTime' } },
     },
+    {
+      name: 'qr',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: { path: '/components/admin/QrPanel#QrPanel', clientProps: { kind: 'link' } },
+        },
+      },
+    },
   ],
 }

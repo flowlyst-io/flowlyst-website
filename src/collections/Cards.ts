@@ -56,5 +56,14 @@ export const Cards: CollectionConfig = {
         description: 'Set on creation and never changes, so a printed code keeps working.',
       },
     },
+    {
+      name: 'qr',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: { path: '/components/admin/QrPanel#QrPanel', clientProps: { kind: 'card' } },
+        },
+      },
+    },
   ],
 }
