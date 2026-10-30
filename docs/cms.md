@@ -37,6 +37,15 @@ see these inboxes.
 - **Users** — auth collection with an enforced `role` (see Roles).
 - **Site Settings** (global) — contact email, hero copy, footer text, social links (the LinkedIn row drives the footer icon; every row feeds the Organization `sameAs`) and Aziz's LinkedIn URL (the /about link and Person `sameAs`). An empty URL hides it; saving revalidates the whole site. Admin-only.
 
+## Links and contact cards
+
+Both live in the admin group **Links & Cards**, and every admin and editor sees and manages all of them.
+
+- **Link** (`/go/<code>`): create it with an internal name, a description and an `https://` destination. It gets a random code on first save, and you can add a readable slug too. Both `/go/<code>` and `/go/<slug>` redirect to the destination. Switch **Active** off to retire it (the link then shows the not-found page). The sidebar shows the scan count and last-scanned time. The code never changes; the destination and slug can.
+- **Contact card** (`/card/<name>-<random>`): create it with name, title, headshot, phone, email, LinkedIn and website. The card page shows the company socials from Site Settings; an empty one is hidden. The card is not indexed and not in the sitemap.
+- **URL and QR code:** after the first save, the edit view shows the URL(s) with a Copy button, a QR preview, and **Download SVG** and **Download PNG**. Every code was checked to scan back to exactly the URL it shows.
+- **Printing or NFC:** do not print a card's own QR code. Create a Link that points to the card's URL and use the Link's QR code, so you can change where it goes later.
+
 ## Roles (enforced)
 
 Two roles, enforced through Payload access control (`src/access/index.ts`):

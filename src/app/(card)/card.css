@@ -1,0 +1,212 @@
+/* Mobile-first single column from board A2; colours, shadows, radii and type sizes are tokens. */
+.contact-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-width: 480px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--bg-page);
+  color: var(--fg-primary);
+  font-family: var(--font-sans);
+}
+
+.contact-card a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.card__panel {
+  position: relative;
+  box-sizing: border-box;
+  height: 304px;
+  padding: 24px;
+  overflow: hidden;
+  background: var(--fl-green);
+}
+
+.card__watermark {
+  position: absolute;
+  top: -50px;
+  right: -190px;
+  width: 440px;
+  opacity: 0.14;
+  fill: var(--fl-gray-100);
+}
+
+.card__brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card__brand-mark {
+  width: 36px;
+  fill: var(--fl-gray-100);
+}
+
+.card__brand-name {
+  color: var(--fg-on-brand);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.card__diamond {
+  position: absolute;
+  top: 200px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 176px;
+  height: 176px;
+  margin-left: -88px;
+}
+
+.card__diamond-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: content-box;
+  width: 124px;
+  height: 124px;
+  overflow: hidden;
+  border: 6px solid var(--fl-gray-100);
+  border-radius: 28px;
+  background: var(--accent-soft);
+  box-shadow: var(--shadow-md);
+  transform: rotate(45deg);
+}
+
+.card__headshot {
+  flex: none;
+  max-width: none;
+  width: 176px;
+  height: 176px;
+  object-fit: cover;
+  transform: rotate(-45deg);
+}
+
+.card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  box-sizing: border-box;
+  padding: 96px 24px 24px;
+}
+
+.card__id {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.card__name {
+  margin: 0;
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.card__title {
+  color: var(--fg-secondary);
+  font-size: var(--fs-body);
+}
+
+.card__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 52px;
+  border-radius: var(--radius-sm);
+  background: var(--fl-green);
+  box-shadow: var(--shadow-brand);
+  color: var(--fg-on-brand);
+  font-size: var(--fs-body);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.card__tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.card__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 64px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.card__follow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.card__follow-label {
+  color: var(--accent);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+}
+
+.card__socials {
+  display: flex;
+  gap: 12px;
+}
+
+.card__social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  color: var(--fg-primary);
+  text-decoration: none;
+}
+
+.card__tagline {
+  margin-top: auto;
+  color: var(--fg-secondary);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.card__nowrap {
+  white-space: nowrap;
+}
+
+.card-not-found {
+  min-height: 100dvh;
+  background: var(--c-cream);
+}

@@ -86,6 +86,7 @@ test.describe('SEO surface — /robots.txt', () => {
     expect(body, 'blocks the admin').toMatch(/Disallow:\s*\/admin/i)
     expect(body, 'blocks the API').toMatch(/Disallow:\s*\/api/i)
     expect(body, 'blocks the preview route').toMatch(/Disallow:\s*\/preview/i)
+    expect(robotsBlockFor(body, '*'), 'the * group blocks /go/').toMatch(/Disallow:\s*\/go\//i)
 
     // The AI crawlers (PRD §10.1 hard invariant) are named AND allowed. Because a
     // crawler obeys only its own most-specific group, assert the group each names is
@@ -101,7 +102,7 @@ test.describe('SEO surface — /robots.txt', () => {
     expect(aiBlock, 'AI crawlers are NOT root-disallowed').not.toMatch(/Disallow:\s*\/\s*$/im)
     // …but every non-content surface is still off-limits to them (the disallows are
     // repeated in the AI group, since a crawler ignores the `*` group's rules).
-    for (const path of ['/admin', '/api', '/preview']) {
+    for (const path of ['/admin', '/api', '/preview', '/go/']) {
       expect(aiBlock, `AI crawlers still blocked from ${path}`).toMatch(
         new RegExp(`Disallow:\\s*${path}`, 'i'),
       )
