@@ -90,7 +90,7 @@ export function ContactCard({ card, settings }: Props) {
   const socials = cardSocials(settings)
 
   return (
-    <div className="card">
+    <div className="contact-card">
       <header className="card__panel">
         <WhiteMark className="card__watermark" />
         <div className="card__brand">

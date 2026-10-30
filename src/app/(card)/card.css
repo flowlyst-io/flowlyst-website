@@ -1,5 +1,5 @@
 /* Mobile-first single column from board A2; colours, shadows, radii and type sizes are tokens. */
-.card {
+.contact-card {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -13,7 +13,7 @@
   font-family: var(--font-sans);
 }
 
-.card a:focus-visible {
+.contact-card a:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -84,6 +84,7 @@
 
 .card__headshot {
   flex: none;
+  max-width: none;
   width: 176px;
   height: 176px;
   object-fit: cover;
