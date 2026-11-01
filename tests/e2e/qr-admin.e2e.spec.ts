@@ -45,7 +45,19 @@ test('a new unsaved link shows the save prompt', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Download SVG' })).toHaveCount(0)
 })
 
-test('a saved link shows its URL and both downloads decode to it', async ({ page }) => {
+const VARIANTS = [
+  { color: 'black', label: 'Black' },
+  { color: 'white', label: 'White' },
+  { color: 'violet', label: 'Flowlyst purple' },
+].flatMap((c) => [
+  { ...c, logo: 'logo', logoLabel: 'With logo' },
+  { ...c, logo: 'nologo', logoLabel: 'Without logo' },
+])
+const bgFor = (color: string) => (color === 'white' ? '#1a1a1a' : '#ffffff')
+
+test('a saved link downloads all six variants as SVG and PNG, transparent and decoding', async ({
+  page,
+}) => {
   await login({ page, user: ADMIN })
   await page.goto('/admin/collections/links/create')
   await page.fill('#field-name', `QR link ${stamp}`)
@@ -64,22 +76,54 @@ test('a saved link shows its URL and both downloads decode to it', async ({ page
   const url = `${getServerURL()}/go/${code}`
   await expect(page.getByTestId('qr-url').first()).toHaveText(url)
 
-  const svgDownload = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Download SVG' }).click()
-  const svg = await svgDownload
-  expect(svg.suggestedFilename()).toBe(`flowlyst-go-${code}.svg`)
-  expect(await decodeQr(await readFile((await svg.path()) as string))).toBe(url)
+  for (const v of VARIANTS) {
+    await page.getByLabel(v.label, { exact: true }).check()
+    await page.getByLabel(v.logoLabel, { exact: true }).check()
+    await expect(page.getByTestId('qr-preview')).toHaveAttribute(
+      'aria-label',
+      new RegExp(`${v.label.toLowerCase()}, ${v.logo === 'logo' ? 'with' : 'without'} logo$`),
+    )
+    const base = `flowlyst-go-${code}-${v.color}-${v.logo}`
 
-  const pngDownload = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Download PNG' }).click()
-  const png = await pngDownload
-  expect(png.suggestedFilename()).toMatch(/\.png$/)
-  const pngBuf = await readFile((await png.path()) as string)
-  expect((await sharp(pngBuf).metadata()).width).toBe(2048)
-  expect(await decodeQr(pngBuf)).toBe(url)
+    const svgDownload = page.waitForEvent('download')
+    await page.getByRole('button', { name: 'Download SVG' }).click()
+    const svg = await svgDownload
+    expect(svg.suggestedFilename()).toBe(`${base}.svg`)
+    expect(
+      await decodeQr(await readFile((await svg.path()) as string), 1024, bgFor(v.color)),
+      base,
+    ).toBe(url)
+
+    const pngDownload = page.waitForEvent('download')
+    await page.getByRole('button', { name: 'Download PNG' }).click()
+    const png = await pngDownload
+    expect(png.suggestedFilename()).toBe(`${base}.png`)
+    const pngBuf = await readFile((await png.path()) as string)
+    const meta = await sharp(pngBuf).metadata()
+    expect(meta.width).toBe(2048)
+    expect(meta.hasAlpha).toBe(true)
+    expect(meta.channels).toBe(4)
+    const raw = await sharp(pngBuf).ensureAlpha().raw().toBuffer()
+    expect(raw[3], `${base} corner alpha`).toBe(0)
+    expect(await decodeQr(pngBuf, 1024, bgFor(v.color)), base).toBe(url)
+  }
 })
 
-test('a card shows its URL, the Link note, and a PNG that decodes', async ({ page }) => {
+test('the preview swatch is dark for white codes and white otherwise', async ({ page }) => {
+  await login({ page, user: ADMIN })
+  await page.goto('/admin/collections/links')
+  await page.getByText(`QR link ${stamp}`).first().click()
+  await expect(page.getByTestId('qr-panel')).toBeVisible({ timeout: 30_000 })
+  const swatch = page.getByTestId('qr-swatch')
+  await page.getByLabel('White', { exact: true }).check()
+  await expect(swatch).toHaveCSS('background-color', 'rgb(26, 26, 26)')
+  await page.getByLabel('Black', { exact: true }).check()
+  await expect(swatch).toHaveCSS('background-color', 'rgb(255, 255, 255)')
+})
+
+test('a card shows its URL, the Link note, and a purple no-logo PNG that decodes', async ({
+  page,
+}) => {
   const payload = await getPayload({ config })
   const card = await payload.findByID({ collection: 'cards', id: cardId as number })
   await login({ page, user: ADMIN })
@@ -88,9 +132,13 @@ test('a card shows its URL, the Link note, and a PNG that decodes', async ({ pag
   await expect(page.getByTestId('qr-url')).toHaveText(url)
   await expect(page.getByText('Create a Link')).toBeVisible()
 
+  await page.getByLabel('Flowlyst purple', { exact: true }).check()
+  await page.getByLabel('Without logo', { exact: true }).check()
   const pngDownload = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Download PNG' }).click()
   const png = await pngDownload
-  expect(png.suggestedFilename()).toBe(`flowlyst-card-${card.slug}.png`)
-  expect(await decodeQr(await readFile((await png.path()) as string))).toBe(url)
+  expect(png.suggestedFilename()).toBe(`flowlyst-card-${card.slug}-violet-nologo.png`)
+  const pngBuf = await readFile((await png.path()) as string)
+  expect((await sharp(pngBuf).metadata()).hasAlpha).toBe(true)
+  expect(await decodeQr(pngBuf, 1024, '#ffffff')).toBe(url)
 })

@@ -43,7 +43,7 @@ Both live in the admin group **Links & Cards**, and every admin and editor sees 
 
 - **Link** (`/go/<code>`): create it with an internal name, a description and an `https://` destination. It gets a random code on first save, and you can add a readable slug too. Both `/go/<code>` and `/go/<slug>` redirect to the destination. Switch **Active** off to retire it (the link then shows the not-found page). The sidebar shows the scan count and last-scanned time. The code never changes; the destination and slug can.
 - **Contact card** (`/card/<name>-<random>`): create it with name, title, headshot, phone, email, LinkedIn and website. The card page shows the company socials from Site Settings; an empty one is hidden. The card is not indexed and not in the sitemap.
-- **URL and QR code:** after the first save, the edit view shows the URL(s) with a Copy button, a QR preview, and **Download SVG** and **Download PNG**. Every code was checked to scan back to exactly the URL it shows.
+- **URL and QR code:** after the first save, the edit view shows the URL(s) with a Copy button, a QR preview, and **Download SVG** and **Download PNG**. Pick a colour (black, white or Flowlyst purple) and with or without the logo; every download has a transparent background, and white is for dark surfaces (the preview shows it on a dark swatch). Every code was checked to scan back to exactly the URL it shows.
 - **Printing or NFC:** do not print a card's own QR code. Create a Link that points to the card's URL and use the Link's QR code, so you can change where it goes later.
 
 ## Roles (enforced)
