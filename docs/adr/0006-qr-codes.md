@@ -29,3 +29,7 @@ Aziz asked for QR codes for links and contact cards, generated in the admin with
 | Calling the Python skill                  | The reference implementation itself             | No Python on Vercel, so it cannot run in the deployed admin           |
 | A hosted QR API                           | No code to write                                | A third-party service, no control over the logo, links leave the site |
 | `jsqr` (tests only, chosen for decoding)  | A pure-JS decoder that proves a code scans      | A dev dependency; not a phone                                         |
+
+## Update 2026-11-01
+
+Aziz asked for styles: transparent background in black, white or flowlyst purple, each with or without the logo. The white centre circle and white background are gone; the logo takes the bar colour, and without it the bars fill the centre. The libraries are unchanged.
