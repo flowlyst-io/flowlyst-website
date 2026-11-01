@@ -2,9 +2,16 @@ import { create } from 'qrcode'
 
 import { FLOWLYST_MARK_PATH } from '@/utilities/flowlystMarkShared'
 
-const MODULE_COLOR = '#1a1a1a'
-const BACKGROUND_COLOR = '#ffffff'
-const LOGO_COLOR = '#00a568'
+/** Design-system tokens: --fl-black, --fl-gray-100, --fl-violet. The admin shell does not load styles.css. */
+export const QR_COLORS = { black: '#1a1a1a', white: '#ffffff', violet: '#5f5aa2' } as const
+export type QrColor = keyof typeof QR_COLORS
+
+export const QR_VARIANTS: ReadonlyArray<{ color: QrColor; logo: boolean }> = (
+  ['black', 'white', 'violet'] as const
+).flatMap((color) => [
+  { color, logo: true },
+  { color, logo: false },
+])
 
 const BORDER = 2
 const MARK_WIDTH = 227.46
@@ -30,15 +37,22 @@ export function alignmentPositions(version: number): number[] {
 
 const num = (value: number) => String(Number(value.toFixed(8)))
 
-const rect = (x: number, y: number, size: number, rx: number, fill: string) =>
-  `<rect x="${num(x)}" y="${num(y)}" width="${num(size)}" height="${num(size)}" rx="${num(rx)}" fill="${fill}"/>`
+const roundedRectPath = (x: number, y: number, size: number, r: number) => {
+  const side = num(size - 2 * r)
+  const rr = num(r)
+  return `M${num(x + r)} ${num(y)}h${side}a${rr} ${rr} 0 0 1 ${rr} ${rr}v${side}a${rr} ${rr} 0 0 1 -${rr} ${rr}h-${side}a${rr} ${rr} 0 0 1 -${rr} -${rr}v-${side}a${rr} ${rr} 0 0 1 ${rr} -${rr}z`
+}
 
-export function buildRainfallQr(text: string): {
+export function buildRainfallQr(
+  text: string,
+  { color = 'black', logo = true }: { color?: QrColor; logo?: boolean } = {},
+): {
   svg: string
   version: number
   modules: number
   ecLevel: 'H'
 } {
+  const fill = QR_COLORS[color]
   const symbol = create(text, { errorCorrectionLevel: 'H' })
   const n = symbol.modules.size
   const dark = (r: number, c: number) => symbol.modules.get(r, c) === 1
@@ -63,9 +77,12 @@ export function buildRainfallQr(text: string): {
   ) => {
     const ring = size - 2
     const dot = size - 4
-    eyes.push(rect(x + BORDER, y + BORDER, size, rOuter, MODULE_COLOR))
-    eyes.push(rect(x + BORDER + 1, y + BORDER + 1, ring, rInner, BACKGROUND_COLOR))
-    eyes.push(rect(x + BORDER + 2, y + BORDER + 2, dot, rDot, MODULE_COLOR))
+    // Evenodd turns the ring into a real hole, so the code stays transparent.
+    const d =
+      roundedRectPath(x + BORDER, y + BORDER, size, rOuter) +
+      roundedRectPath(x + BORDER + 1, y + BORDER + 1, ring, rInner) +
+      roundedRectPath(x + BORDER + 2, y + BORDER + 2, dot, rDot)
+    eyes.push(`<path fill-rule="evenodd" fill="${fill}" d="${d}"/>`)
   }
 
   for (const [r, c] of [
@@ -93,6 +110,7 @@ export function buildRainfallQr(text: string): {
   const reach = (R + 0.6) ** 2
   const usable = (r: number, c: number) => {
     if (!dark(r, c) || skip[r][c]) return false
+    if (!logo) return true
     return (c + BORDER + 0.5 - cx) ** 2 + (r + BORDER + 0.5 - cx) ** 2 > reach
   }
 
@@ -109,7 +127,7 @@ export function buildRainfallQr(text: string): {
       const start = r
       while (r < n && usable(r, c)) r++
       bars.push(
-        `<rect x="${num(c + BORDER + pad)}" y="${num(start + BORDER + pad / 2)}" width="${num(bw)}" height="${num(r - start - pad)}" rx="${num(bw * 0.3)}" fill="${MODULE_COLOR}"/>`,
+        `<rect x="${num(c + BORDER + pad)}" y="${num(start + BORDER + pad / 2)}" width="${num(bw)}" height="${num(r - start - pad)}" rx="${num(bw * 0.3)}" fill="${fill}"/>`,
       )
     }
   }
@@ -120,11 +138,11 @@ export function buildRainfallQr(text: string): {
 
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${W}" width="${SVG_PIXELS}" height="${SVG_PIXELS}">` +
-    `<rect width="${W}" height="${W}" fill="${BACKGROUND_COLOR}"/>` +
     `<g id="eyes">${eyes.join('')}</g>` +
     `<g id="bars">${bars.join('')}</g>` +
-    `<circle id="centre" cx="${num(cx)}" cy="${num(cx)}" r="${num(R)}" fill="${BACKGROUND_COLOR}"/>` +
-    `<g id="logo" transform="translate(${num(tx)} ${num(ty)}) scale(${num(scale)})"><path d="${FLOWLYST_MARK_PATH}" fill="${LOGO_COLOR}"/></g>` +
+    (logo
+      ? `<g id="logo" transform="translate(${num(tx)} ${num(ty)}) scale(${num(scale)})"><path d="${FLOWLYST_MARK_PATH}" fill="${fill}"/></g>`
+      : '') +
     `</svg>`
 
   return { svg, version: symbol.version, modules: n, ecLevel: 'H' }
