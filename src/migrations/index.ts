@@ -10,6 +10,7 @@ import * as migration_20261014_003843_contact_reason_assessment_pricing from './
 import * as migration_20261017_000039_organizations from './20261017_000039_organizations';
 import * as migration_20261017_184755_site_settings_founder_linkedin from './20261017_184755_site_settings_founder_linkedin';
 import * as migration_20261021_024401_bigin_crm_sync from './20261021_024401_bigin_crm_sync';
+import * as migration_20261030_212514_links_and_cards from './20261030_212514_links_and_cards';
 
 export const migrations = [
   {
@@ -70,6 +71,11 @@ export const migrations = [
   {
     up: migration_20261021_024401_bigin_crm_sync.up,
     down: migration_20261021_024401_bigin_crm_sync.down,
-    name: '20261021_024401_bigin_crm_sync'
+    name: '20261021_024401_bigin_crm_sync',
+  },
+  {
+    up: migration_20261030_212514_links_and_cards.up,
+    down: migration_20261030_212514_links_and_cards.down,
+    name: '20261030_212514_links_and_cards'
   },
 ];

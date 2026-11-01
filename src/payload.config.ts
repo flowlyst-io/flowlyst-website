@@ -12,6 +12,8 @@ import { isAdmin } from './access'
 import { getServerURL } from './utilities/serverURL'
 import { envValue } from './utilities/envValue'
 import { Users } from './collections/Users'
+import { Links } from './collections/Links'
+import { Cards } from './collections/Cards'
 import { biginRetryTask } from './crm/biginRetryTask'
 
 /**
@@ -82,6 +84,9 @@ export default buildConfig({
     SpeakingRequests,
     ContactMessages,
     NewsletterSubscribers,
+    // Links & Cards
+    Links,
+    Cards,
     // Admin
     Users,
   ],

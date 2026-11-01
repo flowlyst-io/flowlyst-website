@@ -30,6 +30,7 @@ Decisions taken before this record existed live on issue #1 (Architecture decisi
 | 0003 | [Vercel Speed Insights](./0003-vercel-speed-insights.md) | Accepted |
 | 0004 | [Zoho Bigin CRM (lead push)](./0004-zoho-bigin-crm.md)   | Accepted |
 | 0005 | [Google Analytics 4](./0005-google-analytics-4.md)       | Accepted |
+| 0006 | [QR codes](./0006-qr-codes.md)                           | Accepted |
 
 ---
 

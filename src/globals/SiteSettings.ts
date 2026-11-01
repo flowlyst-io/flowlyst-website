@@ -54,7 +54,7 @@ export const SiteSettings: GlobalConfig = {
       labels: { singular: 'Social Link', plural: 'Social Links' },
       admin: {
         description:
-          'The footer shows the LinkedIn entry as an icon; every entry feeds the Organization structured data. Leave empty to hide.',
+          'The footer shows the LinkedIn entry as an icon; every entry feeds the Organization structured data. Leave empty to hide. The contact card shows the X, Instagram, Facebook and LinkedIn entries; a missing one is hidden.',
       },
       fields: [
         {
