@@ -1,8 +1,9 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { getPayload } from 'payload'
 import sharp from 'sharp'
 import config from '../../src/payload.config.js'
 import { cropPlacement } from '../../src/utilities/headshotCropShared'
+import { getCard, openCard, quadrants, save, styleOf } from '../helpers/cardAdmin'
 import { login } from '../helpers/login'
 import { parseVcf } from '../helpers/parseVcf'
 import { deriveFixtureEmail } from '../helpers/seedUser'
@@ -24,59 +25,6 @@ let mediaFilename = ''
 let cardId: number
 let slug = ''
 let adminCentre: number[] = []
-
-const quadrants = async () => {
-  const quad = (r: number, g: number, b: number) =>
-    sharp({ create: { width: 600, height: 400, channels: 3, background: { r, g, b } } })
-      .png()
-      .toBuffer()
-  const [a, b, c, d] = await Promise.all([
-    quad(220, 30, 30),
-    quad(30, 30, 220),
-    quad(30, 160, 30),
-    quad(230, 200, 20),
-  ])
-  return sharp({
-    create: { width: 1200, height: 800, channels: 3, background: { r: 0, g: 0, b: 0 } },
-  })
-    .composite([
-      { input: a, left: 0, top: 0 },
-      { input: b, left: 600, top: 0 },
-      { input: c, left: 0, top: 400 },
-      { input: d, left: 600, top: 400 },
-    ])
-    .jpeg({ quality: 90 })
-    .toBuffer()
-}
-
-const getCard = async (id: number | string) => {
-  const payload = await getPayload({ config })
-  return payload.findByID({ collection: 'cards', id, depth: 0 })
-}
-
-const styleOf = (page: Page, selector: string) =>
-  page.locator(selector).evaluate((el) => {
-    const s = (el as HTMLElement).style
-    return {
-      left: parseFloat(s.left),
-      top: parseFloat(s.top),
-      width: parseFloat(s.width),
-      height: parseFloat(s.height),
-    }
-  })
-
-const openCard = async (page: Page, id: number | string) => {
-  await page.goto(`/admin/collections/cards/${id}`)
-  await expect(page.getByTestId('headshot-crop')).toBeVisible({ timeout: 30_000 })
-  await expect(page.getByTestId('headshot-crop-zoom')).toBeEnabled({ timeout: 30_000 })
-}
-
-const save = async (page: Page) => {
-  await page.getByRole('button', { name: 'Save' }).first().click()
-  await expect(
-    page.getByText('Updated successfully.').or(page.getByText('successfully')),
-  ).toBeVisible({ timeout: 30_000 })
-}
 
 test.beforeAll(async () => {
   test.setTimeout(120_000)

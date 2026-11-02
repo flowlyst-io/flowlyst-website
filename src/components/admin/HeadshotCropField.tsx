@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, useConfig, useField, useFormFields } from '@payloadcms/ui'
+import { Button, useConfig, useDocumentEvents, useField, useFormFields } from '@payloadcms/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -12,10 +12,20 @@ import {
   panCrop,
   type HeadshotCrop,
 } from '@/utilities/headshotCropShared'
+import { withMediaVersion } from '@/utilities/mediaSrc'
 import '@/components/card/headshotDiamond.css'
 import './HeadshotCropField.css'
 
-type MediaDoc = { url?: string | null; alt?: string | null; mimeType?: string | null }
+type MediaDoc = {
+  url?: string | null
+  alt?: string | null
+  mimeType?: string | null
+  updatedAt?: string | null
+  filename?: string | null
+  filesize?: number | null
+  width?: number | null
+  height?: number | null
+}
 
 const DEFAULT_CROP: HeadshotCrop = { zoom: 1, x: 0.5, y: 0.5, aspect: null }
 const HELP =
@@ -27,6 +37,12 @@ export function HeadshotCropField() {
   const headshotId =
     headshot && typeof headshot === 'object' ? (headshot as { id?: number | string }).id : headshot
   const hasHeadshot = headshotId !== undefined && headshotId !== null && headshotId !== ''
+
+  const { mostRecentUpdate } = useDocumentEvents()
+  const mediaEvent =
+    mostRecentUpdate?.entitySlug === 'media' && String(mostRecentUpdate.id) === String(headshotId)
+      ? mostRecentUpdate
+      : null
 
   const zoomField = useField<number | null>({ path: 'headshotCrop.zoom' })
   const xField = useField<number | null>({ path: 'headshotCrop.x' })
@@ -73,6 +89,18 @@ export function HeadshotCropField() {
     s.aspectField.setValue(crop ? crop.aspect : null)
   }, [])
 
+  const clearCrop = useCallback(() => {
+    const s = setters.current
+    const hasValue = [s.zoomField, s.xField, s.yField, s.aspectField].some(
+      (f) => f.value !== null && f.value !== undefined,
+    )
+    if (hasValue) write(null)
+  }, [write])
+
+  // Compares the file itself, never the event: the event outlives navigation, so a stale one on
+  // mount must not reset a saved crop. Alt, caption and focal edits leave the signature alone.
+  const fileFacts = useRef<{ id: unknown; sig: string } | null>(null)
+
   useEffect(() => {
     if (!hasHeadshot) return
     const controller = new AbortController()
@@ -84,24 +112,33 @@ export function HeadshotCropField() {
         if (!res.ok) throw new Error(String(res.status))
         return res.json() as Promise<MediaDoc>
       })
-      .then((doc) => setLoaded({ id: headshotId, media: doc }))
+      .then((doc) => {
+        const sig = [doc.filename, doc.filesize, doc.width, doc.height].join('|')
+        const facts = fileFacts.current
+        if (facts && facts.id === headshotId && facts.sig !== sig) {
+          // Hide the old photo and lock zoom until the new file loads, so its aspect is never
+          // written against the old one.
+          setNatural({ id: undefined })
+          setDraftState({ id: headshotId, crop: null })
+          latest.current = DEFAULT_CROP
+          clearCrop()
+        }
+        fileFacts.current = { id: headshotId, sig }
+        setLoaded({ id: headshotId, media: doc })
+      })
       .catch((err: unknown) => {
         if ((err as { name?: string }).name !== 'AbortError')
           setLoaded({ id: headshotId, failed: true })
       })
     return () => controller.abort()
-  }, [config.routes.api, hasHeadshot, headshotId])
+  }, [config.routes.api, hasHeadshot, headshotId, mediaEvent, clearCrop])
 
   const previousId = useRef(headshotId)
   useEffect(() => {
     if (previousId.current === headshotId) return
     previousId.current = headshotId
-    const s = setters.current
-    const hasValue = [s.zoomField, s.xField, s.yField, s.aspectField].some(
-      (f) => f.value !== null && f.value !== undefined,
-    )
-    if (hasValue) write(null)
-  }, [headshotId, write])
+    clearCrop()
+  }, [headshotId, clearCrop])
 
   const dragStart = useRef<{ x: number; y: number; crop: HeadshotCrop } | null>(null)
 
@@ -122,7 +159,9 @@ export function HeadshotCropField() {
   const aspect = naturalAspect ?? 1
   const current = draft ?? stored
   const placement = cropPlacement(current, aspect)
-  const src = media?.url ? media.url.replace(config.serverURL ?? '', '') : undefined
+  const src = media?.url
+    ? withMediaVersion(media.url.replace(config.serverURL ?? '', ''), media.updatedAt)
+    : undefined
 
   const commit = (crop: HeadshotCrop) => {
     const clamped = clampCrop(crop, aspect)

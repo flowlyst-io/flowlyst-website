@@ -23,3 +23,12 @@ export function mediaSrc(url: string): string {
   const serverURL = getServerURL()
   return url.startsWith(`${serverURL}/`) ? url.slice(serverURL.length) : url
 }
+
+/**
+ * Add a version to a media URL so a file replaced under the same name is fetched
+ * again. Payload's file route ignores the query, and `next/image` caches by URL.
+ */
+export function withMediaVersion(src: string, updatedAt?: string | null): string {
+  if (!updatedAt) return src
+  return `${src}${src.includes('?') ? '&' : '?'}v=${encodeURIComponent(updatedAt)}`
+}
