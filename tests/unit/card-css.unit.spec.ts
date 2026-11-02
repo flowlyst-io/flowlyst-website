@@ -39,3 +39,27 @@ describe('headshot crop frame', () => {
     expect(rule).toMatch(new RegExp(`height:\\s*${CROP_FRAME_PX}px`))
   })
 })
+
+describe('admin crop control', () => {
+  it('HeadshotCropField.tsx has no colour literal', () => {
+    const source = readFileSync(
+      path.join(ROOT, 'src/components/admin/HeadshotCropField.tsx'),
+      'utf8',
+    )
+    expect(source.match(COLOUR_LITERAL)).toBeNull()
+  })
+
+  it('the scoped tokens equal the ones in styles.css :root', () => {
+    const squash = (s: string) => s.replace(/\s+/g, ' ').trim()
+    const css = readFileSync(path.join(ROOT, 'src/components/admin/HeadshotCropField.css'), 'utf8')
+    const styles = readFileSync(path.join(ROOT, 'src/app/(frontend)/styles.css'), 'utf8')
+    const block = css.match(/\.headshot-crop\s*\{([^}]*)\}/)![1]
+    const declared = [...block.matchAll(/(--[\w-]+):\s*([^;]+);/g)]
+    expect(declared.length).toBe(6)
+    for (const [, name, value] of declared) {
+      const root = styles.match(new RegExp(`${name}:\\s*([^;]+);`))?.[1]
+      expect(root, name).toBeDefined()
+      expect(squash(value), name).toBe(squash(root!))
+    }
+  })
+})

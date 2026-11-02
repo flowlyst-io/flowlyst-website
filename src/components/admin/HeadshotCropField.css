@@ -1,0 +1,40 @@
+.headshot-crop {
+  --fl-gray-100: #ffffff;
+  --fl-green-50: #e6f6ef;
+  --fl-green-700: #007147;
+  --accent: var(--fl-green-700);
+  --accent-soft: var(--fl-green-50);
+  --shadow-md: 0 8px 20px rgba(64, 64, 65, 0.1);
+}
+
+.headshot-crop__stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 176px;
+  height: 176px;
+  margin: 16px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.headshot-crop__stage:active {
+  cursor: grabbing;
+}
+
+.headshot-crop__stage:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.headshot-crop__zoom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.headshot-crop__zoom input {
+  width: 240px;
+}
