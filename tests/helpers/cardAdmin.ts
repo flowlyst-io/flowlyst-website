@@ -45,11 +45,14 @@ export const solidJpeg = (colour: Rgb, width = 1200, height = 800) =>
     .jpeg({ quality: 90 })
     .toBuffer()
 
-/** Red left half, blue right half; a crop to the right half changes the centre colour. */
-export const halfRedHalfBlue = async (width = 1200, height = 1600) => {
+/**
+ * Red on the left, blue from `split` rightwards; a crop to the right edge changes the centre
+ * colour. A `split` just right of the middle keeps the uncropped centre solidly red.
+ */
+export const halfRedHalfBlue = async (width = 1200, height = 1600, split = width / 2) => {
   const half = await sharp({
     create: {
-      width: width / 2,
+      width: width - split,
       height,
       channels: 3,
       background: { r: BLUE[0], g: BLUE[1], b: BLUE[2] },
@@ -60,7 +63,7 @@ export const halfRedHalfBlue = async (width = 1200, height = 1600) => {
   return sharp({
     create: { width, height, channels: 3, background: { r: RED[0], g: RED[1], b: RED[2] } },
   })
-    .composite([{ input: half, left: width / 2, top: 0 }])
+    .composite([{ input: half, left: split, top: 0 }])
     .jpeg({ quality: 90 })
     .toBuffer()
 }

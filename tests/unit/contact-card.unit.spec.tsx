@@ -146,6 +146,32 @@ describe('ContactCard', () => {
       expect(container.querySelector('.card__headshot-crop')).toBeNull()
     })
 
+    describe('version on the photo URL', () => {
+      const updatedAt = '2026-11-02T21:17:35.137Z'
+      const versioned = (w: number, h: number): Media => ({ ...media(w, h), updatedAt })
+      const expected = `/api/media/file/aziz.jpg?v=${encodeURIComponent(updatedAt)}`
+
+      it.each([
+        ['without a crop', undefined, '.card__headshot'],
+        ['with a crop', crop, '.card__headshot-crop img'],
+      ])('carries v=<updatedAt> %s', (_label, headshotCrop, selector) => {
+        const { container } = render(
+          <ContactCard
+            card={{ ...card, headshot: versioned(1200, 800), headshotCrop }}
+            settings={null}
+          />,
+        )
+        const img = container.querySelector(selector) as HTMLImageElement
+        expect(img).not.toBeNull()
+        expect(decodeURIComponent(img.getAttribute('src')!)).toContain(expected)
+      })
+
+      it('has no img without a headshot', () => {
+        const { container } = render(<ContactCard card={card} settings={null} />)
+        expect(container.querySelector('img')).toBeNull()
+      })
+    })
+
     it('renders neither without a headshot', () => {
       const { container } = render(<ContactCard card={card} settings={null} />)
       expect(container.querySelector('.card__headshot')).toBeNull()

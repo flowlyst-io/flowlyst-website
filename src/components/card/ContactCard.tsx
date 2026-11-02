@@ -4,7 +4,7 @@ import Image from 'next/image'
 import type { Card, Media, SiteSetting } from '@/payload-types'
 import { FLOWLYST_MARK_PATH, FLOWLYST_MARK_VIEWBOX } from '@/utilities/flowlystMarkShared'
 import { headshotPlacement } from '@/utilities/headshotCropShared'
-import { mediaSrc } from '@/utilities/mediaSrc'
+import { mediaSrc, withMediaVersion } from '@/utilities/mediaSrc'
 import { cardSocials, type CardSocialPlatform } from '@/utilities/cardSocials'
 
 type Props = {
@@ -108,7 +108,7 @@ export function ContactCard({ card, settings }: Props) {
             <div className="card__headshot-crop">
               <Image
                 className="card__headshot-crop-img"
-                src={mediaSrc(headshot.url)}
+                src={withMediaVersion(mediaSrc(headshot.url), headshot.updatedAt)}
                 alt={headshot.alt}
                 width={Math.round(placement.width)}
                 height={Math.round(placement.height)}
@@ -119,7 +119,7 @@ export function ContactCard({ card, settings }: Props) {
           ) : headshot?.url ? (
             <Image
               className="card__headshot"
-              src={mediaSrc(headshot.url)}
+              src={withMediaVersion(mediaSrc(headshot.url), headshot.updatedAt)}
               alt={headshot.alt}
               width={176}
               height={176}

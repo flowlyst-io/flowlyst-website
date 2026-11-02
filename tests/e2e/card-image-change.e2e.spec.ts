@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test, expect, type Page } from '@playwright/test'
@@ -230,6 +230,100 @@ const NOT_SAVED = 'Not saved yet: the card still shows the previous photo. Click
 const NOT_SAVED_FIRST = 'Not saved yet: the card has no photo until you click Save at the top.'
 const removePhoto = (page: Page) =>
   page.locator('.field-type.upload .upload-relationship-details__remove').click()
+
+// Waits on the card's own PATCH: the shared toast check trips when a drawer toast is still up.
+const saveCard = async (page: Page, cardId: number | string) => {
+  const [res] = await Promise.all([
+    page.waitForResponse(
+      (r) => r.url().includes(`/api/cards/${cardId}`) && r.request().method() === 'PATCH',
+    ),
+    topSave(page).click(),
+  ])
+  expect(res.status()).toBe(200)
+}
+
+const publicImg = (page: Page) => page.locator('.card__diamond img').first()
+
+const visitPublic = async (page: Page, slug: string) => {
+  await page.goto(`/card/${slug}`, { waitUntil: 'networkidle' })
+  await expect
+    .poll(() => publicImg(page).evaluate((el) => (el as HTMLImageElement).naturalWidth))
+    .toBeGreaterThan(0)
+  return {
+    src: (await publicImg(page).getAttribute('src'))!,
+    colour: await centreColour(page.locator('.card__diamond')),
+  }
+}
+
+test('E11 Edit Image keeps the file name and the public card still shows the new photo', async ({
+  page,
+  request,
+}) => {
+  const { cardId, slug, filename, mediaId } = await makeCard(
+    await halfRedHalfBlue(1200, 1600, 640),
+    null,
+  )
+  await login({ page, user: ADMIN })
+  const before = await visitPublic(page, slug)
+  expectNear(before.colour, RED)
+
+  await openCard(page, cardId)
+  expect(await editImageInDrawer(page)).toBe(200)
+  await closeDrawer(page)
+
+  const payload = await getPayload({ config })
+  const media = await payload.findByID({ collection: 'media', id: mediaId, depth: 0 })
+  expect(media.filename).toBe(filename)
+  const after = await visitPublic(page, slug)
+  const prefix = `/api/media/file/${filename}?v=`
+  expect(decodeURIComponent(before.src)).toContain(prefix)
+  expect(decodeURIComponent(after.src)).toContain(prefix)
+  expect(after.src).not.toBe(before.src)
+  expectNear(after.colour, BLUE)
+
+  const optimised = await request.get(after.src)
+  expect(optimised.status()).toBe(200)
+  expect(optimised.headers()['content-type']).toMatch(/^image\//)
+  const file = await request.get(
+    `/api/media/file/${filename}?v=${encodeURIComponent(media.updatedAt)}`,
+  )
+  expect(file.status()).toBe(200)
+})
+
+test('E12 deleting the photo and uploading the same file name shows the new photo', async ({
+  page,
+}) => {
+  const { cardId, slug, filename, mediaId } = await makeCard(await solidJpeg(RED), null)
+  await login({ page, user: ADMIN })
+  const before = await visitPublic(page, slug)
+  expectNear(before.colour, RED)
+
+  await openCard(page, cardId)
+  await removePhoto(page)
+  await saveCard(page, cardId)
+  await expect.poll(async () => (await getCard(cardId)).headshot ?? null).toBeNull()
+  const payload = await getPayload({ config })
+  await payload.delete({ collection: 'media', id: mediaId })
+
+  const dir = path.join(tmp, `reupload-${counter}`)
+  mkdirSync(dir)
+  const file = path.join(dir, filename)
+  writeFileSync(file, await solidJpeg(GREEN, 900, 600))
+  expect(await createNewInDrawer(page, file)).toBe(201)
+  await saveCard(page, cardId)
+  await expect.poll(async () => (await getCard(cardId)).headshot ?? null).not.toBeNull()
+  const media = await payload.findByID({
+    collection: 'media',
+    id: (await getCard(cardId)).headshot as number,
+    depth: 0,
+  })
+  expect(media.filename).toBe(filename)
+
+  const after = await visitPublic(page, slug)
+  expect(decodeURIComponent(after.src)).toContain(`/api/media/file/${filename}?v=`)
+  expect(after.src).not.toBe(before.src)
+  expectNear(after.colour, GREEN)
+})
 
 test('E5 a clean load has an empty, rendered message', async ({ page }) => {
   const { cardId } = await makeCard(await solidJpeg(RED), null)
