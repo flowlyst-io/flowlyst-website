@@ -121,8 +121,10 @@ describe('cropToJpeg', () => {
     expect((await sharp(out).metadata()).isProgressive).toBe(false)
   })
 
-  it('rejects an over-ceiling result', async () => {
-    await expect(cropToJpeg(await noise(512).png().toBuffer(), null)).rejects.toThrow()
+  it('re-encodes an over-ceiling photo smaller instead of dropping it', async () => {
+    const out = await cropToJpeg(await noise(512).png().toBuffer(), null)
+    expect(out.length).toBeLessThanOrEqual(PHOTO_MAX_BYTES)
+    expect((await sharp(out).metadata()).format).toBe('jpeg')
   })
 
   it('falls back to the centre for a bad crop', async () => {

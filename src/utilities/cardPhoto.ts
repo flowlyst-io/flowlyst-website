@@ -25,13 +25,20 @@ export async function cropToJpeg(
 
   const clamped = crop ? clampCrop({ ...crop, aspect: null }, width / height) : null
   const { left, top, size } = cropRect(clamped, width, height)
-  const out = await source
-    .extract({ left, top, width: size, height: size })
-    .resize(PHOTO_MAX_SIDE, PHOTO_MAX_SIDE, { withoutEnlargement: true })
-    .flatten({ background: DIAMOND_BACKGROUND })
-    .jpeg({ quality: 80, progressive: false })
-    .timeout({ seconds: 6 })
-    .toBuffer()
+  const encode = (side: number, quality: number) =>
+    source
+      .clone()
+      .extract({ left, top, width: size, height: size })
+      .resize(side, side, { withoutEnlargement: true })
+      .flatten({ background: DIAMOND_BACKGROUND })
+      .jpeg({ quality, progressive: false })
+      .timeout({ seconds: 6 })
+      .toBuffer()
+
+  // A busy photo can exceed the ceiling, and a card without its photo is the failure this guards against.
+  let out = await encode(PHOTO_MAX_SIDE, 80)
+  if (out.length > PHOTO_MAX_BYTES) out = await encode(PHOTO_MAX_SIDE, 60)
+  if (out.length > PHOTO_MAX_BYTES) out = await encode(256, 60)
   if (out.length > PHOTO_MAX_BYTES) throw new Error(`photo is ${out.length} bytes, over the limit`)
   return out
 }
