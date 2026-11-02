@@ -688,6 +688,12 @@ export interface Card {
   name: string;
   title?: string | null;
   headshot?: (number | null) | Media;
+  headshotCrop?: {
+    zoom?: number | null;
+    x?: number | null;
+    y?: number | null;
+    aspect?: number | null;
+  };
   phone?: string | null;
   email?: string | null;
   linkedIn?: string | null;
@@ -1332,6 +1338,14 @@ export interface CardsSelect<T extends boolean = true> {
   name?: T;
   title?: T;
   headshot?: T;
+  headshotCrop?:
+    | T
+    | {
+        zoom?: T;
+        x?: T;
+        y?: T;
+        aspect?: T;
+      };
   phone?: T;
   email?: T;
   linkedIn?: T;
