@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import { APIError, type CollectionConfig } from 'payload'
 
 import { anyone, isAdminOrEditor } from '@/access'
 
@@ -23,6 +23,30 @@ export const Media: CollectionConfig = {
     create: isAdminOrEditor,
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
+  },
+  hooks: {
+    // The cards' FK is ON DELETE set null, so without this a delete silently strips a card's photo.
+    beforeDelete: [
+      async ({ id, req }) => {
+        const { docs } = await req.payload.find({
+          collection: 'cards',
+          where: { headshot: { equals: id } },
+          depth: 0,
+          pagination: false,
+          overrideAccess: true,
+          req,
+          select: { name: true },
+        })
+        if (docs.length === 0) return
+        const names = docs.map((card) => `"${card.name}"`).join(', ')
+        throw new APIError(
+          docs.length === 1
+            ? `This photo is used by the contact card ${names}. Remove it from the card first, then delete it.`
+            : `This photo is used by the contact cards ${names}. Remove it from those cards first, then delete it.`,
+          400,
+        )
+      },
+    ],
   },
   upload: {
     mimeTypes: ['image/*'],
