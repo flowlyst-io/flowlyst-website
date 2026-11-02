@@ -178,3 +178,35 @@ export const expectCentre = (locator: Locator, expected: Rgb, tolerance = 24) =>
       return Math.max(...actual.map((v, i) => Math.abs(v - expected[i])))
     })
     .toBeLessThanOrEqual(tolerance)
+
+/** Creates a media doc from the card's "Create New" drawer; resolves with the POST status. */
+export const createNewInDrawer = async (
+  page: Page,
+  filePath: string,
+  alt = 'Created in a test',
+) => {
+  await page
+    .locator('.field-type.upload')
+    .first()
+    .getByRole('button', { name: 'Create New' })
+    .click()
+  const dr = drawer(page)
+  const input = dr.locator('input[type=file]').first()
+  await input.waitFor({ state: 'attached', timeout: 20_000 })
+  await input.setInputFiles(filePath)
+  await dr.locator('#field-alt').fill(alt)
+  const [res] = await Promise.all([
+    page.waitForResponse((r) => /\/api\/media/.test(r.url()) && r.request().method() === 'POST', {
+      timeout: 60_000,
+    }),
+    dr.locator('#action-save').click(),
+  ])
+  await expect(page.locator('.drawer--is-open')).toHaveCount(0)
+  return res.status()
+}
+
+/** Picks an existing media doc by file name from the card's "Choose from existing" drawer. */
+export const chooseExisting = async (page: Page, filename: string) => {
+  await page.getByRole('button', { name: 'Choose from existing' }).click()
+  await page.getByText(filename).first().click()
+}

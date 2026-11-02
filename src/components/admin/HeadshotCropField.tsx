@@ -1,6 +1,13 @@
 'use client'
 
-import { Button, useConfig, useDocumentEvents, useField, useFormFields } from '@payloadcms/ui'
+import {
+  Button,
+  useConfig,
+  useDocumentEvents,
+  useDocumentInfo,
+  useField,
+  useFormFields,
+} from '@payloadcms/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -30,6 +37,9 @@ type MediaDoc = {
 const DEFAULT_CROP: HeadshotCrop = { zoom: 1, x: 0.5, y: 0.5, aspect: null }
 const HELP =
   'This is how the photo looks on the card and in saved contacts. Save the card to keep it.'
+const UNSAVED_REPLACED =
+  'Not saved yet: the card still shows the previous photo. Click Save at the top.'
+const UNSAVED_FIRST = 'Not saved yet: the card has no photo until you click Save at the top.'
 
 export function HeadshotCropField() {
   const { config } = useConfig()
@@ -38,6 +48,7 @@ export function HeadshotCropField() {
     headshot && typeof headshot === 'object' ? (headshot as { id?: number | string }).id : headshot
   const hasHeadshot = headshotId !== undefined && headshotId !== null && headshotId !== ''
 
+  const { id: docId, savedDocumentData } = useDocumentInfo()
   const { mostRecentUpdate } = useDocumentEvents()
   const mediaEvent =
     mostRecentUpdate?.entitySlug === 'media' && String(mostRecentUpdate.id) === String(headshotId)
@@ -142,13 +153,34 @@ export function HeadshotCropField() {
 
   const dragStart = useRef<{ x: number; y: number; crop: HeadshotCrop } | null>(null)
 
-  if (!hasHeadshot) return null
+  // Compares with the last successful save, not the form's modified flag: Payload clears that
+  // flag even when the server refuses the save.
+  const saved = savedDocumentData?.headshot
+  const savedId = saved && typeof saved === 'object' ? (saved as { id?: unknown }).id : saved
+  const unsaved = Boolean(docId) && String(savedId ?? '') !== String(headshotId ?? '')
+  const unsavedText = !unsaved ? '' : savedId ? UNSAVED_REPLACED : UNSAVED_FIRST
+
+  // Always mounted, so a screen reader announces the change after the photo is removed and re-picked.
+  const liveRegion = (
+    <p
+      className="headshot-crop headshot-crop__unsaved"
+      role="status"
+      data-testid="headshot-crop-unsaved"
+    >
+      {unsavedText}
+    </p>
+  )
+
+  if (!hasHeadshot) return liveRegion
 
   const wrapper = (children: React.ReactNode) => (
-    <div className="field-type headshot-crop" data-testid="headshot-crop">
-      <h4>Adjust photo</h4>
-      {children}
-    </div>
+    <>
+      {liveRegion}
+      <div className="field-type headshot-crop" data-testid="headshot-crop">
+        <h4>Adjust photo</h4>
+        {children}
+      </div>
+    </>
   )
 
   if (failed) return wrapper(<p role="alert">Could not load the photo.</p>)

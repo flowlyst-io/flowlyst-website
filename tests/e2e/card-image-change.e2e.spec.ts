@@ -9,7 +9,9 @@ import {
   GREEN,
   RED,
   centreColour,
+  chooseExisting,
   closeDrawer,
+  createNewInDrawer,
   editImageInDrawer,
   expectCentre,
   expectNear,
@@ -40,7 +42,12 @@ const cardIds: (number | string)[] = []
 const mediaIds: (number | string)[] = []
 let counter = 0
 
-const makeCard = async (buf: Buffer, crop: typeof CROP | null = CROP, aspect = CROP.aspect) => {
+const makeCard = async (
+  buf: Buffer,
+  crop: typeof CROP | null = CROP,
+  aspect = CROP.aspect,
+  withHeadshot = true,
+) => {
   const payload = await getPayload({ config })
   const n = ++counter
   const media = await payload.create({
@@ -58,16 +65,21 @@ const makeCard = async (buf: Buffer, crop: typeof CROP | null = CROP, aspect = C
     collection: 'cards',
     data: {
       name: `Image change ${stamp} ${n}`,
-      headshot: media.id,
+      ...(withHeadshot ? { headshot: media.id } : {}),
       ...(crop ? { headshotCrop: { ...crop, aspect } } : {}),
     },
   })
   cardIds.push(card.id)
-  return { cardId: card.id, slug: card.slug as string, mediaId: media.id }
+  return {
+    cardId: card.id,
+    slug: card.slug as string,
+    mediaId: media.id,
+    filename: media.filename as string,
+  }
 }
 
 const jpegFile = (name: string, buf: Buffer) => {
-  const file = path.join(tmp, name)
+  const file = path.join(tmp, `card-image-change-${stamp}-${name}`)
   writeFileSync(file, buf)
   return file
 }
@@ -75,6 +87,7 @@ const jpegFile = (name: string, buf: Buffer) => {
 const img = (page: Page) => page.getByTestId('headshot-crop-img')
 const stage = (page: Page) => page.getByTestId('headshot-crop-stage')
 const zoom = (page: Page) => page.getByTestId('headshot-crop-zoom')
+const unsaved = (page: Page) => page.getByTestId('headshot-crop-unsaved')
 const topSave = (page: Page) => page.locator('#action-save').first()
 
 // Collects the field's own refetches, so a test can tell whether the drawer's save reached it.
@@ -99,6 +112,10 @@ test.afterAll(async () => {
   await payload.delete({ collection: 'users', where: { email: { equals: ADMIN.email } } })
   for (const id of cardIds) await payload.delete({ collection: 'cards', id }).catch(() => {})
   for (const id of mediaIds) await payload.delete({ collection: 'media', id }).catch(() => {})
+  await payload.delete({
+    collection: 'media',
+    where: { filename: { like: `card-image-change-${stamp}` } },
+  })
 })
 
 test('E1 pencil replace on a stored crop refreshes the diamond and resets the zoom', async ({
@@ -125,6 +142,7 @@ test('E1 pencil replace on a stored crop refreshes the diamond and resets the zo
   expect(await img(page).evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBe(900)
   await expect(zoom(page)).toHaveValue('1')
   await expect(topSave(page)).toBeEnabled()
+  await expect(unsaved(page)).toHaveText('')
   expect((await getCard(cardId)).headshotCrop?.zoom).toBe(2)
 
   // The drawer's own success toast may still be showing, so wait on the stored value instead.
@@ -206,4 +224,131 @@ test('E4 a stale media event does not reset a saved crop on return or reload', a
   await expect(zoom(page)).toHaveValue('2')
   await expect(topSave(page)).toBeDisabled()
   expect((await getCard(cardId)).headshotCrop?.zoom).toBe(2)
+})
+
+const NOT_SAVED = 'Not saved yet: the card still shows the previous photo. Click Save at the top.'
+const NOT_SAVED_FIRST = 'Not saved yet: the card has no photo until you click Save at the top.'
+const removePhoto = (page: Page) =>
+  page.locator('.field-type.upload .upload-relationship-details__remove').click()
+
+test('E5 a clean load has an empty, rendered message', async ({ page }) => {
+  const { cardId } = await makeCard(await solidJpeg(RED), null)
+  await login({ page, user: ADMIN })
+  await openCard(page, cardId)
+  await expect(unsaved(page)).toHaveText('')
+  expect(await unsaved(page).evaluate((el) => getComputedStyle(el).display)).not.toBe('none')
+})
+
+test('E6 an unrelated edit leaves the message empty', async ({ page }) => {
+  const { cardId } = await makeCard(await solidJpeg(RED), null)
+  await login({ page, user: ADMIN })
+  await openCard(page, cardId)
+  await page.fill('#field-title', 'Some other title')
+  await expect(topSave(page)).toBeEnabled()
+  await expect(unsaved(page)).toHaveText('')
+})
+
+test('E7 X then Create New shows the message until the card is saved', async ({ page }) => {
+  const { cardId, mediaId } = await makeCard(await solidJpeg(RED), null)
+  await login({ page, user: ADMIN })
+  await openCard(page, cardId)
+  await unsaved(page).evaluate((el) => {
+    el.dataset.probe = '1'
+  })
+
+  await removePhoto(page)
+  await expect(page.getByTestId('headshot-crop')).toHaveCount(0)
+  await expect(unsaved(page)).toHaveText(NOT_SAVED)
+
+  const file = jpegFile('e7-green.jpg', await solidJpeg(GREEN, 900, 600))
+  expect(await createNewInDrawer(page, file)).toBe(201)
+  await expect(unsaved(page)).toHaveText(NOT_SAVED)
+  await expect(unsaved(page)).toHaveAttribute('role', 'status')
+  await expect(unsaved(page)).toHaveAttribute('data-probe', '1')
+  expect((await getCard(cardId)).headshot).toBe(mediaId)
+
+  await save(page)
+  await expect(unsaved(page)).toHaveText('')
+  expect((await getCard(cardId)).headshot).not.toBe(mediaId)
+  await expect(zoom(page)).toBeEnabled({ timeout: 30_000 })
+  await zoom(page).fill('2')
+  await expect(unsaved(page)).toHaveText('')
+  await page.reload()
+  await expect(page.getByTestId('headshot-crop')).toBeVisible({ timeout: 30_000 })
+  await expect(unsaved(page)).toHaveText('')
+})
+
+test('E7b a refused Save keeps the message', async ({ page }) => {
+  const { cardId, mediaId } = await makeCard(await solidJpeg(RED), null)
+  await login({ page, user: ADMIN })
+  await openCard(page, cardId)
+  await removePhoto(page)
+  const file = jpegFile('e7b-green.jpg', await solidJpeg(GREEN, 900, 600))
+  expect(await createNewInDrawer(page, file)).toBe(201)
+
+  let refused = false
+  await page.route(`**/api/cards/${cardId}*`, (route) => {
+    if (route.request().method() === 'PATCH' && !refused) {
+      refused = true
+      return route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ errors: [{ message: 'Something went wrong.' }] }),
+      })
+    }
+    return route.continue()
+  })
+  const [res] = await Promise.all([
+    page.waitForResponse(
+      (r) => r.url().includes(`/api/cards/${cardId}`) && r.request().method() === 'PATCH',
+    ),
+    topSave(page).click(),
+  ])
+  expect(res.status()).toBe(500)
+  await expect(unsaved(page)).toHaveText(NOT_SAVED)
+  expect((await getCard(cardId)).headshot).toBe(mediaId)
+})
+
+test('E8 X then picking the saved photo again clears the message', async ({ page }) => {
+  const { cardId, filename } = await makeCard(await solidJpeg(RED), null)
+  await login({ page, user: ADMIN })
+  await openCard(page, cardId)
+  await removePhoto(page)
+  await expect(unsaved(page)).toHaveText(NOT_SAVED)
+  await chooseExisting(page, filename)
+  await expect(page.getByTestId('headshot-crop')).toBeVisible()
+  await expect(unsaved(page)).toHaveText('')
+})
+
+test('E9 a card with no photo before gets the no-photo wording until it is saved', async ({
+  page,
+}) => {
+  const { cardId } = await makeCard(await solidJpeg(RED), null, 1.5, false)
+  const { filename } = await makeCard(await solidJpeg(GREEN), null)
+  await login({ page, user: ADMIN })
+  await page.goto(`/admin/collections/cards/${cardId}`)
+  await expect(page.getByRole('button', { name: 'Choose from existing' })).toBeVisible({
+    timeout: 30_000,
+  })
+  await expect(page.getByTestId('headshot-crop')).toHaveCount(0)
+  await expect(unsaved(page)).toHaveText('')
+
+  await chooseExisting(page, filename)
+  await expect(page.getByTestId('headshot-crop')).toBeVisible()
+  await expect(unsaved(page)).toHaveText(NOT_SAVED_FIRST)
+  await save(page)
+  await expect(unsaved(page)).toHaveText('')
+  expect((await getCard(cardId)).headshot).toBeTruthy()
+})
+
+test('E10 the create screen shows no message after a photo is picked', async ({ page }) => {
+  const { filename } = await makeCard(await solidJpeg(RED), null)
+  await login({ page, user: ADMIN })
+  await page.goto('/admin/collections/cards/create')
+  await expect(page.getByRole('button', { name: 'Choose from existing' })).toBeVisible({
+    timeout: 30_000,
+  })
+  await chooseExisting(page, filename)
+  await expect(page.getByTestId('headshot-crop')).toBeVisible()
+  await expect(unsaved(page)).toHaveText('')
 })
