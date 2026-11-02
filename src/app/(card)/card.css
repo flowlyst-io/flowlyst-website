@@ -67,30 +67,6 @@
   margin-left: -88px;
 }
 
-.card__diamond-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: content-box;
-  width: 124px;
-  height: 124px;
-  overflow: hidden;
-  border: 6px solid var(--fl-gray-100);
-  border-radius: 28px;
-  background: var(--accent-soft);
-  box-shadow: var(--shadow-md);
-  transform: rotate(45deg);
-}
-
-.card__headshot {
-  flex: none;
-  max-width: none;
-  width: 176px;
-  height: 176px;
-  object-fit: cover;
-  transform: rotate(-45deg);
-}
-
 .card__body {
   display: flex;
   flex: 1;

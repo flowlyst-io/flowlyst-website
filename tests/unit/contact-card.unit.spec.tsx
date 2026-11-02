@@ -4,7 +4,7 @@ import { cleanup, render } from '@testing-library/react'
 
 import { ContactCard } from '@/components/card/ContactCard'
 import { cardSocials } from '@/utilities/cardSocials'
-import type { Card } from '@/payload-types'
+import type { Card, Media } from '@/payload-types'
 
 const card: Card = {
   id: 1,
@@ -93,5 +93,63 @@ describe('ContactCard', () => {
     const { container } = render(<ContactCard card={card} settings={allSocials} />)
     expect(container.querySelector('nav')).toBeNull()
     expect(container.querySelector('footer')).toBeNull()
+  })
+
+  describe('headshot', () => {
+    const media = (w: number | null, h: number | null): Media => ({
+      id: 9,
+      alt: 'Aziz portrait',
+      url: '/api/media/file/aziz.jpg',
+      width: w,
+      height: h,
+      updatedAt: '',
+      createdAt: '',
+    })
+    const crop = { zoom: 2, x: 0.5, y: 0.5, aspect: 1.5 }
+
+    it("keeps today's markup when there is no crop", () => {
+      const { container } = render(
+        <ContactCard card={{ ...card, headshot: media(1200, 800) }} settings={null} />,
+      )
+      expect(container.querySelector('.card__headshot')).not.toBeNull()
+      expect(container.querySelector('.card__headshot-crop')).toBeNull()
+    })
+
+    it.each([
+      ['1200x800', 1200, 800],
+      ['EXIF-swapped 800x1200', 800, 1200],
+    ])('places the crop inside the frame for %s', (_label, w, h) => {
+      const { container } = render(
+        <ContactCard
+          card={{ ...card, headshot: media(w, h), headshotCrop: crop }}
+          settings={null}
+        />,
+      )
+      const img = container.querySelector('.card__headshot-crop img') as HTMLImageElement
+      expect(img).not.toBeNull()
+      expect(img.style.left).toBe('-176px')
+      expect(img.style.top).toBe('-88px')
+      expect(img.style.width).toBe('528px')
+      expect(img.style.height).toBe('352px')
+      expect(img.getAttribute('alt')).toBe('Aziz portrait')
+      expect(container.querySelector('.card__headshot')).toBeNull()
+    })
+
+    it('falls back to the plain headshot when media dimensions are missing', () => {
+      const { container } = render(
+        <ContactCard
+          card={{ ...card, headshot: media(null, null), headshotCrop: crop }}
+          settings={null}
+        />,
+      )
+      expect(container.querySelector('.card__headshot')).not.toBeNull()
+      expect(container.querySelector('.card__headshot-crop')).toBeNull()
+    })
+
+    it('renders neither without a headshot', () => {
+      const { container } = render(<ContactCard card={card} settings={null} />)
+      expect(container.querySelector('.card__headshot')).toBeNull()
+      expect(container.querySelector('.card__headshot-crop')).toBeNull()
+    })
   })
 })

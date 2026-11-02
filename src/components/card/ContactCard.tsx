@@ -3,6 +3,7 @@ import Image from 'next/image'
 
 import type { Card, Media, SiteSetting } from '@/payload-types'
 import { FLOWLYST_MARK_PATH, FLOWLYST_MARK_VIEWBOX } from '@/utilities/flowlystMarkShared'
+import { headshotPlacement } from '@/utilities/headshotCropShared'
 import { mediaSrc } from '@/utilities/mediaSrc'
 import { cardSocials, type CardSocialPlatform } from '@/utilities/cardSocials'
 
@@ -53,6 +54,9 @@ function WhiteMark({ className }: { className: string }) {
 export function ContactCard({ card, settings }: Props) {
   const headshot =
     card.headshot && typeof card.headshot === 'object' ? (card.headshot as Media) : null
+  const placement = headshot
+    ? headshotPlacement(card.headshotCrop, headshot.width, headshot.height)
+    : null
   const phoneHref = card.phone ? `tel:${card.phone.replace(/[^\d+]/g, '')}` : null
   const tiles = [
     {
@@ -100,7 +104,19 @@ export function ContactCard({ card, settings }: Props) {
       </header>
       <div className="card__diamond">
         <div className="card__diamond-box">
-          {headshot?.url ? (
+          {headshot?.url && placement ? (
+            <div className="card__headshot-crop">
+              <Image
+                className="card__headshot-crop-img"
+                src={mediaSrc(headshot.url)}
+                alt={headshot.alt}
+                width={Math.round(placement.width)}
+                height={Math.round(placement.height)}
+                style={placement}
+                priority
+              />
+            </div>
+          ) : headshot?.url ? (
             <Image
               className="card__headshot"
               src={mediaSrc(headshot.url)}

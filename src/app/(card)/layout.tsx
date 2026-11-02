@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { nunito } from '../(frontend)/fonts'
 import '../(frontend)/styles.css'
+import '@/components/card/headshotDiamond.css'
 import './card.css'
 
 /**
