@@ -1,6 +1,8 @@
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
+import { loadCardPhoto } from '@/utilities/cardPhoto'
+import { normalizeCrop } from '@/utilities/headshotCropShared'
 import { buildVCard } from '@/utilities/vcard'
 
 export const dynamic = 'force-dynamic'
@@ -12,7 +14,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     collection: 'cards',
     where: { slug: { equals: slug } },
     overrideAccess: true,
-    depth: 0,
+    depth: 1,
     limit: 1,
   })
   const card = docs[0]
@@ -20,7 +22,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
 
   // Drop the trailing random code so the file is named after the person.
   const filename = `${slug.replace(/-[^-]+$/, '') || 'card'}.vcf`
-  return new Response(buildVCard(card), {
+  const photo =
+    card.headshot && typeof card.headshot === 'object'
+      ? await loadCardPhoto(payload, card.headshot, normalizeCrop(card.headshotCrop))
+      : null
+  return new Response(buildVCard(card, photo), {
     status: 200,
     headers: {
       'Content-Type': 'text/vcard; charset=utf-8',

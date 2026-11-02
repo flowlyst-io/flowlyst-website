@@ -24,3 +24,15 @@
 
 - On a preview, QR codes encode the site's `serverURL`. That is `https://flowlyst.io` unless you did step 4, so a preview code only scans through once merged.
 - Never put the connection string in the repo, a PR or an issue.
+
+## #148: the crop columns
+
+**Branch:** `feature/148-card-photo-crop`. This adds four nullable columns to `cards` for the headshot adjustment. Run the same command as step 2 above, from a checkout of that branch:
+
+```sh
+CI=true DATABASE_URL='<preview branch direct connection string>' pnpm migrate
+```
+
+- Expect the output to list `card_headshot_crop` as applied.
+- Until it is run, every card page on that preview errors, since the page reads the new columns.
+- Production needs nothing: the merge's production build applies the additive migration itself.

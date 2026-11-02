@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { isAdminOrEditor } from '@/access'
 import { validateHttpsURL } from '@/fields/validators'
 import { formatSlug } from '@/utilities/formatSlug'
+import { normalizeCrop } from '@/utilities/headshotCropShared'
 import { randomCode } from '@/utilities/randomCode'
 
 /** Digital contact cards served at /card/<slug>. The random suffix keeps the URL unguessable. */
@@ -23,6 +24,15 @@ export const Cards: CollectionConfig = {
         if (operation === 'create' && data) {
           data.slug = `${formatSlug(String(data.name ?? '')) || 'card'}-${randomCode(6)}`
         }
+        if (data) {
+          const emptyCrop = { zoom: null, x: null, y: null, aspect: null }
+          if ('headshot' in data && !data.headshot) {
+            data.headshotCrop = emptyCrop
+          } else if (data.headshotCrop !== undefined) {
+            // Clamp rather than validate, so a bad value can never break the page or the vCard.
+            data.headshotCrop = normalizeCrop(data.headshotCrop) ?? emptyCrop
+          }
+        }
         return data
       },
     ],
@@ -37,6 +47,22 @@ export const Cards: CollectionConfig = {
     { name: 'name', type: 'text', required: true },
     { name: 'title', type: 'text' },
     { name: 'headshot', type: 'upload', relationTo: 'media' },
+    {
+      name: 'headshotCrop',
+      type: 'group',
+      admin: {
+        disableBulkEdit: true,
+        disableListColumn: true,
+        disableListFilter: true,
+        components: { Field: { path: '/components/admin/HeadshotCropField#HeadshotCropField' } },
+      },
+      fields: [
+        { name: 'zoom', type: 'number' },
+        { name: 'x', type: 'number' },
+        { name: 'y', type: 'number' },
+        { name: 'aspect', type: 'number' },
+      ],
+    },
     { name: 'phone', type: 'text' },
     { name: 'email', type: 'email' },
     { name: 'linkedIn', type: 'text', label: 'LinkedIn URL', validate: validateHttpsURL },

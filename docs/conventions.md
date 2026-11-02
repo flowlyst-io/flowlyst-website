@@ -92,6 +92,13 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: `const { reason } = await searchParams; <ContactForm key={toContactReason(reason) ?? ''} initialReason={toContactReason(reason)} />`, island `useState({ ...INITIAL, reason: initialReason ?? '' })`.
 4. **Gotcha**: island state only takes the prop on first mount, so key the island on it; reading `searchParams` makes the page dynamic, which is acceptable only when the page makes no DB calls.
 
+### An admin control that reuses public card styles imports the shared CSS and declares a scoped copy of only the tokens it needs
+
+1. **Rule**: an admin control that reuses public card styles imports the shared CSS and declares a scoped copy of only the tokens it needs.
+2. **Why**: the admin does not load `styles.css`, and loading it would restyle the admin.
+3. **Minimal example**: `.headshot-crop { --fl-green-50: #e6f6ef; ... }`, with a unit test that each value equals `styles.css` `:root`.
+4. **Gotcha**: never add a value that is not in `:root`; the test is what keeps the copy honest.
+
 **Entries arrive from the auditor.** The independent auditor reads every diff with fresh eyes, which is exactly the position from which a new convention is visible. Its verdict says whether the change **established** a convention, which becomes an entry here, or **violated** one, which is a finding to fix in the review loop. Nobody writes speculative conventions in advance: an entry describes what a merged change actually did.
 
 **This is house style, not tutorial.** It says what this codebase does, not how the language works. And it obeys the house rules below, in particular no code-knowable facts: an entry that lists exact signatures or versions is stale the moment someone edits the code.
