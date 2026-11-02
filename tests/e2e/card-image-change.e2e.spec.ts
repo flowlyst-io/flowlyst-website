@@ -30,7 +30,7 @@ test.describe.configure({ mode: 'serial' })
 
 const stamp = Date.now()
 const ADMIN = {
-  email: deriveFixtureEmail({ prefix: 'card-image-change-e2e-admin' }),
+  email: deriveFixtureEmail({ prefix: `card-image-change-e2e-admin-${stamp}` }),
   password: 'card-image-change-e2e-password-123',
   name: 'Card Image Change E2E Admin',
   role: 'admin' as const,
@@ -274,6 +274,7 @@ test('E11 Edit Image keeps the file name and the public card still shows the new
   const payload = await getPayload({ config })
   const media = await payload.findByID({ collection: 'media', id: mediaId, depth: 0 })
   expect(media.filename).toBe(filename)
+  expect(media.width).toBeLessThan(1200)
   const after = await visitPublic(page, slug)
   const prefix = `/api/media/file/${filename}?v=`
   expect(decodeURIComponent(before.src)).toContain(prefix)
@@ -445,4 +446,78 @@ test('E10 the create screen shows no message after a photo is picked', async ({ 
   await chooseExisting(page, filename)
   await expect(page.getByTestId('headshot-crop')).toBeVisible()
   await expect(unsaved(page)).toHaveText('')
+})
+
+const GONE = 'This photo was deleted. Remove it and choose another.'
+
+// Picks a new photo through Create New and returns its media id.
+const pickNewPhoto = async (page: Page, name: string) => {
+  const alt = `Pending photo ${stamp} ${name} ${Date.now()}`
+  const file = jpegFile(`${name}.jpg`, await solidJpeg(GREEN, 900, 600))
+  expect(await createNewInDrawer(page, file, alt)).toBe(201)
+  const payload = await getPayload({ config })
+  const found = await payload.find({ collection: 'media', where: { alt: { equals: alt } } })
+  expect(found.docs).toHaveLength(1)
+  return found.docs[0].id
+}
+
+const saveRefused = async (page: Page, cardId: number | string) => {
+  const [res] = await Promise.all([
+    page.waitForResponse(
+      (r) => r.url().includes(`/api/cards/${cardId}`) && r.request().method() === 'PATCH',
+    ),
+    topSave(page).click(),
+  ])
+  return res.status()
+}
+
+const expectRecovers = async (page: Page, cardId: number | string, oldMediaId: number | string) => {
+  expect(await saveRefused(page, cardId)).toBe(400)
+  await expect(page.getByText(GONE).first()).toBeVisible()
+  expect((await getCard(cardId)).headshot).toBe(oldMediaId)
+
+  // Without a reload Payload's client router can jump to the deleted photo's document view
+  // (redirecting to the media list) once the next photo is picked.
+  await openCard(page, cardId)
+  await removePhoto(page)
+  await pickNewPhoto(page, `recover-${cardId}`)
+  await expect(page.getByTestId('headshot-crop')).toBeVisible()
+  await saveCard(page, cardId)
+  await expect.poll(async () => (await getCard(cardId)).headshot).not.toBe(oldMediaId)
+}
+
+test('E13 deleting the just-picked photo in the pencil drawer then Save is refused, not a 500', async ({
+  page,
+}) => {
+  const { cardId, mediaId } = await makeCard(await solidJpeg(RED), null)
+  await login({ page, user: ADMIN })
+  await openCard(page, cardId)
+  await removePhoto(page)
+  await pickNewPhoto(page, 'e13')
+
+  const dr = await pencil(page)
+  const del = page.waitForResponse(
+    (r) => r.request().method() === 'DELETE' && /\/api\/media/.test(r.url()),
+  )
+  await dr.locator('.doc-controls__popup button, .popup__trigger').first().click()
+  await page.locator('#action-delete:visible').click()
+  await page.locator('#confirm-action').click()
+  expect((await del).status()).toBe(200)
+  await expect(page.locator('.drawer--is-open')).toHaveCount(0)
+
+  await expectRecovers(page, cardId, mediaId)
+})
+
+test('E14 a photo deleted through the API after it was picked is refused at Save, not a 500', async ({
+  page,
+}) => {
+  const { cardId, mediaId } = await makeCard(await solidJpeg(RED), null)
+  await login({ page, user: ADMIN })
+  await openCard(page, cardId)
+  await removePhoto(page)
+  const pickedId = await pickNewPhoto(page, 'e14')
+  const payload = await getPayload({ config })
+  await payload.delete({ collection: 'media', id: pickedId })
+
+  await expectRecovers(page, cardId, mediaId)
 })

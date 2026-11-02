@@ -1,10 +1,26 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, UploadFieldSingleValidation } from 'payload'
 
 import { isAdminOrEditor } from '@/access'
 import { validateHttpsURL } from '@/fields/validators'
 import { formatSlug } from '@/utilities/formatSlug'
 import { normalizeCrop } from '@/utilities/headshotCropShared'
 import { randomCode } from '@/utilities/randomCode'
+
+const photoStillExists: UploadFieldSingleValidation = async (value, { req }) => {
+  if (value === null || value === undefined || value === '') return true
+  const id = typeof value === 'object' ? (value as { id?: number | string }).id : value
+  if (typeof id !== 'number' && typeof id !== 'string') return true
+  if (id === '') return true
+  const found = await req.payload.findByID({
+    collection: 'media',
+    id,
+    depth: 0,
+    disableErrors: true,
+    overrideAccess: true,
+    req,
+  })
+  return found ? true : 'This photo was deleted. Remove it and choose another.'
+}
 
 /** Digital contact cards served at /card/<slug>. The random suffix keeps the URL unguessable. */
 export const Cards: CollectionConfig = {
@@ -46,7 +62,14 @@ export const Cards: CollectionConfig = {
   fields: [
     { name: 'name', type: 'text', required: true },
     { name: 'title', type: 'text' },
-    { name: 'headshot', type: 'upload', relationTo: 'media' },
+    {
+      name: 'headshot',
+      type: 'upload',
+      relationTo: 'media',
+      // A photo deleted after it was picked (another tab, or the pencil drawer) would otherwise fail
+      // on the foreign key at Save with a bare 500.
+      validate: photoStillExists,
+    },
     {
       name: 'headshotCrop',
       type: 'group',

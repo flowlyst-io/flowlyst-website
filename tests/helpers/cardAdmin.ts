@@ -130,7 +130,11 @@ export const editImageInDrawer = async (page: Page) => {
   await dr.getByRole('button', { name: 'Edit Image' }).click()
   const inputs = page.locator('.edit-upload__inputsWrap input')
   await inputs.first().waitFor({ timeout: 20_000 })
+  // The boxes start at 0 and the image load overwrites them, which would undo an early edit.
+  await expect(inputs.nth(0)).not.toHaveValue('0', { timeout: 20_000 })
+  await expect(inputs.nth(1)).not.toHaveValue('0')
   await inputs.nth(0).fill('500')
+  await expect(inputs.nth(0)).toHaveValue('500')
   const sel = page.locator('.ReactCrop__crop-selection').first()
   const bb = (await sel.boundingBox())!
   await page.mouse.move(bb.x + bb.width / 2, bb.y + bb.height / 2)
@@ -145,6 +149,12 @@ export const editImageInDrawer = async (page: Page) => {
     ),
     drawer(page).locator('#action-save').click(),
   ])
+  const edits = new URL(res.request().url()).searchParams
+  expect(
+    Number(edits.get('uploadEdits[crop][width]')),
+    'the PATCH carries a crop narrower than the whole image',
+  ).toBeLessThan(100)
+  expect(Number(edits.get('uploadEdits[widthInPixels]'))).toBe(500)
   return res.status()
 }
 
@@ -211,5 +221,7 @@ export const createNewInDrawer = async (
 /** Picks an existing media doc by file name from the card's "Choose from existing" drawer. */
 export const chooseExisting = async (page: Page, filename: string) => {
   await page.getByRole('button', { name: 'Choose from existing' }).click()
+  // The list shows ten rows, newest first; parallel specs push a fixture off the first page.
+  await drawer(page).getByPlaceholder('Search by File Name').fill(filename)
   await page.getByText(filename).first().click()
 }

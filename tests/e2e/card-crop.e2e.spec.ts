@@ -14,7 +14,7 @@ const stamp = Date.now()
 const NAME = `Crop E2E ${stamp}`
 const NEW_NAME = `Crop E2E new ${stamp}`
 const ADMIN = {
-  email: deriveFixtureEmail({ prefix: 'card-crop-e2e-admin' }),
+  email: deriveFixtureEmail({ prefix: `card-crop-e2e-admin-${stamp}` }),
   password: 'card-crop-e2e-password-123',
   name: 'Card Crop E2E Admin',
   role: 'admin' as const,
@@ -245,6 +245,11 @@ test('7 a photo picked on an unsaved card can be adjusted before the first save'
   await page.goto('/admin/collections/cards/create')
   await expect(page.getByTestId('headshot-crop')).toHaveCount(0)
   await page.getByRole('button', { name: 'Choose from existing' }).click()
+  await page
+    .locator('.drawer--is-open')
+    .last()
+    .getByPlaceholder('Search by File Name')
+    .fill(mediaFilename)
   await page.getByText(mediaFilename).first().click()
   await expect(page.getByTestId('headshot-crop')).toBeVisible()
   await expect(page.getByTestId('headshot-crop-zoom')).toBeEnabled({ timeout: 30_000 })

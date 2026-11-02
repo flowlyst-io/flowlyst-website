@@ -12,7 +12,7 @@ test.describe.configure({ mode: 'serial' })
 
 const stamp = Date.now()
 const ADMIN = {
-  email: deriveFixtureEmail({ prefix: 'qr-e2e-admin' }),
+  email: deriveFixtureEmail({ prefix: `qr-e2e-admin-${stamp}` }),
   password: 'qr-e2e-password-123',
   name: 'QR E2E Admin',
   role: 'admin' as const,
