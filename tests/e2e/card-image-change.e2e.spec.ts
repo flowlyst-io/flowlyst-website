@@ -448,8 +448,6 @@ test('E10 the create screen shows no message after a photo is picked', async ({ 
   await expect(unsaved(page)).toHaveText('')
 })
 
-const GONE = 'This photo was deleted. Remove it and choose another.'
-
 // Picks a new photo through Create New and returns its media id.
 const pickNewPhoto = async (page: Page, name: string) => {
   const alt = `Pending photo ${stamp} ${name} ${Date.now()}`
@@ -471,30 +469,11 @@ const saveRefused = async (page: Page, cardId: number | string) => {
   return res.status()
 }
 
-const expectRecovers = async (page: Page, cardId: number | string, oldMediaId: number | string) => {
-  expect(await saveRefused(page, cardId)).toBe(400)
-  await expect(page.getByText(GONE).first()).toBeVisible()
-  expect((await getCard(cardId)).headshot).toBe(oldMediaId)
+const gone = (page: Page) => page.getByTestId('headshot-crop-gone')
+const pencils = (page: Page) =>
+  page.locator('.field-type.upload .upload-relationship-details__edit')
 
-  // Without a reload Payload's client router can jump to the deleted photo's document view
-  // (redirecting to the media list) once the next photo is picked.
-  await openCard(page, cardId)
-  await removePhoto(page)
-  await pickNewPhoto(page, `recover-${cardId}`)
-  await expect(page.getByTestId('headshot-crop')).toBeVisible()
-  await saveCard(page, cardId)
-  await expect.poll(async () => (await getCard(cardId)).headshot).not.toBe(oldMediaId)
-}
-
-test('E13 deleting the just-picked photo in the pencil drawer then Save is refused, not a 500', async ({
-  page,
-}) => {
-  const { cardId, mediaId } = await makeCard(await solidJpeg(RED), null)
-  await login({ page, user: ADMIN })
-  await openCard(page, cardId)
-  await removePhoto(page)
-  await pickNewPhoto(page, 'e13')
-
+const deleteInDrawer = async (page: Page) => {
   const dr = await pencil(page)
   const del = page.waitForResponse(
     (r) => r.request().method() === 'DELETE' && /\/api\/media/.test(r.url()),
@@ -504,8 +483,44 @@ test('E13 deleting the just-picked photo in the pencil drawer then Save is refus
   await page.locator('#confirm-action').click()
   expect((await del).status()).toBe(200)
   await expect(page.locator('.drawer--is-open')).toHaveCount(0)
+}
 
-  await expectRecovers(page, cardId, mediaId)
+const expectRecovers = async (page: Page, cardId: number | string, oldMediaId: number | string) => {
+  expect(await saveRefused(page, cardId)).toBe(400)
+  await expect(gone(page)).toBeVisible()
+  expect((await getCard(cardId)).headshot).toBe(oldMediaId)
+  await expect(page).toHaveURL(new RegExp(`/admin/collections/cards/${cardId}`))
+
+  await pickNewPhoto(page, `recover-${cardId}`)
+  await expect(page.getByTestId('headshot-crop')).toBeVisible()
+  await saveCard(page, cardId)
+  await expect.poll(async () => (await getCard(cardId)).headshot).not.toBe(oldMediaId)
+}
+
+test('E13 deleting the just-picked photo in the pencil drawer empties the field and says so', async ({
+  page,
+}) => {
+  const { cardId, mediaId } = await makeCard(await solidJpeg(RED), null)
+  await login({ page, user: ADMIN })
+  await openCard(page, cardId)
+  await removePhoto(page)
+  await pickNewPhoto(page, 'e13')
+
+  await deleteInDrawer(page)
+
+  await expect(gone(page)).toBeVisible()
+  await expect(pencils(page)).toHaveCount(0)
+  await expect(page.getByTestId('headshot-crop')).toHaveCount(0)
+  expect((await getCard(cardId)).headshot).toBe(mediaId)
+
+  // Saving the empty field clears the card's photo; picking another then saves it.
+  await saveCard(page, cardId)
+  await expect.poll(async () => (await getCard(cardId)).headshot ?? null).toBeNull()
+  await pickNewPhoto(page, 'e13-again')
+  await expect(page.getByTestId('headshot-crop')).toBeVisible()
+  await expect(gone(page)).toHaveCount(0)
+  await saveCard(page, cardId)
+  await expect.poll(async () => (await getCard(cardId)).headshot ?? null).not.toBeNull()
 })
 
 test('E14 a photo deleted through the API after it was picked is refused at Save, not a 500', async ({
@@ -516,8 +531,55 @@ test('E14 a photo deleted through the API after it was picked is refused at Save
   await openCard(page, cardId)
   await removePhoto(page)
   const pickedId = await pickNewPhoto(page, 'e14')
+  await expect(page.getByTestId('headshot-crop')).toBeVisible()
   const payload = await getPayload({ config })
   await payload.delete({ collection: 'media', id: pickedId })
 
   await expectRecovers(page, cardId, mediaId)
+})
+
+const typeAndDeletePicked = async (page: Page, name: string) => {
+  const title = `Typed before delete ${name}`
+  await page.fill('#field-title', title)
+  await removePhoto(page)
+  await pickNewPhoto(page, name)
+  await deleteInDrawer(page)
+  return title
+}
+
+test('E15 deleting a just-picked photo keeps the unsaved edits and the card screen', async ({
+  page,
+}) => {
+  const { cardId } = await makeCard(await solidJpeg(RED), null)
+  await login({ page, user: ADMIN })
+  await openCard(page, cardId)
+  const title = await typeAndDeletePicked(page, 'e15')
+
+  await expect(gone(page)).toBeVisible()
+  await expect(pencils(page)).toHaveCount(0)
+  expect(page.url()).not.toContain('notFound')
+  await expect(page).toHaveURL(new RegExp(`/admin/collections/cards/${cardId}`))
+  await expect(page.locator('#field-title')).toHaveValue(title)
+
+  const newId = await pickNewPhoto(page, 'e15-again')
+  await saveCard(page, cardId)
+  await expect.poll(async () => (await getCard(cardId)).headshot).toBe(newId)
+  expect((await getCard(cardId)).title).toBe(title)
+})
+
+test('E16 the same delete on the create screen keeps the typed fields', async ({ page }) => {
+  await login({ page, user: ADMIN })
+  await page.goto('/admin/collections/cards/create')
+  await expect(page.getByRole('button', { name: 'Create New' })).toBeVisible({ timeout: 30_000 })
+  await page.fill('#field-name', `E16 typed ${stamp}`)
+  const title = `Typed on create ${stamp}`
+  await page.fill('#field-title', title)
+  await pickNewPhoto(page, 'e16')
+  await deleteInDrawer(page)
+
+  await expect(gone(page)).toBeVisible()
+  await expect(pencils(page)).toHaveCount(0)
+  await expect(page).toHaveURL(/\/admin\/collections\/cards\/create/)
+  await expect(page.locator('#field-title')).toHaveValue(title)
+  await expect(page.locator('#field-name')).toHaveValue(`E16 typed ${stamp}`)
 })

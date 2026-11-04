@@ -1,4 +1,5 @@
 import type { CollectionConfig, UploadFieldSingleValidation } from 'payload'
+import { validations } from 'payload/shared'
 
 import { isAdminOrEditor } from '@/access'
 import { validateHttpsURL } from '@/fields/validators'
@@ -6,7 +7,10 @@ import { formatSlug } from '@/utilities/formatSlug'
 import { normalizeCrop } from '@/utilities/headshotCropShared'
 import { randomCode } from '@/utilities/randomCode'
 
-const photoStillExists: UploadFieldSingleValidation = async (value, { req }) => {
+const photoStillExists: UploadFieldSingleValidation = async (value, options) => {
+  const base = await validations.upload(value, options)
+  if (base !== true) return base
+  const { req } = options
   if (value === null || value === undefined || value === '') return true
   const id = typeof value === 'object' ? (value as { id?: number | string }).id : value
   if (typeof id !== 'number' && typeof id !== 'string') return true
