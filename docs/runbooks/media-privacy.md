@@ -7,11 +7,13 @@
 
 ### 1. Check the list is closed (after the deploy)
 
-1. Run `curl -i https://flowlyst.io/api/media`. It must answer `403`, and the body must show no file names.
-2. Run `curl -s -X POST https://flowlyst.io/api/graphql -H 'content-type: application/json' -d '{"query":"{ allMedia { docs { id } } }"}'`. It must return a "not allowed" error and no photo data.
-3. Open a blog post and a contact card in the browser. Every photo must still show.
+1. Open `https://flowlyst.io/api/media/file/<a file name from /admin → Media>`. The photo must show. If it does not, tell the lead at once.
+2. Open a card page or About, which show a photo through `next/image`. The photo must show.
+3. Run `curl -i https://flowlyst.io/api/media`. It must answer `403`, and the body must show no file names.
+4. Run `curl -s -X POST https://flowlyst.io/api/graphql -H 'content-type: application/json' -d '{"query":"{ allMedia { docs { id } } }"}'`. It must return a "not allowed" error and no photo data.
+5. Open a blog post and a contact card in the browser. Every photo must still show.
 
-If step 3 fails (a photo is missing), stop and tell the lead before going on.
+If step 5 fails (a photo is missing), stop and tell the lead before going on.
 
 ### 2. Replace each photo uploaded before the deploy
 

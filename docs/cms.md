@@ -124,7 +124,8 @@ single committed migration is valid everywhere.
 
 Uploads are stored without camera metadata (make, model, date, GPS), and the photo
 list is not public: only logged-in staff can list or search it, while the image files
-themselves stay public so the site can show them. See
+themselves stay public so the site can show them, with Vercel Blob storage too
+(covered by `tests/int/media-blob-serve.int.spec.ts`). See
 [`runbooks/media-privacy.md`](runbooks/media-privacy.md) for photos uploaded earlier.
 
 Allowed upload types: JPEG, PNG, WebP, GIF, AVIF and SVG. HEIC and other types are
