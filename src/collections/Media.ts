@@ -1,6 +1,6 @@
 import { APIError, type CollectionConfig } from 'payload'
 
-import { isAdminOrEditor, mediaRead } from '@/access'
+import { anyone, isAdminOrEditor } from '@/access'
 
 /**
  * Media library. PRD §9 hard requirements: drag-and-drop upload, automatic
@@ -18,8 +18,8 @@ export const Media: CollectionConfig = {
   labels: { singular: 'Media', plural: 'Media' },
   admin: { group: 'Content' },
   access: {
-    // Files stay public; the list is staff-only (see mediaRead).
-    read: mediaRead,
+    // Public read: images must be served to anonymous site visitors.
+    read: anyone,
     create: isAdminOrEditor,
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
@@ -49,19 +49,8 @@ export const Media: CollectionConfig = {
     ],
   },
   upload: {
-    // Only types sharp can process (SVG excepted), so no upload keeps its camera metadata.
-    mimeTypes: [
-      'image/jpeg',
-      'image/png',
-      'image/webp',
-      'image/gif',
-      'image/avif',
-      'image/svg+xml',
-    ],
+    mimeTypes: ['image/*'],
     focalPoint: true,
-    // Any sharp option makes Payload re-encode the original (.rotate(), no metadata);
-    // without one the original is saved byte for byte, EXIF included. This one changes nothing else.
-    constructorOptions: { limitInputPixels: true },
     // Automatic resizing (PRD §9). Names are referenced by the frontend in
     // Phase 2 for responsive images and OG cards.
     imageSizes: [
