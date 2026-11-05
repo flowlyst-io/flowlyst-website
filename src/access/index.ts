@@ -22,18 +22,6 @@ export const isAdminFieldLevel: FieldAccess = ({ req: { user } }) => user?.role 
 export const anyone: Access = () => true
 
 /**
- * Read access for the media library: files are served to anyone, and server-rendered
- * pages populate media through the local API, but listing, searching, counting and
- * fetching by id over REST or GraphQL is staff-only. Population reuses the caller's
- * `req`, so `payloadAPI` is what tells a page render from a public API call.
- */
-export const mediaRead: Access = ({ req, isReadingStaticFile }) =>
-  Boolean(isReadingStaticFile) ||
-  req.user?.role === 'admin' ||
-  req.user?.role === 'editor' ||
-  req.payloadAPI === 'local'
-
-/**
  * Read access for public content collections/globals.
  *
  * Staff (Admin/Editor) see everything, including drafts. The public sees only
