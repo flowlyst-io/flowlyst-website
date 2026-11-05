@@ -60,9 +60,9 @@ const lexicalBody: BlogPost['body'] = {
   },
 }
 
-// 1x1 transparent PNG.
+// 1x1 transparent PNG. Must decode: uploads are re-encoded through sharp.
 const pngBuffer = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==',
   'base64',
 )
 
