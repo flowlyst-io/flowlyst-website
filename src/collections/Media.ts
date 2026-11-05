@@ -1,6 +1,6 @@
 import { APIError, type CollectionConfig } from 'payload'
 
-import { anyone, isAdminOrEditor } from '@/access'
+import { isAdminOrEditor, mediaRead } from '@/access'
 
 /**
  * Media library. PRD §9 hard requirements: drag-and-drop upload, automatic
@@ -18,8 +18,8 @@ export const Media: CollectionConfig = {
   labels: { singular: 'Media', plural: 'Media' },
   admin: { group: 'Content' },
   access: {
-    // Public read: images must be served to anonymous site visitors.
-    read: anyone,
+    // Files stay public; the list is staff-only (see mediaRead).
+    read: mediaRead,
     create: isAdminOrEditor,
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
