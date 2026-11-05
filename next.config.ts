@@ -7,6 +7,8 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
+  // Don't advertise the stack to scanners.
+  poweredByHeader: false,
   // The frontend and Payload route groups each own a root layout, so unmatched URLs
   // have no layout to compose a branded 404 from; src/app/global-not-found.tsx fills that gap.
   experimental: { globalNotFound: true },
