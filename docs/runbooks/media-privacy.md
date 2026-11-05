@@ -26,7 +26,7 @@ Do this for every JPEG or PNG uploaded earlier, at least the card headshots.
 
 1. In `/admin` → **Media**, find any photo you do not want public.
 2. Before deleting, check where the photo is used. If a contact card uses it, the admin blocks the delete and names the card; remove the photo from that card first, then delete.
-3. The admin does **not** warn you for anything else. A photo used as a blog post's featured image or Open Graph image, a testimonial photo, an author photo or a case-study hero is deleted without a word, and that page loses its image. Check those yourself: open the photo in **Media** and compare it with what the posts, testimonials, authors and case studies show, or look through those collections in the admin for the photo.
+3. The admin does **not** warn you for anything else. A photo used as a blog post's featured image or Open Graph image, a case study's Open Graph image, a testimonial photo, an author photo, a case-study hero, or an image placed inside a blog post's or case study's text is deleted without a word, and that page loses its image. Check those yourself: open the photo in **Media** and compare it with what the posts, testimonials, authors and case studies show, or look through those collections in the admin for the photo. Also open each blog post body and each case study's intro, challenge, solution and results text in the admin and look for the photo there.
 4. Once nothing else uses it, delete it.
 
 ## Good to know
