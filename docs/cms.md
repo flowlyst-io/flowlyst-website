@@ -10,15 +10,15 @@ Grouped as they appear in the admin nav.
 
 ### Content
 
-| Collection            | Purpose                                                                                                             | Publishing                           |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| **Blog Posts**        | Lexical body, excerpt, featured + OG image, author, tags, service category, auto reading-time, SEO meta             | Drafts + scheduled publish + preview |
-| **Case Studies**      | Structured long-form: intro / challenge / solution / results (each Lexical), district info, metrics, hero, SEO meta | Drafts + scheduled publish + preview |
-| **Testimonials**      | Quote, client, org/district, industry, service category, video URL, photo, featured flag                            | Plain `status` (draft/published)     |
-| **Organizations**     | Names on the homepage trust strip; show-on-homepage flag and order                                                  | Plain `status` (draft/published)     |
-| **Training Programs** | Hierarchical: program → ordered modules; level, format, duration                                                    | Plain `status`                       |
-| **Authors**           | Name, title, photo, bio, links — referenced by blog posts                                                           | Public                               |
-| **Media**             | Image library; **alt text required (validated)**; auto image sizes                                                  | Public read                          |
+| Collection            | Purpose                                                                                                             | Publishing                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **Blog Posts**        | Lexical body, excerpt, featured + OG image, author, tags, service category, auto reading-time, SEO meta             | Drafts + scheduled publish + preview     |
+| **Case Studies**      | Structured long-form: intro / challenge / solution / results (each Lexical), district info, metrics, hero, SEO meta | Drafts + scheduled publish + preview     |
+| **Testimonials**      | Quote, client, org/district, industry, service category, video URL, photo, featured flag                            | Plain `status` (draft/published)         |
+| **Organizations**     | Names on the homepage trust strip; show-on-homepage flag and order                                                  | Plain `status` (draft/published)         |
+| **Training Programs** | Hierarchical: program → ordered modules; level, format, duration                                                    | Plain `status`                           |
+| **Authors**           | Name, title, photo, bio, links — referenced by blog posts                                                           | Public                                   |
+| **Media**             | Image library; **alt text required (validated)**; auto image sizes                                                  | Files public; list and search staff-only |
 
 ### Leads (inbox) — **Admin-only** (PII)
 
@@ -121,6 +121,14 @@ the next 06:00 UTC run. Options:
 
 `alwaysInsertFields: true` keeps the media DB schema identical in both modes, so a
 single committed migration is valid everywhere.
+
+Uploads are stored without camera metadata (make, model, date, GPS), and the photo
+list is not public: only logged-in staff can list or search it, while the image files
+themselves stay public so the site can show them. See
+[`runbooks/media-privacy.md`](runbooks/media-privacy.md) for photos uploaded earlier.
+
+Allowed upload types: JPEG, PNG, WebP, GIF, AVIF and SVG. HEIC and other types are
+refused, so export iPhone/Mac photos as JPEG first.
 
 Both modes render featured/hero images through `next/image`: filesystem media
 resolves to a same-origin URL that `mediaSrc` (`src/utilities/mediaSrc.ts`)
