@@ -43,6 +43,8 @@ const UNSAVED_REPLACED =
   'Not saved yet: the card still shows the previous photo. Click Save at the top.'
 const UNSAVED_FIRST = 'Not saved yet: the card has no photo until you click Save at the top.'
 const PHOTO_GONE = 'That photo was deleted. Choose another photo.'
+const PHOTO_GONE_SAVED =
+  'That photo was deleted. Choose another photo. If you click Save now, the card will have no photo.'
 
 export function HeadshotCropField() {
   const { config } = useConfig()
@@ -153,7 +155,7 @@ export function HeadshotCropField() {
       signal: controller.signal,
     })
       .then((res) => {
-        if (res.status === 404) {
+        if (res.status === 404 && res.headers.get('content-type')?.includes('application/json')) {
           setGoneMessage(true)
           setters.current.headshotField.setValue(null)
           return null
@@ -199,7 +201,14 @@ export function HeadshotCropField() {
   const saved = savedDocumentData?.headshot
   const savedId = saved && typeof saved === 'object' ? (saved as { id?: unknown }).id : saved
   const unsaved = Boolean(docId) && String(savedId ?? '') !== String(headshotId ?? '')
-  const unsavedText = !unsaved ? '' : savedId ? UNSAVED_REPLACED : UNSAVED_FIRST
+  // The alert already says what Save does, so the unsaved note stays empty while it shows.
+  const unsavedText = !unsaved || goneMessage ? '' : savedId ? UNSAVED_REPLACED : UNSAVED_FIRST
+
+  const [hadSavedId, setHadSavedId] = useState(Boolean(savedId))
+  if (Boolean(savedId) !== hadSavedId) {
+    setHadSavedId(Boolean(savedId))
+    if (!savedId) setGoneMessage(false)
+  }
 
   // Always mounted, so a screen reader announces the change after the photo is removed and re-picked.
   const liveRegion = (
@@ -222,7 +231,7 @@ export function HeadshotCropField() {
           data-testid="headshot-crop-gone"
           className="headshot-crop headshot-crop__unsaved"
         >
-          {PHOTO_GONE}
+          {savedId ? PHOTO_GONE_SAVED : PHOTO_GONE}
         </p>
       </>
     )

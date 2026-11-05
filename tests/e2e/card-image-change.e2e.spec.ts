@@ -470,6 +470,9 @@ const saveRefused = async (page: Page, cardId: number | string) => {
 }
 
 const gone = (page: Page) => page.getByTestId('headshot-crop-gone')
+const GONE_SAVED =
+  'That photo was deleted. Choose another photo. If you click Save now, the card will have no photo.'
+const GONE_SHORT = 'That photo was deleted. Choose another photo.'
 const pencils = (page: Page) =>
   page.locator('.field-type.upload .upload-relationship-details__edit')
 
@@ -488,6 +491,8 @@ const deleteInDrawer = async (page: Page) => {
 const expectRecovers = async (page: Page, cardId: number | string, oldMediaId: number | string) => {
   expect(await saveRefused(page, cardId)).toBe(400)
   await expect(gone(page)).toBeVisible()
+  await expect(gone(page)).toHaveText(GONE_SAVED)
+  await expect(unsaved(page)).toHaveText('')
   expect((await getCard(cardId)).headshot).toBe(oldMediaId)
   await expect(page).toHaveURL(new RegExp(`/admin/collections/cards/${cardId}`))
 
@@ -509,6 +514,8 @@ test('E13 deleting the just-picked photo in the pencil drawer empties the field 
   await deleteInDrawer(page)
 
   await expect(gone(page)).toBeVisible()
+  await expect(gone(page)).toHaveText(GONE_SAVED)
+  await expect(unsaved(page)).toHaveText('')
   await expect(pencils(page)).toHaveCount(0)
   await expect(page.getByTestId('headshot-crop')).toHaveCount(0)
   expect((await getCard(cardId)).headshot).toBe(mediaId)
@@ -516,6 +523,7 @@ test('E13 deleting the just-picked photo in the pencil drawer empties the field 
   // Saving the empty field clears the card's photo; picking another then saves it.
   await saveCard(page, cardId)
   await expect.poll(async () => (await getCard(cardId)).headshot ?? null).toBeNull()
+  await expect(gone(page)).not.toBeVisible()
   await pickNewPhoto(page, 'e13-again')
   await expect(page.getByTestId('headshot-crop')).toBeVisible()
   await expect(gone(page)).toHaveCount(0)
@@ -556,6 +564,8 @@ test('E15 deleting a just-picked photo keeps the unsaved edits and the card scre
   const title = await typeAndDeletePicked(page, 'e15')
 
   await expect(gone(page)).toBeVisible()
+  await expect(gone(page)).toHaveText(GONE_SAVED)
+  await expect(unsaved(page)).toHaveText('')
   await expect(pencils(page)).toHaveCount(0)
   expect(page.url()).not.toContain('notFound')
   await expect(page).toHaveURL(new RegExp(`/admin/collections/cards/${cardId}`))
@@ -578,6 +588,7 @@ test('E16 the same delete on the create screen keeps the typed fields', async ({
   await deleteInDrawer(page)
 
   await expect(gone(page)).toBeVisible()
+  await expect(gone(page)).toHaveText(GONE_SHORT)
   await expect(pencils(page)).toHaveCount(0)
   await expect(page).toHaveURL(/\/admin\/collections\/cards\/create/)
   await expect(page.locator('#field-title')).toHaveValue(title)
