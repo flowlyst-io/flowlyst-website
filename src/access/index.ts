@@ -26,12 +26,16 @@ export const anyone: Access = () => true
  * pages populate media through the local API, but listing, searching, counting and
  * fetching by id over REST or GraphQL is staff-only. Population reuses the caller's
  * `req`, so `payloadAPI` is what tells a page render from a public API call.
+ *
+ * Static-file reads return a constraint that matches every row rather than `true`: that
+ * makes the file endpoint load the document itself and hand it to the storage adapter.
+ * With `true` the Blob adapter re-queries with the visitor's request, the lock refuses
+ * it, and every file answers 500 (#154).
  */
 export const mediaRead: Access = ({ req, isReadingStaticFile }) =>
-  Boolean(isReadingStaticFile) ||
-  req.user?.role === 'admin' ||
-  req.user?.role === 'editor' ||
-  req.payloadAPI === 'local'
+  isReadingStaticFile
+    ? { id: { exists: true } }
+    : req.user?.role === 'admin' || req.user?.role === 'editor' || req.payloadAPI === 'local'
 
 /**
  * Read access for public content collections/globals.

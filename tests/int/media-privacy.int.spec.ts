@@ -134,7 +134,7 @@ describe('media access', () => {
   it('serves static files to anyone and nothing else', () => {
     const args = (isReadingStaticFile: boolean) =>
       ({ req: { user: null, payloadAPI: 'REST' }, isReadingStaticFile }) as never
-    expect(mediaRead(args(true))).toBe(true)
+    expect(mediaRead(args(true))).toEqual({ id: { exists: true } })
     expect(mediaRead(args(false))).toBe(false)
   })
 })
