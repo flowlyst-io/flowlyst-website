@@ -49,8 +49,19 @@ export const Media: CollectionConfig = {
     ],
   },
   upload: {
-    mimeTypes: ['image/*'],
+    // Only types sharp can process (SVG excepted), so no upload keeps its camera metadata.
+    mimeTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      'image/avif',
+      'image/svg+xml',
+    ],
     focalPoint: true,
+    // Any sharp option makes Payload re-encode the original (.rotate(), no metadata);
+    // without one the original is saved byte for byte, EXIF included. This one changes nothing else.
+    constructorOptions: { limitInputPixels: true },
     // Automatic resizing (PRD §9). Names are referenced by the frontend in
     // Phase 2 for responsive images and OG cards.
     imageSizes: [

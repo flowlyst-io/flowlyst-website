@@ -122,6 +122,9 @@ the next 06:00 UTC run. Options:
 `alwaysInsertFields: true` keeps the media DB schema identical in both modes, so a
 single committed migration is valid everywhere.
 
+Allowed upload types: JPEG, PNG, WebP, GIF, AVIF and SVG. HEIC and other types are
+refused, so export iPhone/Mac photos as JPEG first.
+
 Both modes render featured/hero images through `next/image`: filesystem media
 resolves to a same-origin URL that `mediaSrc` (`src/utilities/mediaSrc.ts`)
 normalizes to a relative `/api/media/file/…` path (matched by `images.localPatterns`),
