@@ -99,6 +99,13 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: `.headshot-crop { --fl-green-50: #e6f6ef; ... }`, with a unit test that each value equals `styles.css` `:root`.
 4. **Gotcha**: never add a value that is not in `:root`; the test is what keeps the copy honest.
 
+### An admin field that reacts to a drawer edit decides from loaded file facts and judges "saved" from `savedDocumentData`
+
+1. **Rule**: an admin field that reacts to a drawer edit listens to `useDocumentEvents` but decides from loaded file facts, and it judges "saved" from `savedDocumentData`.
+2. **Why**: `mostRecentUpdate` outlives navigation, so acting on it would wipe a good crop; Payload also clears the form's modified flag on a refused save.
+3. **Minimal example**: `sig = [filename, filesize, width, height].join('|')`; reset only when `facts.id === id && facts.sig !== sig`.
+4. **Gotcha**: the first load only sets the baseline, and `updatedAt` cannot be the signature because alt edits bump it.
+
 **Entries arrive from the auditor.** The independent auditor reads every diff with fresh eyes, which is exactly the position from which a new convention is visible. Its verdict says whether the change **established** a convention, which becomes an entry here, or **violated** one, which is a finding to fix in the review loop. Nobody writes speculative conventions in advance: an entry describes what a merged change actually did.
 
 **This is house style, not tutorial.** It says what this codebase does, not how the language works. And it obeys the house rules below, in particular no code-knowable facts: an entry that lists exact signatures or versions is stale the moment someone edits the code.

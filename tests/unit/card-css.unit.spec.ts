@@ -55,7 +55,7 @@ describe('admin crop control', () => {
     const styles = readFileSync(path.join(ROOT, 'src/app/(frontend)/styles.css'), 'utf8')
     const block = css.match(/\.headshot-crop\s*\{([^}]*)\}/)![1]
     const declared = [...block.matchAll(/(--[\w-]+):\s*([^;]+);/g)]
-    expect(declared.length).toBe(6)
+    expect(declared.length).toBe(8)
     for (const [, name, value] of declared) {
       const root = styles.match(new RegExp(`${name}:\\s*([^;]+);`))?.[1]
       expect(root, name).toBeDefined()

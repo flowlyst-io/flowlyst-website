@@ -1,6 +1,15 @@
 'use client'
 
-import { Button, useConfig, useField, useFormFields } from '@payloadcms/ui'
+import {
+  Button,
+  useConfig,
+  useDocumentEvents,
+  useDocumentInfo,
+  useField,
+  useFormFields,
+  useFormProcessing,
+  useModal,
+} from '@payloadcms/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -12,14 +21,30 @@ import {
   panCrop,
   type HeadshotCrop,
 } from '@/utilities/headshotCropShared'
+import { withMediaVersion } from '@/utilities/mediaSrc'
 import '@/components/card/headshotDiamond.css'
 import './HeadshotCropField.css'
 
-type MediaDoc = { url?: string | null; alt?: string | null; mimeType?: string | null }
+type MediaDoc = {
+  url?: string | null
+  alt?: string | null
+  mimeType?: string | null
+  updatedAt?: string | null
+  filename?: string | null
+  filesize?: number | null
+  width?: number | null
+  height?: number | null
+}
 
 const DEFAULT_CROP: HeadshotCrop = { zoom: 1, x: 0.5, y: 0.5, aspect: null }
 const HELP =
   'This is how the photo looks on the card and in saved contacts. Save the card to keep it.'
+const UNSAVED_REPLACED =
+  'Not saved yet: the card still shows the previous photo. Click Save at the top.'
+const UNSAVED_FIRST = 'Not saved yet: the card has no photo until you click Save at the top.'
+const PHOTO_GONE = 'That photo was deleted. Choose another photo.'
+const PHOTO_GONE_SAVED =
+  'That photo was deleted. Choose another photo. If you click Save now, the card will have no photo.'
 
 export function HeadshotCropField() {
   const { config } = useConfig()
@@ -28,10 +53,47 @@ export function HeadshotCropField() {
     headshot && typeof headshot === 'object' ? (headshot as { id?: number | string }).id : headshot
   const hasHeadshot = headshotId !== undefined && headshotId !== null && headshotId !== ''
 
+  const { id: docId, savedDocumentData } = useDocumentInfo()
+  const { mostRecentUpdate } = useDocumentEvents()
+  const mediaEvent =
+    mostRecentUpdate?.entitySlug === 'media' && String(mostRecentUpdate.id) === String(headshotId)
+      ? mostRecentUpdate
+      : null
+
   const zoomField = useField<number | null>({ path: 'headshotCrop.zoom' })
   const xField = useField<number | null>({ path: 'headshotCrop.x' })
   const yField = useField<number | null>({ path: 'headshotCrop.y' })
   const aspectField = useField<number | null>({ path: 'headshotCrop.aspect' })
+  const headshotField = useField<number | string | null>({ path: 'headshot' })
+
+  // Payload's upload field has no delete callback, so a photo deleted in the pencil drawer or
+  // another tab is only noticed by asking the server again when a drawer closes, a Save ends or
+  // the window regains focus.
+  const [recheck, setRecheck] = useState(0)
+  const [goneMessage, setGoneMessage] = useState(false)
+  const { modalState } = useModal()
+  const openModals = Object.values(modalState).filter((m) => m?.isOpen).length
+  const previousModals = useRef(openModals)
+  useEffect(() => {
+    if (openModals < previousModals.current) setRecheck((n) => n + 1)
+    previousModals.current = openModals
+  }, [openModals])
+  const processing = useFormProcessing()
+  const wasProcessing = useRef(processing)
+  useEffect(() => {
+    if (wasProcessing.current && !processing) setRecheck((n) => n + 1)
+    wasProcessing.current = processing
+  }, [processing])
+  useEffect(() => {
+    const onFocus = () => setRecheck((n) => n + 1)
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [])
+  const [hadHeadshot, setHadHeadshot] = useState(hasHeadshot)
+  if (hasHeadshot !== hadHeadshot) {
+    setHadHeadshot(hasHeadshot)
+    if (hasHeadshot) setGoneMessage(false)
+  }
 
   // Each piece of state remembers which photo it belongs to, so a different photo starts clean.
   const [loaded, setLoaded] = useState<{ id: unknown; media?: MediaDoc; failed?: boolean }>({
@@ -59,10 +121,10 @@ export function HeadshotCropField() {
       aspect: aspectField.value,
     }) ?? DEFAULT_CROP
   const latest = useRef(stored)
-  const setters = useRef({ zoomField, xField, yField, aspectField })
+  const setters = useRef({ zoomField, xField, yField, aspectField, headshotField })
   useEffect(() => {
     latest.current = stored
-    setters.current = { zoomField, xField, yField, aspectField }
+    setters.current = { zoomField, xField, yField, aspectField, headshotField }
   })
 
   const write = useCallback((crop: HeadshotCrop | null) => {
@@ -73,6 +135,18 @@ export function HeadshotCropField() {
     s.aspectField.setValue(crop ? crop.aspect : null)
   }, [])
 
+  const clearCrop = useCallback(() => {
+    const s = setters.current
+    const hasValue = [s.zoomField, s.xField, s.yField, s.aspectField].some(
+      (f) => f.value !== null && f.value !== undefined,
+    )
+    if (hasValue) write(null)
+  }, [write])
+
+  // Compares the file itself, never the event: the event outlives navigation, so a stale one on
+  // mount must not reset a saved crop. Alt, caption and focal edits leave the signature alone.
+  const fileFacts = useRef<{ id: unknown; sig: string } | null>(null)
+
   useEffect(() => {
     if (!hasHeadshot) return
     const controller = new AbortController()
@@ -81,37 +155,96 @@ export function HeadshotCropField() {
       signal: controller.signal,
     })
       .then((res) => {
+        if (res.status === 404 && res.headers.get('content-type')?.includes('application/json')) {
+          setGoneMessage(true)
+          setters.current.headshotField.setValue(null)
+          return null
+        }
         if (!res.ok) throw new Error(String(res.status))
         return res.json() as Promise<MediaDoc>
       })
-      .then((doc) => setLoaded({ id: headshotId, media: doc }))
+      .then((doc) => {
+        if (!doc) return
+        const sig = [doc.filename, doc.filesize, doc.width, doc.height].join('|')
+        const facts = fileFacts.current
+        if (facts && facts.id === headshotId && facts.sig !== sig) {
+          // Hide the old photo and lock zoom until the new file loads, so its aspect is never
+          // written against the old one.
+          setNatural({ id: undefined })
+          setDraftState({ id: headshotId, crop: null })
+          latest.current = DEFAULT_CROP
+          clearCrop()
+        }
+        fileFacts.current = { id: headshotId, sig }
+        setLoaded({ id: headshotId, media: doc })
+      })
       .catch((err: unknown) => {
         if ((err as { name?: string }).name !== 'AbortError')
-          setLoaded({ id: headshotId, failed: true })
+          setLoaded((prev) =>
+            prev.id === headshotId && prev.media ? prev : { id: headshotId, failed: true },
+          )
       })
     return () => controller.abort()
-  }, [config.routes.api, hasHeadshot, headshotId])
+  }, [config.routes.api, hasHeadshot, headshotId, mediaEvent, clearCrop, recheck])
 
   const previousId = useRef(headshotId)
   useEffect(() => {
     if (previousId.current === headshotId) return
     previousId.current = headshotId
-    const s = setters.current
-    const hasValue = [s.zoomField, s.xField, s.yField, s.aspectField].some(
-      (f) => f.value !== null && f.value !== undefined,
-    )
-    if (hasValue) write(null)
-  }, [headshotId, write])
+    clearCrop()
+  }, [headshotId, clearCrop])
 
   const dragStart = useRef<{ x: number; y: number; crop: HeadshotCrop } | null>(null)
 
-  if (!hasHeadshot) return null
+  // Compares with the last successful save, not the form's modified flag: Payload clears that
+  // flag even when the server refuses the save.
+  const saved = savedDocumentData?.headshot
+  const savedId = saved && typeof saved === 'object' ? (saved as { id?: unknown }).id : saved
+  const unsaved = Boolean(docId) && String(savedId ?? '') !== String(headshotId ?? '')
+  // The alert already says what Save does, so the unsaved note stays empty while it shows.
+  const unsavedText = !unsaved || goneMessage ? '' : savedId ? UNSAVED_REPLACED : UNSAVED_FIRST
+
+  const [hadSavedId, setHadSavedId] = useState(Boolean(savedId))
+  if (Boolean(savedId) !== hadSavedId) {
+    setHadSavedId(Boolean(savedId))
+    if (!savedId) setGoneMessage(false)
+  }
+
+  // Always mounted, so a screen reader announces the change after the photo is removed and re-picked.
+  const liveRegion = (
+    <p
+      className="headshot-crop headshot-crop__unsaved"
+      role="status"
+      data-testid="headshot-crop-unsaved"
+    >
+      {unsavedText}
+    </p>
+  )
+
+  if (!hasHeadshot) {
+    if (!goneMessage) return liveRegion
+    return (
+      <>
+        {liveRegion}
+        <p
+          role="alert"
+          data-testid="headshot-crop-gone"
+          className="headshot-crop headshot-crop__unsaved"
+        >
+          {savedId ? PHOTO_GONE_SAVED : PHOTO_GONE}
+        </p>
+      </>
+    )
+  }
 
   const wrapper = (children: React.ReactNode) => (
-    <div className="field-type headshot-crop" data-testid="headshot-crop">
-      <h4>Adjust photo</h4>
-      {children}
-    </div>
+    <>
+      {liveRegion}
+      <div className="field-type headshot-crop" data-testid="headshot-crop">
+        <h4>Adjust photo</h4>
+        {children}
+      </div>
+    </>
   )
 
   if (failed) return wrapper(<p role="alert">Could not load the photo.</p>)
@@ -122,7 +255,9 @@ export function HeadshotCropField() {
   const aspect = naturalAspect ?? 1
   const current = draft ?? stored
   const placement = cropPlacement(current, aspect)
-  const src = media?.url ? media.url.replace(config.serverURL ?? '', '') : undefined
+  const src = media?.url
+    ? withMediaVersion(media.url.replace(config.serverURL ?? '', ''), media.updatedAt)
+    : undefined
 
   const commit = (crop: HeadshotCrop) => {
     const clamped = clampCrop(crop, aspect)

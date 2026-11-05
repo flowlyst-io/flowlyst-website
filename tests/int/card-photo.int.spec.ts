@@ -125,4 +125,27 @@ describe('GET /card/[slug]/vcard photo', () => {
   it('returns 404 for an unknown slug', async () => {
     expect((await call('no-such-card-zzzzzz')).status).toBe(404)
   })
+
+  it('refuses a headshot whose photo was deleted, and still saves a valid or empty one', async () => {
+    const media = await upload(`photo-e-${stamp}.png`, png)
+    const card = await makeCard({ headshot: media.id })
+    const gone = await upload(`photo-f-${stamp}.png`, png)
+    await payload.delete({ collection: 'media', id: gone.id })
+
+    const update = (headshot: number | null) =>
+      payload.update({ collection: 'cards', id: card.id, data: { headshot }, depth: 0 })
+
+    await expect(update(gone.id)).rejects.toMatchObject({
+      data: {
+        errors: [
+          {
+            path: 'headshot',
+            message: 'This photo was deleted. Remove it and choose another.',
+          },
+        ],
+      },
+    })
+    expect((await update(media.id)).headshot).toBe(media.id)
+    expect((await update(null)).headshot ?? null).toBeNull()
+  })
 })

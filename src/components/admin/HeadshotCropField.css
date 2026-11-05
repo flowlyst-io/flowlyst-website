@@ -1,10 +1,23 @@
 .headshot-crop {
   --fl-gray-100: #ffffff;
+  --fl-red-50: #fae5e6;
+  --fl-red-600: #b22529;
   --fl-green-50: #e6f6ef;
   --fl-green-700: #007147;
   --accent: var(--fl-green-700);
   --accent-soft: var(--fl-green-50);
   --shadow-md: 0 8px 20px rgba(64, 64, 65, 0.1);
+}
+
+.headshot-crop__unsaved {
+  margin: 0;
+}
+
+.headshot-crop__unsaved:not(:empty) {
+  margin-bottom: 12px;
+  padding: 12px;
+  background: var(--fl-red-50);
+  color: var(--fl-red-600);
 }
 
 .headshot-crop__stage {
