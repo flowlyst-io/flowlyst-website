@@ -58,7 +58,7 @@ beforeAll(async () => {
   media = await uploadMedia(`media-privacy-${stamp}.jpg`, buf, 'image/jpeg')
   const author = await payload.create({
     collection: 'authors',
-    data: { name: `MP Author ${stamp}`, photo: media.id },
+    data: { name: `MP Author ${stamp}`, slug: `mp-author-${stamp}`, photo: media.id },
   })
   authorId = author.id
 })
