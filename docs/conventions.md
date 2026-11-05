@@ -106,6 +106,13 @@ The house style for writing code in this repo: how _this_ codebase does things, 
 3. **Minimal example**: `sig = [filename, filesize, width, height].join('|')`; reset only when `facts.id === id && facts.sig !== sig`.
 4. **Gotcha**: the first load only sets the baseline, and `updatedAt` cannot be the signature because alt edits bump it.
 
+### A collection with public files and a staff-only list allows static files, staff roles and local API calls
+
+1. **Rule**: a collection whose files are public but whose list is staff-only uses an access function that returns a match-all constraint (a Where, not `true`) for `isReadingStaticFile`, and allows staff roles and `req.payloadAPI === 'local'`.
+2. **Why**: when a page fills in a related photo, Payload reuses the caller's `req`, and `payloadAPI` is what tells a server render apart from a public REST or GraphQL call.
+3. **Minimal example**: `mediaRead` in `src/access/index.ts`.
+4. **Gotcha**: returning `true` for static files makes cloud-storage adapters re-query with the visitor's request, which the lock refuses, so every file answers 500 (#154). A server-side call with an anonymous `req` that passes user-controlled queries into a media lookup bypasses the lock; Payload's admin server functions are safe only because they check for a login themselves.
+
 **Entries arrive from the auditor.** The independent auditor reads every diff with fresh eyes, which is exactly the position from which a new convention is visible. Its verdict says whether the change **established** a convention, which becomes an entry here, or **violated** one, which is a finding to fix in the review loop. Nobody writes speculative conventions in advance: an entry describes what a merged change actually did.
 
 **This is house style, not tutorial.** It says what this codebase does, not how the language works. And it obeys the house rules below, in particular no code-knowable facts: an entry that lists exact signatures or versions is stale the moment someone edits the code.
