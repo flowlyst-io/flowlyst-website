@@ -120,7 +120,9 @@ export default async function BlogIndexPage({
       >
         <div className="container" style={{ paddingTop: 32 }}>
           <div className="eyebrow" style={{ marginBottom: 32 }}>
-            flowlyst writing
+            <span>
+              <span className="brand-name">flowlyst</span> writing
+            </span>
           </div>
           <h1 className="h1" style={{ marginBottom: 32, maxWidth: 1100 }}>
             Notes from the office that <em>runs the district.</em>

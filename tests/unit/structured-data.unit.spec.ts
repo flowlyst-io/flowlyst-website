@@ -4,6 +4,7 @@ import { serializeJsonLd } from '@/utilities/jsonLd'
 import {
   buildFounderPersonSchema,
   buildOrganizationSchema,
+  founderId,
   organizationId,
 } from '@/utilities/structuredData'
 
@@ -30,6 +31,33 @@ describe('buildOrganizationSchema', () => {
   })
 })
 
+describe('buildOrganizationSchema address and founder', () => {
+  const node = buildOrganizationSchema({ serverURL, sameAs: [] })
+
+  it('has a locality-only PostalAddress for Lucas, TX', () => {
+    expect(node.address).toEqual({
+      '@type': 'PostalAddress',
+      addressLocality: 'Lucas',
+      addressRegion: 'TX',
+      addressCountry: 'US',
+    })
+    expect('streetAddress' in node.address).toBe(false)
+    expect('postalCode' in node.address).toBe(false)
+  })
+
+  it('keeps areaServed US and never mentions Chicago', () => {
+    expect(node.areaServed).toBe('US')
+    expect(JSON.stringify(node)).not.toMatch(/chicago/i)
+  })
+
+  it('names the founder with the same @id as the About Person', () => {
+    expect(node.founder['@type']).toBe('Person')
+    expect(node.founder.name).toBe('Aziz Aghayev')
+    expect(node.founder['@id']).toBe(buildFounderPersonSchema({ serverURL })['@id'])
+    expect(node.founder['@id']).toBe('https://x.test/about#aziz-aghayev')
+  })
+})
+
 describe('buildFounderPersonSchema', () => {
   it('has no sameAs without a LinkedIn URL and worksFor references the Organization @id', () => {
     const node = buildFounderPersonSchema({ serverURL, linkedIn: undefined })
@@ -40,5 +68,23 @@ describe('buildFounderPersonSchema', () => {
   it('sets sameAs to the LinkedIn URL when given', () => {
     const node = buildFounderPersonSchema({ serverURL, linkedIn: 'https://example.com/aziz' })
     expect(node).toHaveProperty('sameAs', ['https://example.com/aziz'])
+  })
+
+  it('describes the founder background and keeps the title', () => {
+    const node = buildFounderPersonSchema({ serverURL })
+    for (const term of [
+      'CFO',
+      'NJASBO',
+      'MASBO',
+      'ASBO New York',
+      'ASBO International',
+      'Chicago Public Schools',
+    ]) {
+      expect(node.description).toContain(term)
+    }
+    expect(node.knowsAbout.length).toBeGreaterThan(0)
+    expect(node.knowsAbout.every((k) => typeof k === 'string')).toBe(true)
+    expect(node.jobTitle).toBe('Founder & CEO')
+    expect(node['@id']).toBe(founderId(serverURL))
   })
 })

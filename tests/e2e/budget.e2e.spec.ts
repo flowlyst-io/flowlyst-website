@@ -174,7 +174,7 @@ test.describe('Budget page — server-rendered content (raw HTML, no JS)', () =>
     const html = await fetchHtml(request, PATH)
     const modules = [
       'Department-level entry',
-      'Real-time tracking',
+      'Tracking that refreshes on upload',
       'Color-coded reports',
       'Supervisor rollup',
       'Fast table export',
@@ -361,5 +361,41 @@ test.describe('Budget page — responsive & accessibility smoke', () => {
     ).toBe(true)
     await cta.focus()
     await expect(cta).toBeFocused()
+  })
+})
+
+test.describe('Budget page — upload-refreshed tracking wording (issue #157)', () => {
+  test('no real-time claim anywhere in the server HTML', async ({ request }) => {
+    const html = await fetchHtml(request, PATH)
+    expect(html).not.toMatch(/real[\s-]?time/i)
+  })
+
+  test('meta and Open Graph descriptions say tracking refreshes on ERP export upload', async ({
+    request,
+  }) => {
+    const html = await fetchHtml(request, PATH)
+    for (const description of [
+      getMetaContent(html, 'description'),
+      getMetaProperty(html, 'og:description'),
+    ]) {
+      expect(description).toMatch(/ERP export/i)
+      expect(description).toMatch(/upload/i)
+    }
+  })
+
+  test('the Service description says upload-refreshed and not live', async ({ request }) => {
+    const nodes = collectJsonLdNodes(await fetchHtml(request, PATH))
+    const description = String(
+      nodes.find(({ node }) => typeMatches(node, 'Service'))!.node.description,
+    )
+    expect(description).toMatch(/ERP export/i)
+    expect(description).toMatch(/upload/i)
+    expect(description).not.toMatch(/real[\s-]?time/i)
+    expect(description).toMatch(/No live ERP connection/)
+  })
+
+  test('AI analysis stays coming soon', async ({ request }) => {
+    const html = await fetchHtml(request, PATH)
+    expect(html).toMatch(/AI budget analysis[\s\S]{0,400}Coming soon/)
   })
 })

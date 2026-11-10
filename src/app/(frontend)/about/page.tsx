@@ -135,7 +135,9 @@ export default async function AboutPage() {
 
         <div className="container" style={{ position: 'relative', paddingTop: 64 }}>
           <div className="eyebrow" style={{ marginBottom: 32 }}>
-            About flowlyst
+            <span>
+              About <span className="brand-name">flowlyst</span>
+            </span>
           </div>
           <h1 className="h1" style={{ marginBottom: 32, maxWidth: 1100 }}>
             We sat in <em>your seat.</em>
@@ -180,10 +182,20 @@ export default async function AboutPage() {
               >
                 15+ years in K-12 finance and leadership. Former school CFO. National speaker.
               </p>
-              <p className="p" style={{ fontSize: 17, marginBottom: 32, maxWidth: '54ch' }}>
+              <p className="p" style={{ fontSize: 17, marginBottom: 16, maxWidth: '54ch' }}>
                 Aziz built flowlyst because the tools and partners he wished he had as a CFO didn’t
                 exist. Today he leads the consulting practice, delivers the keynotes, and writes the
                 blog.
+              </p>
+              <p
+                className="p"
+                data-testid="about-founder-background"
+                style={{ fontSize: 17, marginBottom: 32, maxWidth: '54ch' }}
+              >
+                A former public school district CFO, Aziz knows district finance from the
+                business-office side. He has presented AI training for school business officials at
+                NJASBO, MASBO, ASBO New York and ASBO International’s Annual Conference &amp; Expo
+                (ACE), and for Chicago Public Schools.
               </p>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 32 }}>
                 {AZIZ_CHIPS.map((chip) => (
@@ -276,7 +288,9 @@ export default async function AboutPage() {
               marginBottom: 40,
             }}
           >
-            Aziz on flowlyst
+            <span>
+              Aziz on <span className="brand-name">flowlyst</span>
+            </span>
           </div>
           <blockquote
             className="h1"

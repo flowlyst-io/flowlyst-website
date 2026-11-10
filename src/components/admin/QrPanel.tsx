@@ -36,7 +36,7 @@ function CopyUrl({ url }: { url: string }) {
 const COLOR_LABELS: Record<QrColor, string> = {
   black: 'Black',
   white: 'White',
-  violet: 'Flowlyst purple',
+  violet: 'flowlyst purple',
 }
 
 function RadioGroup<T extends string>({

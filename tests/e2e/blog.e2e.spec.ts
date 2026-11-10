@@ -296,7 +296,7 @@ test.describe('Blog index — SEO metadata (raw HTML, no JS)', () => {
 test.describe('Blog index — server-rendered content (raw HTML, no JS)', () => {
   test('the hero (eyebrow, headline, lead) is in the server HTML', async ({ request }) => {
     const html = await fetchHtml(request, '/blog')
-    expect(html).toMatch(/flowlyst writing/i)
+    expect(html.replace(/<[^>]+>/g, '')).toMatch(/flowlyst writing/i)
     expect(html).toMatch(/Notes from the office/i)
     expect(html).toMatch(/runs the district/i)
     expect(html).toMatch(/Practical posts on AI/i)
