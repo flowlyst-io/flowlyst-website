@@ -4,6 +4,7 @@ import { serializeJsonLd } from '@/utilities/jsonLd'
 import {
   buildFounderPersonSchema,
   buildOrganizationSchema,
+  founderId,
   organizationId,
 } from '@/utilities/structuredData'
 
@@ -27,6 +28,33 @@ describe('buildOrganizationSchema', () => {
     const out = serializeJsonLd(buildOrganizationSchema({ serverURL, sameAs: [hostile] }))
     expect(out).not.toContain('<')
     expect(JSON.parse(out).sameAs).toEqual([hostile])
+  })
+})
+
+describe('buildOrganizationSchema address and founder', () => {
+  const node = buildOrganizationSchema({ serverURL, sameAs: [] })
+
+  it('has a locality-only PostalAddress for Lucas, TX', () => {
+    expect(node.address).toEqual({
+      '@type': 'PostalAddress',
+      addressLocality: 'Lucas',
+      addressRegion: 'TX',
+      addressCountry: 'US',
+    })
+    expect('streetAddress' in node.address).toBe(false)
+    expect('postalCode' in node.address).toBe(false)
+  })
+
+  it('keeps areaServed US and never mentions Chicago', () => {
+    expect(node.areaServed).toBe('US')
+    expect(JSON.stringify(node)).not.toMatch(/chicago/i)
+  })
+
+  it('names the founder with the same @id as the About Person', () => {
+    expect(node.founder['@type']).toBe('Person')
+    expect(node.founder.name).toBe('Aziz Aghayev')
+    expect(node.founder['@id']).toBe(buildFounderPersonSchema({ serverURL })['@id'])
+    expect(node.founder['@id']).toBe('https://x.test/about#aziz-aghayev')
   })
 })
 

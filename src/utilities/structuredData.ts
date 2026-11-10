@@ -1,4 +1,5 @@
 export const organizationId = (serverURL: string) => `${serverURL}/#organization`
+export const founderId = (serverURL: string) => `${serverURL}/about#aziz-aghayev`
 
 export function buildOrganizationSchema({
   serverURL,
@@ -18,6 +19,18 @@ export function buildOrganizationSchema({
     email: 'info@flowlyst.io',
     description:
       'flowlyst gives K–12 public school district leaders software, training, and consulting built and delivered by a former school CFO.',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Lucas',
+      addressRegion: 'TX',
+      addressCountry: 'US',
+    },
+    founder: {
+      '@type': 'Person',
+      '@id': founderId(serverURL),
+      name: 'Aziz Aghayev',
+      url: `${serverURL}/about`,
+    },
     areaServed: 'US',
     ...(sameAs.length > 0 && { sameAs }),
   }
@@ -33,6 +46,7 @@ export function buildFounderPersonSchema({
   return {
     '@context': 'https://schema.org',
     '@type': 'Person',
+    '@id': founderId(serverURL),
     name: 'Aziz Aghayev',
     image: `${serverURL}/images/aziz-aghayev.jpg`,
     jobTitle: 'Founder & CEO',
