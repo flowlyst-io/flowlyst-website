@@ -69,4 +69,22 @@ describe('buildFounderPersonSchema', () => {
     const node = buildFounderPersonSchema({ serverURL, linkedIn: 'https://example.com/aziz' })
     expect(node).toHaveProperty('sameAs', ['https://example.com/aziz'])
   })
+
+  it('describes the founder background and keeps the title', () => {
+    const node = buildFounderPersonSchema({ serverURL })
+    for (const term of [
+      'CFO',
+      'NJASBO',
+      'MASBO',
+      'ASBO New York',
+      'ASBO International',
+      'Chicago Public Schools',
+    ]) {
+      expect(node.description).toContain(term)
+    }
+    expect(node.knowsAbout.length).toBeGreaterThan(0)
+    expect(node.knowsAbout.every((k) => typeof k === 'string')).toBe(true)
+    expect(node.jobTitle).toBe('Founder & CEO')
+    expect(node['@id']).toBe(founderId(serverURL))
+  })
 })

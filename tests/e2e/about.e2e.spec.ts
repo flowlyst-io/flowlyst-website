@@ -297,6 +297,36 @@ test.describe('About — JSON-LD (Organization + Person)', () => {
       organization!.node['@id'],
     )
   })
+
+  test('the Person carries @id, background and the Organization founder points at it', async ({
+    request,
+  }) => {
+    const nodes = collectJsonLdNodes(await fetchAboutHtml(request))
+    const person = nodes.find(({ node }) => typeMatches(node, 'Person'))!.node
+    const org = nodes.find(({ node }) => typeMatches(node, 'Organization'))!.node
+    expect(String(person['@id'])).toMatch(/\/about#aziz-aghayev$/)
+    expect(typeof person.description).toBe('string')
+    expect(person.description as string).toContain('CFO')
+    expect(Array.isArray(person.knowsAbout) && person.knowsAbout.length > 0).toBe(true)
+    expect((org.founder as JsonLdNode)['@id']).toBe(person['@id'])
+  })
+})
+
+test.describe('About — founder background (server-rendered)', () => {
+  test('the raw HTML shows his background', async ({ request }) => {
+    const html = await fetchAboutHtml(request)
+    expect(html).toContain('data-testid="about-founder-background"')
+    expect(html).toMatch(/former public school district CFO/i)
+    for (const term of [
+      'NJASBO',
+      'MASBO',
+      'ASBO New York',
+      'ASBO International',
+      'Chicago Public Schools',
+    ]) {
+      expect(html, term).toContain(term)
+    }
+  })
 })
 
 // ------------------------- Accessibility smoke ------------------------------
