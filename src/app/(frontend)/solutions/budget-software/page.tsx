@@ -30,7 +30,7 @@ const CANONICAL_PATH = '/solutions/budget-software'
 
 const PAGE_TITLE = 'Budget Software for K–12 Districts — flowlyst'
 const PAGE_DESCRIPTION =
-  'Centralize your K–12 district’s budgeting — department entry, real-time tracking, and board-ready reports. Supplementary to your ERP, built by a former school CFO.'
+  'Centralize your K–12 district’s budgeting: department entry, budget-vs-actual tracking that refreshes every time you upload your ERP export, and board-ready reports. Supplementary to your ERP, built by a former school CFO.'
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -67,8 +67,8 @@ const MODULES: Module[] = [
   },
   {
     num: '02',
-    title: 'Real-time tracking',
-    copy: 'Actuals vs. budget, by department, by line, with the variance the board will ask about.',
+    title: 'Tracking that refreshes on upload',
+    copy: 'Upload your ERP export, map it once, preview it, and budget vs. actual refreshes by department and line, with the variance the board will ask about. No IT integration project required.',
   },
   {
     num: '03',
@@ -144,7 +144,7 @@ export default async function BudgetSoftwarePage() {
     name: 'flowlyst Budgeting Software',
     serviceType: 'K–12 school district budgeting software',
     description:
-      'A web-based budgeting platform for K–12 public school districts — department entry, real-time tracking, board-ready reports, and analytics — supplementary to the district’s existing ERP.',
+      'A web-based budgeting platform for K–12 public school districts: department entry, budget-vs-actual tracking that refreshes each time the district uploads its ERP export (CSV import with upload, mapping and preview), board-ready reports, and analytics, supplementary to the district’s existing ERP. No live ERP connection or IT integration project required.',
     url: `${serverURL}${CANONICAL_PATH}`,
     areaServed: 'US',
     provider: {
@@ -348,7 +348,7 @@ export default async function BudgetSoftwarePage() {
 function ERPDiagram() {
   const adds = [
     'Department-level budget entry',
-    'Real-time variance tracking',
+    'Variance tracking from every ERP upload',
     'Board-ready reports',
   ]
   return (
