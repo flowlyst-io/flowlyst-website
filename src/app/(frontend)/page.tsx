@@ -75,7 +75,7 @@ const OFFERINGS: Offering[] = [
     num: '02',
     tag: 'Workshop',
     title: 'AI Training',
-    copy: `District-specific workshops for leadership and staff. ${TRAINING_RESULTS.positiveFeedbackPct}% positive feedback from ${TRAINING_RESULTS.surveyed} attendees across ${STATES_COUNT} states.`,
+    copy: `District-specific workshops for leadership and staff. ${TRAINING_RESULTS.positiveFeedbackPct}% positive feedback from ${TRAINING_RESULTS.surveyed} attendee responses across ${STATES_COUNT} states.`,
     cta: 'Book a discussion',
     href: '/solutions/ai-training',
   },

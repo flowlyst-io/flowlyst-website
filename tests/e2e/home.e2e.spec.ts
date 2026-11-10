@@ -149,7 +149,7 @@ test.describe('Homepage — server-rendered content (raw HTML, no JS)', () => {
     expect(pageText).not.toMatch(/satisfaction/i)
     expect(pageText).not.toContain('2,000+')
     expect(pageText).not.toMatch(/500\+\s*(admin\s*)?hours/i)
-    expect(pageText).toContain('98% positive feedback from 675 attendees across 16 states')
+    expect(pageText).toContain('98% positive feedback from 675 attendee responses across 16 states')
   })
 
   test('budget tracking is described as refreshing on ERP export upload, not real-time', async ({
