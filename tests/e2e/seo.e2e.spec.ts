@@ -16,6 +16,7 @@ const STATIC_PATHS = [
   '/about',
   '/solutions/budget-software',
   '/solutions/ai-training',
+  '/solutions/corporate-ai-training',
   '/solutions/consulting',
   '/solutions/keynotes',
   '/request-demo',

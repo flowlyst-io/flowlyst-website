@@ -79,6 +79,9 @@ export function Footer({ linkedInUrl }: { linkedInUrl?: string }) {
                 <Link href="/solutions/ai-training">AI Training</Link>
               </li>
               <li>
+                <Link href="/solutions/corporate-ai-training">Corporate AI Training</Link>
+              </li>
+              <li>
                 <Link href="/solutions/consulting">Consulting</Link>
               </li>
               <li>
