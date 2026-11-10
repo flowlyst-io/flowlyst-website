@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { fetchHtml } from '../helpers/rawHtml'
 
 /**
  * SEO / AI-discoverability surface (issue #21, PRD §10.1 / §11; review invariant a) —
@@ -158,4 +159,22 @@ test.describe('default Open Graph image', () => {
     expect(res.status()).toBe(200)
     expect(res.headers()['content-type']).toContain('image/png')
   })
+})
+
+test.describe('Claim guard — retired, unmeasured claims appear nowhere', () => {
+  for (const path of ['/', ...STATIC_PATHS]) {
+    test(`${path} carries none of the retired claims`, async ({ request }) => {
+      const html = await fetchHtml(request, path)
+      // Tags are stripped and whitespace collapsed because a claim can be split across
+      // markup (the old stat band put `100%` and `satisfaction` in different elements).
+      const text = html
+        .replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, '')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+      expect(text).not.toMatch(/100%\s*(workshop\s*)?satisfaction/i)
+      expect(text).not.toMatch(/2,000\+/)
+      expect(text).not.toMatch(/500\+\s*(admin\s*)?hours/i)
+    })
+  }
 })
