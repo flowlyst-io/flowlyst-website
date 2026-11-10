@@ -18,6 +18,7 @@ import { getPayload, type Payload } from 'payload'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactElement } from 'react'
 
+import type { Testimonial } from '@/payload-types'
 import config from '@/payload.config'
 import TestimonialsPage from '@/app/(frontend)/testimonials/page'
 
@@ -44,7 +45,7 @@ async function seed(data: {
   quote: string
   roleTitle?: string
   organization?: string
-  serviceCategory?: 'ai-training' | 'budget-software' | 'consulting' | 'keynotes' | 'general'
+  serviceCategory?: NonNullable<Testimonial['serviceCategory']>
   status?: 'draft' | 'published'
   videoUrl?: string
 }): Promise<void> {
@@ -145,6 +146,18 @@ describe('Testimonials index — CMS rendering', () => {
     expect(html, 'the keynotes quote renders under its filter').toContain(keynote)
     expect(html, 'its tag uses the Keynotes label').toContain('Keynotes')
     expect(html, 'a non-keynotes quote is filtered out').not.toContain(consulting)
+  })
+
+  it('filters by the corporate-training category', async () => {
+    const corporate = 'Corporate quote about the team session.'
+    const consulting = 'Consulting quote that must not appear.'
+    await seed({ quote: corporate, serviceCategory: 'corporate-training' })
+    await seed({ quote: consulting, serviceCategory: 'consulting' })
+
+    const html = await render({ service: 'corporate-training' })
+    expect(html).toContain(corporate)
+    expect(html).not.toContain(consulting)
+    expect(html).toContain('Corporate AI Training')
   })
 
   it('filters by role — only the matching role renders', async () => {

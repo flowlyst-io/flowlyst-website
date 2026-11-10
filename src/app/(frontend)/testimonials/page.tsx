@@ -74,6 +74,7 @@ const SERVICE_OPTIONS: ReadonlyArray<{ value: ServiceValue; label: string }> = [
   { value: 'budget-software', label: 'Budget Software' },
   { value: 'consulting', label: 'Consulting' },
   { value: 'keynotes', label: 'Keynotes' },
+  { value: 'corporate-training', label: 'Corporate AI Training' },
   { value: 'general', label: 'General' },
 ]
 

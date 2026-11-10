@@ -449,17 +449,21 @@ export interface CaseStudy {
 export interface Testimonial {
   id: number;
   quote: string;
+  /**
+   * Initials only, e.g. E.G.
+   */
   clientName: string;
   /**
    * Role / title of the person quoted.
    */
   roleTitle?: string | null;
   /**
-   * District or organization.
+   * School districts: the state (e.g. New Jersey). Corporate: a description, never the company name (e.g. international energy trading company).
    */
   organization?: string | null;
   industry?: string | null;
-  serviceCategory?: ('ai-training' | 'budget-software' | 'consulting' | 'keynotes' | 'general') | null;
+  serviceCategory?:
+    ('ai-training' | 'budget-software' | 'consulting' | 'keynotes' | 'corporate-training' | 'general') | null;
   /**
    * Optional link to a video testimonial.
    */
