@@ -425,6 +425,9 @@ code,
   margin: 0;
   text-wrap: balance;
 }
+.brand-name {
+  text-transform: none;
+}
 .eyebrow {
   font-size: 12px;
   font-weight: 800;

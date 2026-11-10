@@ -422,7 +422,7 @@ function ERPDiagram() {
             marginBottom: 16,
           }}
         >
-          flowlyst adds
+          <span className="brand-name">flowlyst</span> adds
         </div>
         <div style={{ display: 'grid', gap: 8 }}>
           {adds.map((t) => (

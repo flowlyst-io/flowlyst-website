@@ -48,7 +48,7 @@ test('a new unsaved link shows the save prompt', async ({ page }) => {
 const VARIANTS = [
   { color: 'black', label: 'Black' },
   { color: 'white', label: 'White' },
-  { color: 'violet', label: 'Flowlyst purple' },
+  { color: 'violet', label: 'flowlyst purple' },
 ].flatMap((c) => [
   { ...c, logo: 'logo', logoLabel: 'With logo' },
   { ...c, logo: 'nologo', logoLabel: 'Without logo' },
@@ -132,7 +132,7 @@ test('a card shows its URL, the Link note, and a purple no-logo PNG that decodes
   await expect(page.getByTestId('qr-url')).toHaveText(url)
   await expect(page.getByText('Create a Link')).toBeVisible()
 
-  await page.getByLabel('Flowlyst purple', { exact: true }).check()
+  await page.getByLabel('flowlyst purple', { exact: true }).check()
   await page.getByLabel('Without logo', { exact: true }).check()
   const pngDownload = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Download PNG' }).click()
