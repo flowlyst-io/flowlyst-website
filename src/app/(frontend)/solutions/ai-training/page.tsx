@@ -1,36 +1,44 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { getPayload } from 'payload'
 
 import { FinalCTA } from '@/components/FinalCTA'
 import { SolutionHero } from '@/components/solutions/SolutionHero'
 import { SectionHead } from '@/components/solutions/SectionHead'
+import { TrainingRosterArt } from '@/components/solutions/TrainingRosterArt'
+import { TrainingTestimonials } from '@/components/solutions/TrainingTestimonials'
+import {
+  SCHOOL_FAQ,
+  STATES_COUNT,
+  TRAINED_STATES,
+  TRAINING_RESULTS,
+  TRAINING_VENUES,
+} from '@/content/training'
+import config from '@/payload.config'
+import { buildFaqPageSchema } from '@/utilities/faqSchema'
 import { getServerURL } from '@/utilities/serverURL'
 import { serializeJsonLd } from '@/utilities/jsonLd'
 import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
- * AI Training solution page (`/solutions/ai-training`, PRD §4.2 / §3.4 / §7 / §11),
- * built against the settled design `design/site/solutions.jsx` `TrainingPage`.
+ * AI Training solution page (`/solutions/ai-training`, PRD §4.2 / §3.4 / §7 / §11):
+ * training for school district business offices, built from
+ * `design/site/solutions.jsx` `TrainingPage`.
  *
  * Fully server-rendered: every crawlable string is in the initial HTML, no
  * client-only content (PRD §10.1, review invariant a). Nav / Footer come from the
  * frontend layout; this page owns its single H1 (the hero) and the closing
- * FinalCTA band.
- *
- * Statically rendered — every section is fixed content from the settled design, so
- * there is no `revalidate` / Payload query here (unlike the budget page, which
- * drives a featured testimonial from the CMS). The `TrainingPrograms` collection
- * models programs-with-modules (level, duration, ordered `modules[]`), which none
- * of this design's sections represent — see the task report's flagged decision.
+ * FinalCTA band. Testimonials come from the CMS and the query stays in this
+ * top-level async function so the int tests can render the page.
  */
+
+export const revalidate = 60
 
 const CANONICAL_PATH = '/solutions/ai-training'
 
-// Meta <title> carries the formal issue-#9 framing ("AI Training for District
-// Leadership and Staff"); the design's on-page H1 stays "AI training that sticks
-// the next day." and the formal framing rides in the hero eyebrow.
-const PAGE_TITLE = 'AI Training for District Leadership and Staff — flowlyst'
+const PAGE_TITLE = 'AI Training for School District Business Offices — flowlyst'
 const PAGE_DESCRIPTION =
-  'Hands-on AI workshops for K–12 district leadership and staff — not students. Customized content, real use cases, and a toolkit licensed for your whole district.'
+  'Hands-on AI training for school district business offices: accounts payable, payroll, HR, purchasing, budget, CFOs, grants, board secretaries and superintendents. On-site in any US state or virtual.'
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -54,15 +62,46 @@ export const metadata: Metadata = {
 
 // ---- Static content (design/site/solutions.jsx `TrainingPage`) ----
 
-// Audiences — "who's in the room" (PRD §4.2). Leadership + operational staff, plus
-// school-level leaders when relevant; explicitly NOT students.
-type Audience = { title: string; sub: string }
+// Roles in the room (issue #156): the business office, plus leadership.
+type Role = { title: string; sub: string }
 
-const AUDIENCES: Audience[] = [
-  { title: 'Superintendents', sub: 'Asst. supts & chiefs of staff' },
-  { title: 'Business managers', sub: 'CFOs and finance teams' },
-  { title: 'HR & IT', sub: 'Directors and operational leads' },
-  { title: 'Principals', sub: 'School-level instructional leaders' },
+const ROLES: Role[] = [
+  { title: 'Accounts payable', sub: 'Vendor emails, PO and vendor spend analysis' },
+  { title: 'Payroll', sub: 'Excel formulas and repeatable reports' },
+  { title: 'HR & benefits', sub: 'Policy drafts and redlines' },
+  { title: 'Purchasing & procurement', sub: 'PO and vendor spend analysis' },
+  { title: 'Budget', sub: 'Budget-vs-actual dashboards' },
+  {
+    title: 'Business administrators, CFOs & treasurers',
+    sub: 'Board memos and monthly variance summaries',
+  },
+  { title: 'Grants', sub: 'Grant narrative drafts' },
+  { title: 'District clerks & board secretaries', sub: 'A board minutes workflow' },
+  { title: 'Superintendents & cabinet', sub: 'Drafting a district AI rollout' },
+]
+
+// Hero roster rows (illustrative).
+const ROSTER_ROWS = [
+  { name: 'Superintendent', task: 'Drafting a 3-month AI rollout' },
+  { name: 'CFO', task: 'Prompt: monthly variance summary' },
+  { name: 'HR Director', task: 'Auto-classifying form submissions' },
+  { name: 'IT Director', task: 'Setting up the prompt library' },
+]
+
+const RESULT_STATS = [
+  {
+    stat: `${TRAINING_RESULTS.improvedPct}%`,
+    label: `Confidence rose for ${TRAINING_RESULTS.improvedPct}% of attendees (${TRAINING_RESULTS.improved} of ${TRAINING_RESULTS.surveyed} surveyed)`,
+  },
+  {
+    stat: `${TRAINING_RESULTS.avgBefore} → ${TRAINING_RESULTS.avgAfter}`,
+    label: `Average confidence ${TRAINING_RESULTS.avgBefore} → ${TRAINING_RESULTS.avgAfter} out of 5`,
+  },
+  { stat: `${STATES_COUNT}`, label: `Attendees from ${STATES_COUNT} states` },
+  {
+    stat: `${TRAINING_RESULTS.positiveFeedbackPct}%`,
+    label: `${TRAINING_RESULTS.positiveFeedbackPct}% positive feedback from ${TRAINING_RESULTS.surveyed} attendee responses`,
+  },
 ]
 
 // Delivery formats (PRD §4.2 fixed list). Conceptual "how training runs" rows —
@@ -148,8 +187,21 @@ const AGENDA: AgendaRow[] = [
   },
 ]
 
-export default function AiTrainingPage() {
+export default async function AiTrainingPage() {
   const serverURL = getServerURL()
+
+  const payload = await getPayload({ config })
+  // `overrideAccess: false` applies `publishedOrStaff`, so drafts never reach the page.
+  const testimonialResult = await payload.find({
+    collection: 'testimonials',
+    where: {
+      and: [{ status: { equals: 'published' } }, { serviceCategory: { equals: 'ai-training' } }],
+    },
+    overrideAccess: false,
+    depth: 0,
+    limit: 24,
+    sort: '-createdAt',
+  })
 
   // schema.org Service for the AI training offering (PRD §10.1, review invariant
   // a) — in addition to the site-wide Organization node emitted by the frontend
@@ -157,12 +209,12 @@ export default function AiTrainingPage() {
   const serviceSchema = {
     '@context': 'https://schema.org',
     '@type': 'Service',
-    name: 'flowlyst AI Training',
-    serviceType: 'AI training for K–12 school district leadership and staff',
+    name: 'flowlyst AI Training for School Districts',
+    serviceType: 'AI training for K–12 school district business offices',
     description:
-      'Customized, hands-on AI workshops for the leadership and staff of K–12 public school districts — superintendents, business managers, HR, IT, and principals. Delivered half-day, full-day, as a webinar series, or as a summer/fall institute, in person, virtual, or hybrid. Adaptable to other organizations.',
+      'Hands-on AI training for the staff of K–12 school district business offices: accounts payable, payroll, HR and benefits, purchasing and procurement, budget, business administrators, CFOs and treasurers, grants, district clerks and board secretaries, plus superintendents and cabinet. Delivered on-site in any US state or virtual.',
     url: `${serverURL}${CANONICAL_PATH}`,
-    areaServed: 'US',
+    areaServed: { '@type': 'Country', name: 'United States' },
     provider: {
       '@type': 'Organization',
       name: 'flowlyst',
@@ -170,7 +222,7 @@ export default function AiTrainingPage() {
     },
     audience: {
       '@type': 'Audience',
-      audienceType: 'K–12 public school district leadership and staff',
+      audienceType: 'K–12 public school district business office staff and leadership',
     },
   }
 
@@ -180,24 +232,34 @@ export default function AiTrainingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceSchema) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(buildFaqPageSchema(SCHOOL_FAQ)) }}
+      />
 
       <SolutionHero
-        eyebrow="AI Training · for District Leadership and Staff"
+        eyebrow="AI Training · for School District Business Offices"
         title={
           <>
             AI training that <em>sticks the next day.</em>
           </>
         }
-        lead="Customized workshops for the office that runs the district. Designed for K-12 leaders — adaptable to other organizations."
+        lead="Hands-on workshops for the whole business office, from accounts payable to the CFO. On-site in any US state, or virtual."
         primaryCta="Book a 15-min discussion"
         primaryHref="/contact?reason=training"
         secondaryCta="See sample agenda"
         secondaryHref="#agenda"
-        badges={['100% satisfaction', '2,000+ leaders trained', '500+ hours saved']}
-        visual={<TrainingHeroArt />}
+        badges={[
+          `${TRAINING_RESULTS.positiveFeedbackPct}% positive feedback`,
+          `${TRAINING_RESULTS.improvedPct}% gained confidence`,
+          `Attendees from ${STATES_COUNT} states`,
+        ]}
+        visual={
+          <TrainingRosterArt label="Sample workshop · what each role builds" rows={ROSTER_ROWS} />
+        }
       />
 
-      {/* AUDIENCES — who the training is for; explicitly not students (PRD §4.2). */}
+      {/* ROLES — who the training is for; explicitly not students (PRD §4.2). */}
       <section className="section" data-testid="training-audiences">
         <div className="container">
           <SectionHead
@@ -207,11 +269,11 @@ export default function AiTrainingPage() {
                 For the office that <em>runs the district</em> — not for students.
               </>
             }
-            kicker="Training is for administrators, leaders, and operational staff. Districts can bring school-level staff (principals, teachers) when relevant."
+            kicker="Training is for the business office and district leadership. Districts can bring school-level staff when relevant."
           />
-          <div className="grid-4">
-            {AUDIENCES.map((a, i) => (
-              <div key={a.title} className="card">
+          <div className="grid-3">
+            {ROLES.map((r, i) => (
+              <div key={r.title} className="card">
                 <div
                   style={{
                     fontSize: 14,
@@ -221,31 +283,86 @@ export default function AiTrainingPage() {
                     letterSpacing: '0.08em',
                   }}
                 >
-                  0{i + 1}
+                  {String(i + 1).padStart(2, '0')}
                 </div>
                 <h3 className="h4" style={{ marginBottom: 8 }}>
-                  {a.title}
+                  {r.title}
                 </h3>
                 <p className="p" style={{ fontSize: 14 }}>
-                  {a.sub}
+                  {r.sub}
                 </p>
               </div>
             ))}
           </div>
-          {/* Adjacent non-K-12 clients — kept, but not leading (PRD §3.4). */}
-          <div
-            style={{
-              marginTop: 32,
-              padding: 24,
-              background: 'var(--c-cream)',
-              borderRadius: 4,
-              fontSize: 14,
-              color: 'var(--c-ink-2)',
-            }}
-          >
-            <strong>Adjacent:</strong> roughly 10% of training clients are non-K-12 organizations.
-            We adapt the curriculum without changing the depth.
+        </div>
+      </section>
+
+      {/* WHERE — any US state, on-site or virtual, and where it has run. */}
+      <section className="section section--cream" data-testid="training-where">
+        <div className="container">
+          <SectionHead
+            eyebrow="Where we’ve trained"
+            title={
+              <>
+                On-site in any US state, <em>or virtual.</em>
+              </>
+            }
+            kicker="Attendees have come from the states below, through state associations, national events and district-hosted sessions."
+          />
+          <h3 className="h4" style={{ marginBottom: 16 }}>
+            States
+          </h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
+            {TRAINED_STATES.map((state) => (
+              <span key={state} className="chip">
+                {state}
+              </span>
+            ))}
           </div>
+          <h3 className="h4" style={{ marginBottom: 16 }}>
+            Associations and districts
+          </h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {TRAINING_VENUES.map((venue) => (
+              <span key={venue} className="chip chip--green">
+                {venue}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* RESULTS — measured from post-session surveys. */}
+      <section
+        className="section--green"
+        style={{ padding: '120px 56px' }}
+        data-testid="training-results"
+      >
+        <div className="container">
+          <div className="stat-band__grid" style={{ '--stat-band-cols': 4 } as React.CSSProperties}>
+            {RESULT_STATS.map((p) => (
+              <div
+                key={p.stat + p.label}
+                style={{ borderLeft: '2px solid rgba(255,255,255,0.4)', paddingLeft: 24 }}
+              >
+                <div
+                  style={{
+                    fontSize: 64,
+                    fontWeight: 800,
+                    color: '#fff',
+                    lineHeight: 1,
+                    letterSpacing: '-0.04em',
+                  }}
+                >
+                  {p.stat}
+                </div>
+                <p style={{ marginTop: 16, lineHeight: 1.5 }}>{p.label}</p>
+              </div>
+            ))}
+          </div>
+          <p style={{ marginTop: 40 }}>
+            {`From ${TRAINING_RESULTS.surveyed} post-session surveys across ${TRAINING_RESULTS.sessions} sessions.`}
+          </p>
         </div>
       </section>
 
@@ -407,71 +524,66 @@ export default function AiTrainingPage() {
         </div>
       </section>
 
+      <TrainingTestimonials
+        testimonials={testimonialResult.docs}
+        testid="training-testimonials"
+        eyebrow="What attendees say"
+        title={
+          <>
+            From the people <em>in the room.</em>
+          </>
+        }
+      />
+
+      {/* Q&A — every question and answer is visible and mirrored in the FAQPage JSON-LD. */}
+      <section className="section" data-testid="training-faq">
+        <div className="container">
+          <SectionHead
+            eyebrow="Questions"
+            title={
+              <>
+                Questions we <em>get asked.</em>
+              </>
+            }
+          />
+          <div style={{ display: 'grid', gap: 32, maxWidth: 900 }}>
+            {SCHOOL_FAQ.map((item) => (
+              <div key={item.question}>
+                <h3 className="h4" style={{ marginBottom: 8 }}>
+                  {item.question}
+                </h3>
+                <p className="p">{item.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section" style={{ paddingTop: 0 }}>
+        <div className="container">
+          <div
+            style={{
+              padding: 24,
+              background: 'var(--c-cream)',
+              borderRadius: 4,
+              fontSize: 14,
+              color: 'var(--c-ink-2)',
+            }}
+          >
+            Training a company team? See{' '}
+            <Link href="/solutions/corporate-ai-training">corporate AI training</Link>.
+          </div>
+        </div>
+      </section>
+
       <FinalCTA />
     </>
   )
 }
 
 // ---------------- supporting presentational elements ----------------
-// Training-specific (not shared with the sibling pages). Ported verbatim from
-// design/site/solutions.jsx `TrainingHeroArt` / `TrainingToolkitArt`; inline
-// styles reference brand tokens / the design source's own values (no invented
-// values).
-
-// Hero visual — a sample roster of what each role builds in a workshop (illustrative, not a live session).
-function TrainingHeroArt() {
-  const participants = [
-    { name: 'Superintendent', task: 'Drafting a 3-month AI rollout' },
-    { name: 'CFO', task: 'Prompt: monthly variance summary' },
-    {
-      name: 'HR Director',
-      task: 'Auto-classifying form submissions',
-    },
-    { name: 'IT Director', task: 'Setting up the prompt library' },
-  ]
-  return (
-    <div
-      style={{
-        background: '#fff',
-        border: '1px solid var(--c-cream-2)',
-        borderRadius: 4,
-        padding: 32,
-        boxShadow: '0 24px 60px -16px rgba(14,20,16,0.10)',
-      }}
-    >
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 800,
-          color: 'var(--fl-green-700)',
-          letterSpacing: '0.16em',
-          textTransform: 'uppercase',
-          marginBottom: 24,
-        }}
-      >
-        Sample workshop · what each role builds
-      </div>
-      {participants.map((p, i) => (
-        <div
-          key={p.name}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '14px 0',
-            borderTop: i === 0 ? '1px solid var(--c-line-2)' : 'none',
-            borderBottom: '1px solid var(--c-line-2)',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--c-ink)' }}>{p.name}</div>
-            <div style={{ fontSize: 12, color: 'var(--c-ink-2)', marginTop: 2 }}>{p.task}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
+// Ported from design/site/solutions.jsx `TrainingToolkitArt`; inline styles
+// reference brand tokens / the design source's own values (no invented values).
 
 // "What's included" visual — the post-training prompt toolkit, tiled by department.
 function TrainingToolkitArt() {
