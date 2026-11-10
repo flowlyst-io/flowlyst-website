@@ -135,7 +135,9 @@ export default async function AboutPage() {
 
         <div className="container" style={{ position: 'relative', paddingTop: 64 }}>
           <div className="eyebrow" style={{ marginBottom: 32 }}>
-            About <span className="brand-name">flowlyst</span>
+            <span>
+              About <span className="brand-name">flowlyst</span>
+            </span>
           </div>
           <h1 className="h1" style={{ marginBottom: 32, maxWidth: 1100 }}>
             We sat in <em>your seat.</em>
@@ -286,7 +288,9 @@ export default async function AboutPage() {
               marginBottom: 40,
             }}
           >
-            Aziz on <span className="brand-name">flowlyst</span>
+            <span>
+              Aziz on <span className="brand-name">flowlyst</span>
+            </span>
           </div>
           <blockquote
             className="h1"

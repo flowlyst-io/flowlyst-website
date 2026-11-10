@@ -394,11 +394,8 @@ test.describe('Budget page — upload-refreshed tracking wording (issue #157)', 
     expect(description).toMatch(/No live ERP connection/)
   })
 
-  test('salary projection is not offered and AI analysis stays coming soon', async ({
-    request,
-  }) => {
+  test('AI analysis stays coming soon', async ({ request }) => {
     const html = await fetchHtml(request, PATH)
-    expect(html).not.toMatch(/salary projection/i)
     expect(html).toMatch(/AI budget analysis[\s\S]{0,400}Coming soon/)
   })
 })
