@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { render, screen, cleanup } from '@testing-library/react'
 import { describe, it, expect, afterEach } from 'vitest'
 
@@ -36,5 +37,12 @@ describe('FinalCTA (homepage closing band)', () => {
       '/request-demo',
     )
     expect(screen.getByRole('link', { name: /meet aziz/i })).toHaveAttribute('href', '/about')
+  })
+})
+
+describe('homepage source', () => {
+  it('never describes budget tracking as real-time (data comes from uploaded ERP exports)', () => {
+    const source = fs.readFileSync('src/app/(frontend)/page.tsx', 'utf8')
+    expect(source).not.toMatch(/real[\s-]?time/i)
   })
 })

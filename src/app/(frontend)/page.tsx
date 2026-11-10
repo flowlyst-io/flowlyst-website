@@ -10,6 +10,7 @@ import { Mark } from '@/components/Mark'
 import { FinalCTA } from '@/components/FinalCTA'
 import { PostThumb } from '@/components/blog/BlogArt'
 import { ProductMock } from '@/components/solutions/ProductMock'
+import { STATES_COUNT, TRAINING_RESULTS } from '@/content/training'
 import { getSiteSettings } from '@/utilities/siteSettings'
 
 /**
@@ -66,7 +67,7 @@ const OFFERINGS: Offering[] = [
     num: '01',
     tag: 'Software',
     title: 'Budget Software',
-    copy: 'Department entry, real-time tracking, board-ready reports — supplementary to your ERP.',
+    copy: 'Department entry, budget-vs-actual tracking that refreshes every time you upload your ERP export, board-ready reports — supplementary to your ERP.',
     cta: 'Request a demo',
     href: '/solutions/budget-software',
   },
@@ -74,7 +75,7 @@ const OFFERINGS: Offering[] = [
     num: '02',
     tag: 'Workshop',
     title: 'AI Training',
-    copy: 'District-specific workshops for leadership and staff. 100% satisfaction across 2,000+ leaders.',
+    copy: `District-specific workshops for leadership and staff. ${TRAINING_RESULTS.positiveFeedbackPct}% positive feedback from ${TRAINING_RESULTS.surveyed} attendees across ${STATES_COUNT} states.`,
     cta: 'Book a discussion',
     href: '/solutions/ai-training',
   },
@@ -82,7 +83,7 @@ const OFFERINGS: Offering[] = [
     num: '03',
     tag: 'Engagement',
     title: 'Consulting',
-    copy: 'Targeted automation projects or full McKinsey-style roadmaps with embedded engineers. 500+ admin hours saved.',
+    copy: 'Targeted automation projects or full McKinsey-style roadmaps with embedded engineers.',
     cta: 'Free assessment',
     href: '/solutions/consulting',
   },
@@ -295,8 +296,9 @@ export default async function HomePage() {
                 The platform we <em>wished existed</em> when we ran the budget.
               </h2>
               <p className="lead" style={{ fontSize: 19, marginBottom: 32 }}>
-                Department entry. Real-time tracking. Board-ready reports. One source of truth that
-                sits alongside the ERP you’ve already paid for.
+                Department entry. Budget-vs-actual tracking that refreshes every time you upload
+                your ERP export. Board-ready reports. One source of truth that sits alongside the
+                ERP you’ve already paid for.
               </p>
               <div
                 style={{
@@ -340,11 +342,15 @@ export default async function HomePage() {
       >
         <div className="container" style={{ maxWidth: 1080 }}>
           <h2 className="h2" style={{ color: '#fff', marginBottom: 56 }}>
-            <span className="accent--yellow">100%</span> workshop satisfaction.
+            <span className="accent--yellow">{TRAINING_RESULTS.improvedPct}%</span> of attendees
+            gained confidence.
             <br />
-            <span className="accent--yellow">2,000+</span> leaders trained.
+            <span className="accent--yellow">
+              {TRAINING_RESULTS.avgBefore} → {TRAINING_RESULTS.avgAfter}
+            </span>{' '}
+            average confidence, out of 5.
             <br />
-            <span className="accent--yellow">500+</span> hours saved.
+            <span className="accent--yellow">{STATES_COUNT}</span> states trained.
           </h2>
           {/* Size + white come from the .section--green WCAG 1.4.3 amendment in
               styles.css (large-text contrast on the brand-green band). */}
@@ -355,8 +361,7 @@ export default async function HomePage() {
               margin: 0,
             }}
           >
-            Every number is a district leader who got their evening back, a board meeting that ran
-            clean, or a budget that closed on time.
+            {`Measured across ${TRAINING_RESULTS.surveyed} post-session surveys from ${TRAINING_RESULTS.sessions} training sessions.`}
           </p>
         </div>
       </section>

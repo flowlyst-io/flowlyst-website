@@ -123,15 +123,41 @@ test.describe('Homepage — server-rendered content (raw HTML, no JS)', () => {
     expect(html).toMatch(/Four ways/i)
   })
 
-  test('the stat strip is present in the server HTML', async ({ request }) => {
+  test('the stat strip carries the measured figures and none of the retired claims', async ({
+    request,
+  }) => {
     const html = await fetchHomeHtml(request)
-    // Brand stats from the manifesto band.
-    expect(html).toMatch(/100%/)
-    expect(html).toMatch(/2,?000\+/)
-    expect(html).toMatch(/500\+/)
-    // At least one of the stat labels, so we prove it's the stat strip, not a
-    // stray number elsewhere.
-    expect(html).toMatch(/satisfaction|trained|hours saved/i)
+    const strip = html.slice(html.indexOf('data-testid="home-stats"'))
+    const stripText = strip
+      .slice(0, strip.indexOf('</section>'))
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+    for (const figure of ['86%', '2.3', '3.7', '675']) {
+      expect(stripText, `stat strip shows ${figure}`).toContain(figure)
+    }
+    for (const retired of ['100%', '2,000+', '500+']) {
+      expect(stripText, `stat strip no longer shows ${retired}`).not.toContain(retired)
+    }
+
+    const pageText = html
+      .replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, '')
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+    expect(pageText).not.toMatch(/100%\s*(workshop\s*)?satisfaction/i)
+    expect(pageText).not.toMatch(/satisfaction/i)
+    expect(pageText).not.toContain('2,000+')
+    expect(pageText).not.toMatch(/500\+\s*(admin\s*)?hours/i)
+    expect(pageText).toContain('98% positive feedback from 675 attendees across 16 states')
+  })
+
+  test('budget tracking is described as refreshing on ERP export upload, not real-time', async ({
+    request,
+  }) => {
+    const html = await fetchHomeHtml(request)
+    expect(html).not.toMatch(/real[\s-]?time/i)
+    expect(html).toContain('refreshes every time you upload your ERP export')
   })
 })
 
