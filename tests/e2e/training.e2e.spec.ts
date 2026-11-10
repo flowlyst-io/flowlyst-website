@@ -18,8 +18,8 @@ import {
  * assertions read the *raw* server HTML over HTTP (no browser, no JS) via the shared
  * helpers in tests/helpers/rawHtml.ts — if a crawlable string only appears after
  * hydration these fail, which is the PRD §10.1 requirement that public pages are
- * server-rendered (review invariant a). The page is fully static (no CMS query,
- * adjudicated), so there is no omitted-testimonial / no-leak case here. The layout,
+ * server-rendered (review invariant a). Testimonial visibility is proven in
+ * tests/int/training-pages-cms.int.spec.ts. The layout,
  * focus, and hero-scoped assertions need a real browser (computed layout, tab order,
  * visible text), so those go through the `page` fixture.
  *
@@ -29,6 +29,69 @@ import {
  */
 
 const PATH = '/solutions/ai-training'
+
+const ROLE_TITLES = [
+  'Accounts payable',
+  'Payroll',
+  'HR & benefits',
+  'Purchasing & procurement',
+  'Budget',
+  'Business administrators, CFOs & treasurers',
+  'Grants',
+  'District clerks & board secretaries',
+  'Superintendents & cabinet',
+]
+
+const STATE_NAMES = [
+  'New Jersey',
+  'New York',
+  'Massachusetts',
+  'Illinois',
+  'Texas',
+  'Pennsylvania',
+  'Indiana',
+  'Missouri',
+  'Kansas',
+  'Alabama',
+  'Utah',
+  'Oregon',
+  'Nevada',
+  'Arizona',
+  'North Carolina',
+  'Maryland',
+]
+
+const VENUES = [
+  'NJASBO',
+  'MASBO',
+  'ASBO New York',
+  'ASBO International (ACE)',
+  'Chicago Public Schools',
+]
+
+const QUESTIONS = [
+  'Who offers AI training for school business office staff?',
+  'Do you train in my state?',
+  'What does a session cover?',
+  'Is it hands-on?',
+  'How is sensitive employee data handled?',
+]
+
+function decode(html: string): string {
+  return html
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'")
+}
+
+function textOf(html: string): string {
+  return decode(html.replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, '').replace(/<[^>]+>/g, ' '))
+    .replace(/\s+/g, ' ')
+    .trim()
+}
 
 // ------------------------------- SEO metadata -------------------------------
 
@@ -165,6 +228,37 @@ test.describe('AI Training page — JSON-LD structured data', () => {
   })
 })
 
+test.describe('AI Training page — Service and FAQPage detail', () => {
+  test('one Service naming the roles, covering the US', async ({ request }) => {
+    const html = await fetchHtml(request, PATH)
+    const services = collectJsonLdNodes(html).filter(({ node }) => typeMatches(node, 'Service'))
+    expect(services).toHaveLength(1)
+    const node = services[0].node
+    const haystack = `${node.serviceType} ${node.description}`
+    expect(haystack).toMatch(/accounts payable/i)
+    expect(haystack).toMatch(/payroll/i)
+    expect(haystack).toMatch(/board secretar/i)
+    expect(JSON.stringify(node.areaServed)).toMatch(/United States/)
+    expect(node.offers).toBeUndefined()
+    expect(node.price).toBeUndefined()
+  })
+
+  test('one FAQPage whose questions and answers match the visible Q&A', async ({ request }) => {
+    const html = await fetchHtml(request, PATH)
+    const faqs = collectJsonLdNodes(html).filter(({ node }) => typeMatches(node, 'FAQPage'))
+    expect(faqs).toHaveLength(1)
+    const entities = faqs[0].node.mainEntity as Array<{
+      name: string
+      acceptedAnswer: { text: string }
+    }>
+    expect(entities.map((e) => e.name)).toEqual(QUESTIONS)
+    const text = textOf(html)
+    for (const e of entities) {
+      expect(text, `answer to "${e.name}" visible`).toContain(e.acceptedAnswer.text)
+    }
+  })
+})
+
 // --------------------------- Server-rendered content ------------------------
 
 test.describe('AI Training page — server-rendered content (raw HTML, no JS)', () => {
@@ -177,21 +271,35 @@ test.describe('AI Training page — server-rendered content (raw HTML, no JS)', 
     expect(html, 'hero secondary CTA').toContain('See sample agenda')
   })
 
-  test('the three hero proof chips are server-rendered', async ({ request }) => {
+  test('the measured figures are server-rendered and the old claims are gone', async ({
+    request,
+  }) => {
     const html = await fetchHtml(request, PATH)
-    // Literal % / + / comma — matched as plain substrings, not regex.
-    expect(html, 'chip — satisfaction').toContain('100% satisfaction')
-    expect(html, 'chip — leaders trained').toContain('2,000+ leaders trained')
-    expect(html, 'chip — hours saved').toContain('500+ hours saved')
+    const text = textOf(html)
+    for (const figure of [
+      'Confidence rose for 86% of attendees (583 of 675 surveyed)',
+      'Average confidence 2.3 → 3.7 out of 5',
+      'Attendees from 16 states',
+      '98% positive feedback from 675 attendee responses',
+    ]) {
+      expect(text, `figure "${figure}"`).toContain(figure)
+    }
+    expect(text).not.toMatch(/100%\s*(workshop\s*)?satisfaction/i)
+    expect(text).not.toMatch(/satisfaction/i)
+    expect(text).not.toContain('2,000+')
+    expect(text).not.toMatch(/500\+\s*hours/i)
   })
 
-  test('the four section data-testids are present', async ({ request }) => {
+  test('the section data-testids are present', async ({ request }) => {
     const html = await fetchHtml(request, PATH)
     for (const testid of [
       'training-audiences',
+      'training-where',
+      'training-results',
       'training-formats',
       'training-included',
       'training-agenda',
+      'training-faq',
     ]) {
       expect(html, `section "${testid}" must be in the server HTML`).toContain(
         `data-testid="${testid}"`,
@@ -199,18 +307,35 @@ test.describe('AI Training page — server-rendered content (raw HTML, no JS)', 
     }
   })
 
-  test('the audiences section names its audiences and states "not for students"', async ({
+  test('every business-office role is named, and the page says not for students', async ({
+    request,
+  }) => {
+    const text = decode(await fetchHtml(request, PATH))
+    expect(text, 'audiences: not-for-students framing').toMatch(/not for students/i)
+    for (const role of ROLE_TITLES) {
+      expect(text, `role "${role}"`).toContain(role)
+    }
+  })
+
+  test('says training is on-site in any US state, or virtual', async ({ request }) => {
+    const text = textOf(await fetchHtml(request, PATH))
+    expect(text).toContain('On-site in any US state, or virtual')
+  })
+
+  test('the where-we-have-trained section lists the 16 states and the 5 venues', async ({
     request,
   }) => {
     const html = await fetchHtml(request, PATH)
-    // PRD §4.2: training is for the office that runs the district, explicitly not students.
-    // "not for students" is contiguous after the </em> in the section title.
-    expect(html, 'audiences: not-for-students framing').toMatch(/not for students/i)
-    for (const audience of ['Superintendents', 'Business managers', 'Principals']) {
-      expect(html, `audience "${audience}"`).toContain(audience)
+    const start = html.indexOf('data-testid="training-where"')
+    const section = textOf(html.slice(start, html.indexOf('data-testid="training-results"')))
+    for (const name of [...STATE_NAMES, ...VENUES]) {
+      expect(section, `"${name}" in the where section`).toContain(name)
     }
-    // "HR & IT" renders with the ampersand HTML-escaped (`HR &amp; IT`); match either form.
-    expect(html, 'audience "HR & IT"').toMatch(/HR &(?:amp;)? IT/)
+  })
+
+  test('the Q&A shows each question visibly', async ({ request }) => {
+    const text = textOf(await fetchHtml(request, PATH))
+    for (const q of QUESTIONS) expect(text, `question "${q}"`).toContain(q)
   })
 
   test('all four delivery formats are server-rendered', async ({ request }) => {
@@ -264,32 +389,25 @@ test.describe('AI Training page — server-rendered content (raw HTML, no JS)', 
   })
 })
 
-// -------- Door-open-without-leading: the non-K-12 note (PRD §3.4) -----------
+// -------- Corporate pointer and the retired non-K-12 note --------------------
 
-test.describe('AI Training page — non-K-12 note present but not leading', () => {
-  test('the adjacent non-K-12 note IS server-rendered somewhere on the page', async ({
+test.describe('AI Training page — corporate pointer', () => {
+  test('links to the corporate page and no longer carries the non-K-12 note', async ({
     request,
   }) => {
     const html = await fetchHtml(request, PATH)
-    // PRD §3.4: the door is open to non-K-12 orgs — the note must exist and be crawlable.
-    expect(html, 'non-K-12 note present').toMatch(/non-K-12/i)
-    expect(html, 'the "roughly 10%" framing is present').toMatch(/roughly 10%/i)
+    expect(html).toContain('href="/solutions/corporate-ai-training"')
+    expect(html).not.toMatch(/roughly 10%/i)
   })
 
-  test('the non-K-12 note does NOT appear in the hero (K-12 leads)', async ({ page }) => {
+  test('the hero names the school business office and carries no non-K-12 note', async ({
+    page,
+  }) => {
     await page.goto(PATH)
-    // The hero leads with K-12; the adjacent-clients note lives down in the audiences
-    // section, never in the hero. Assert on the hero's rendered text so we can't be
-    // fooled by the note happening to sit elsewhere in the raw HTML.
     const heroText = await page.locator('[data-testid="solution-hero"]').innerText()
-    expect(heroText, 'hero must not surface the non-K-12 note').not.toMatch(/non-K-12/i)
-    expect(heroText, 'hero must not surface the "Adjacent:" label').not.toMatch(/Adjacent:/i)
-    expect(heroText, 'hero must not surface the "roughly 10%" framing').not.toMatch(/roughly 10%/i)
-    // Sanity: the hero DOES carry the K-12 leadership framing (proves we scoped the hero,
-    // not an empty node).
-    expect(heroText, 'hero carries the K-12 leadership framing').toMatch(
-      /District Leadership and Staff/i,
-    )
+    expect(heroText).not.toMatch(/non-K-12/i)
+    expect(heroText).not.toMatch(/roughly 10%/i)
+    expect(heroText).toMatch(/School District Business Offices/i)
   })
 })
 

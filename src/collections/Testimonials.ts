@@ -8,19 +8,25 @@ import { isAdminOrEditor, publishedOrStaff } from '@/access'
 import { validateURL } from '@/fields/validators'
 import { revalidatePaths } from '@/utilities/revalidate'
 
+const TESTIMONIAL_PATHS = [
+  '/testimonials',
+  '/solutions/ai-training',
+  '/solutions/corporate-ai-training',
+]
+
 /**
  * On-demand revalidation for the testimonials index (issue #1 decision). Creating,
- * editing, unpublishing, or deleting a testimonial refreshes `/testimonials` without
+ * editing, unpublishing, or deleting a testimonial refreshes `/testimonials` and the two training pages that show them without
  * a redeploy via the shared never-throw `revalidatePaths` helper — the guard and the
  * settled import-style rationale live there.
  */
 const revalidateAfterChange: CollectionAfterChangeHook = ({ doc, req }) => {
-  revalidatePaths(['/testimonials'], req)
+  revalidatePaths(TESTIMONIAL_PATHS, req)
   return doc
 }
 
 const revalidateAfterDelete: CollectionAfterDeleteHook = ({ doc, req }) => {
-  revalidatePaths(['/testimonials'], req)
+  revalidatePaths(TESTIMONIAL_PATHS, req)
   return doc
 }
 
@@ -52,7 +58,12 @@ export const Testimonials: CollectionConfig = {
   },
   fields: [
     { name: 'quote', type: 'textarea', required: true },
-    { name: 'clientName', type: 'text', required: true },
+    {
+      name: 'clientName',
+      type: 'text',
+      required: true,
+      admin: { description: 'Initials only, e.g. E.G.' },
+    },
     {
       name: 'roleTitle',
       type: 'text',
@@ -61,7 +72,10 @@ export const Testimonials: CollectionConfig = {
     {
       name: 'organization',
       type: 'text',
-      admin: { description: 'District or organization.' },
+      admin: {
+        description:
+          'School districts: the state (e.g. New Jersey). Corporate: a description, never the company name (e.g. international energy trading company).',
+      },
     },
     { name: 'industry', type: 'text' },
     {
@@ -72,6 +86,7 @@ export const Testimonials: CollectionConfig = {
         { label: 'Budget Software', value: 'budget-software' },
         { label: 'Consulting', value: 'consulting' },
         { label: 'Keynotes', value: 'keynotes' },
+        { label: 'Corporate AI Training', value: 'corporate-training' },
         { label: 'General', value: 'general' },
       ],
     },

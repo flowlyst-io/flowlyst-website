@@ -12,6 +12,7 @@ import * as migration_20261017_184755_site_settings_founder_linkedin from './202
 import * as migration_20261021_024401_bigin_crm_sync from './20261021_024401_bigin_crm_sync';
 import * as migration_20261030_212514_links_and_cards from './20261030_212514_links_and_cards';
 import * as migration_20261102_181916_card_headshot_crop from './20261102_181916_card_headshot_crop';
+import * as migration_20261110_205844_testimonials_corporate_training from './20261110_205844_testimonials_corporate_training';
 
 export const migrations = [
   {
@@ -82,6 +83,11 @@ export const migrations = [
   {
     up: migration_20261102_181916_card_headshot_crop.up,
     down: migration_20261102_181916_card_headshot_crop.down,
-    name: '20261102_181916_card_headshot_crop'
+    name: '20261102_181916_card_headshot_crop',
+  },
+  {
+    up: migration_20261110_205844_testimonials_corporate_training.up,
+    down: migration_20261110_205844_testimonials_corporate_training.down,
+    name: '20261110_205844_testimonials_corporate_training'
   },
 ];
