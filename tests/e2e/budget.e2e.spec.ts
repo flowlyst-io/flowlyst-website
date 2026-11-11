@@ -203,6 +203,9 @@ test.describe('Budget page — server-rendered content (raw HTML, no JS)', () =>
       expect(html, `promise stat "${stat}"`).toContain(stat)
     }
     expect(html, 'promise label — implementation').toMatch(/Average implementation/i)
+    expect(html, 'promise label — our side').toContain('on our side')
+    expect(html, 'promise label — district wait').toContain('Time waiting on the district')
+    expect(html, 'hero two-week claim').toContain('2-week implementation')
     expect(html, 'old one-week claim is gone').not.toContain('1-week')
     expect(html, 'old one-week stat is gone').not.toContain('1 wk')
     expect(html, 'promise label — onboarding').toMatch(/Personalized onboarding/i)

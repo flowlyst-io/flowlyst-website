@@ -47,7 +47,7 @@ const BULLETS = [
   'No slide deck — we open the product and show you',
   'Tailored to your district size and priorities',
   'Aziz on the call',
-  '2-week typical implementation if it’s a fit',
+  '2-week typical implementation on our side if it’s a fit',
 ]
 
 export default function RequestDemoPage() {

@@ -177,7 +177,7 @@ test.describe('Request-demo page — server-rendered content (raw HTML, no JS)',
       'we open the product and show you',
       'Tailored to your district size and priorities',
       'Aziz on the call',
-      '2-week typical implementation',
+      '2-week typical implementation on our side',
     ]) {
       expect(html, `bullet "${bullet}"`).toContain(bullet)
     }

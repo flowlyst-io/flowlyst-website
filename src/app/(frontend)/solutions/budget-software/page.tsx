@@ -99,7 +99,7 @@ const MODULES: Module[] = [
 const PROMISES: Array<{ stat: string; label: string }> = [
   {
     stat: '2 wks',
-    label: 'Average implementation on our side. Time waiting on district data isn’t counted.',
+    label: 'Average implementation on our side. Time waiting on the district isn’t counted.',
   },
   { stat: '1:1', label: 'Personalized onboarding sessions.' },
   { stat: 'CFOs', label: 'Support from school finance experts.' },
