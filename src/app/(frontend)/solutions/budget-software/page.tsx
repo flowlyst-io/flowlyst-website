@@ -73,7 +73,7 @@ const MODULES: Module[] = [
   {
     num: '03',
     title: 'Color-coded analysis',
-    copy: 'Analysis Mode flags lines that rise past your threshold, new lines and removed lines, in colors your district picks, including a color-blind-safe set. Export any grid to CSV or Excel.',
+    copy: 'Analysis Mode flags lines that rise past your threshold, new lines and removed lines, in colors your district picks, including a color-blind-safe set. Export grids to CSV, and budget entry grids to Excel.',
   },
   {
     num: '04',
