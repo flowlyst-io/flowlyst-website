@@ -97,7 +97,10 @@ const MODULES: Module[] = [
 // styles.css) — the design's 15px / 85%-white supporting text fails AA on the
 // brand-green band. Do NOT set inline font-size/color here or the amendment loses.
 const PROMISES: Array<{ stat: string; label: string }> = [
-  { stat: '1 wk', label: 'Average implementation. We mean it.' },
+  {
+    stat: '2 wks',
+    label: 'Average implementation on our side. Time waiting on district data isn’t counted.',
+  },
   { stat: '1:1', label: 'Personalized onboarding sessions.' },
   { stat: 'CFOs', label: 'Support from school finance experts.' },
   { stat: '$0', label: 'Hidden fees. No IT staff required.' },
@@ -177,7 +180,7 @@ export default async function BudgetSoftwarePage() {
         primaryHref="/request-demo"
         secondaryCta="See pricing on a call"
         secondaryHref="/contact?reason=pricing"
-        badges={['1-week implementation', 'No IT lift', 'Built by a former school CFO']}
+        badges={['2-week implementation', 'No IT lift', 'Built by a former school CFO']}
         visual={<ProductMock />}
       />
 

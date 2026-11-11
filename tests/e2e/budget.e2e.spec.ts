@@ -199,10 +199,12 @@ test.describe('Budget page — server-rendered content (raw HTML, no JS)', () =>
   test('the service-promises band strings are server-rendered', async ({ request }) => {
     const html = await fetchHtml(request, PATH)
     // Stats + labels from the green promises band (PRD §4.1 differentiators).
-    for (const stat of ['1 wk', '1:1', 'CFOs', '$0']) {
+    for (const stat of ['2 wks', '1:1', 'CFOs', '$0']) {
       expect(html, `promise stat "${stat}"`).toContain(stat)
     }
     expect(html, 'promise label — implementation').toMatch(/Average implementation/i)
+    expect(html, 'old one-week claim is gone').not.toContain('1-week')
+    expect(html, 'old one-week stat is gone').not.toContain('1 wk')
     expect(html, 'promise label — onboarding').toMatch(/Personalized onboarding/i)
     expect(html, 'promise label — finance experts').toMatch(/school finance experts/i)
     expect(html, 'promise label — no hidden fees').toMatch(/Hidden fees\. No IT staff required/i)
