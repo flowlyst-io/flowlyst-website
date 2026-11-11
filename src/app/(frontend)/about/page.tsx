@@ -10,6 +10,7 @@ import { serializeJsonLd } from '@/utilities/jsonLd'
 import { getSiteSettings } from '@/utilities/siteSettings'
 import { founderLinkedIn } from '@/utilities/socialLinks'
 import { buildFounderPersonSchema } from '@/utilities/structuredData'
+import { LEADERS_TRAINED } from '@/content/training'
 import { SOCIAL_IMAGE } from '@/utilities/socialImage'
 
 /**
@@ -180,7 +181,8 @@ export default async function AboutPage() {
                   maxWidth: '50ch',
                 }}
               >
-                15+ years in K-12 finance and leadership. Former school CFO. National speaker.
+                15+ years in K-12 finance and leadership. Former school CFO. National speaker.{' '}
+                {LEADERS_TRAINED} leaders trained.
               </p>
               <p className="p" style={{ fontSize: 17, marginBottom: 16, maxWidth: '54ch' }}>
                 Aziz built flowlyst because the tools and partners he wished he had as a CFO didn’t
@@ -195,7 +197,8 @@ export default async function AboutPage() {
                 A former public school district CFO, Aziz knows district finance from the
                 business-office side. He has presented AI training for school business officials at
                 NJASBO, MASBO, ASBO New York and ASBO International’s Annual Conference &amp; Expo
-                (ACE), and for Chicago Public Schools.
+                (ACE), and for Chicago Public Schools. In all, he has trained {LEADERS_TRAINED}{' '}
+                leaders across school districts and companies.
               </p>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 32 }}>
                 {AZIZ_CHIPS.map((chip) => (

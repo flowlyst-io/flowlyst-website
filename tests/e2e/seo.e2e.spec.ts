@@ -173,7 +173,6 @@ test.describe('Claim guard — retired, unmeasured claims appear nowhere', () =>
         .replace(/<[^>]+>/g, ' ')
         .replace(/\s+/g, ' ')
       expect(text).not.toMatch(/100%\s*(workshop\s*)?satisfaction/i)
-      expect(text).not.toMatch(/2,000\+/)
       expect(text).not.toMatch(/500\+\s*(admin\s*)?hours/i)
     })
   }

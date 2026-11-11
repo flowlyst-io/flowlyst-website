@@ -8,6 +8,7 @@ import { SectionHead } from '@/components/solutions/SectionHead'
 import { TrainingRosterArt } from '@/components/solutions/TrainingRosterArt'
 import { TrainingTestimonials } from '@/components/solutions/TrainingTestimonials'
 import {
+  LEADERS_TRAINED,
   SCHOOL_FAQ,
   STATES_COUNT,
   TRAINED_STATES,
@@ -244,7 +245,7 @@ export default async function AiTrainingPage() {
             AI training that <em>sticks the next day.</em>
           </>
         }
-        lead="Hands-on workshops for the whole business office, from accounts payable to the CFO. On-site in any US state, or virtual."
+        lead={`Hands-on workshops for the whole business office, from accounts payable to the CFO. ${LEADERS_TRAINED} leaders trained so far, on-site in any US state, or virtual.`}
         primaryCta="Book a 15-min discussion"
         primaryHref="/contact?reason=training"
         secondaryCta="See sample agenda"
