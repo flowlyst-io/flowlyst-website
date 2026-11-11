@@ -30,6 +30,10 @@ export const TRAINING_VENUES = [
 
 export const STATES_COUNT = TRAINED_STATES.length
 
+// Aziz's own count of everyone trained across conference sessions, district and
+// corporate engagements. Not from the attendee surveys.
+export const LEADERS_TRAINED = '2,000+'
+
 // From post-session attendee surveys. `positiveFeedbackPct` is the share of the 675
 // responses that were positive; the survey never asked a satisfaction question, so
 // the copy says "positive feedback" and never "satisfaction".
@@ -51,7 +55,7 @@ export const SCHOOL_FAQ: ReadonlyArray<{ question: string; answer: string }> = [
   },
   {
     question: 'Do you train in my state?',
-    answer: `Yes. flowlyst trains on-site in any US state, or virtually. Attendees so far have come from ${STATES_COUNT} states, and sessions have run for state associations including NJASBO, MASBO and ASBO New York, for ASBO International (ACE) and for Chicago Public Schools.`,
+    answer: `Yes. flowlyst trains on-site in any US state, or virtually. It has trained ${LEADERS_TRAINED} leaders so far, with attendees from ${STATES_COUNT} states, and sessions have run for state associations including NJASBO, MASBO and ASBO New York, for ASBO International (ACE) and for Chicago Public Schools.`,
   },
   {
     question: 'What does a session cover?',

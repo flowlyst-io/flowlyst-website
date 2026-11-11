@@ -135,6 +135,16 @@ test.describe('About — server-rendered content (raw HTML, no JS)', () => {
     expect(html).toMatch(/Equip K-12 districts with the tools and partners/i)
   })
 
+  test('the leaders-trained figure matches the homepage', async ({ request }) => {
+    const html = await fetchAboutHtml(request)
+    const text = html
+      .replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, '')
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+    expect(text).toContain('2,000+ leaders trained')
+  })
+
   test('the three mission pillars are present in the server HTML', async ({ request }) => {
     const html = await fetchAboutHtml(request)
     for (const pillar of ['Operator credibility', 'Partner, not vendor', 'K-12 first']) {

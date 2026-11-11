@@ -30,7 +30,7 @@ const CANONICAL_PATH = '/solutions/budget-software'
 
 const PAGE_TITLE = 'Budget Software for K–12 Districts — flowlyst'
 const PAGE_DESCRIPTION =
-  'Centralize your K–12 district’s budgeting: department entry, budget-vs-actual tracking that refreshes every time you upload your ERP export, and board-ready reports. Supplementary to your ERP, built by a former school CFO.'
+  'Centralize your K–12 district’s budgeting: department entry, budget-vs-actual tracking that refreshes every time you upload your ERP export, purchase order tracking and color-coded analysis. Supplementary to your ERP, built by a former school CFO.'
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -68,22 +68,22 @@ const MODULES: Module[] = [
   {
     num: '02',
     title: 'Tracking that refreshes on upload',
-    copy: 'Upload your ERP export, map it once, preview it, and budget vs. actual refreshes by department and line, with the variance the board will ask about. No IT integration project required.',
+    copy: 'Upload your ERP export as a CSV, match its columns, preview every row, and budget, actual, encumbrance and available budget refresh by department and account. Used % turns orange at 80% and red when over budget. No IT integration project required.',
   },
   {
     num: '03',
-    title: 'Color-coded reports',
-    copy: 'Board-ready, no Excel surgery. Export in seconds.',
+    title: 'Color-coded analysis',
+    copy: 'Analysis Mode flags lines that rise past your threshold, new lines and removed lines, in colors your district picks, including a color-blind-safe set. Export any grid to CSV or Excel.',
   },
   {
     num: '04',
     title: 'Supervisor rollup',
-    copy: 'Roll department budgets into one supervisor view.',
+    copy: 'Supervisors see every department they oversee in one view, and lock or unlock budgets after they are submitted.',
   },
   {
     num: '05',
-    title: 'Fast table export',
-    copy: 'Any dataset, any time, in a format the auditor will accept.',
+    title: 'Purchase order tracking',
+    copy: 'Import purchase orders from your ERP and follow each PO, its lines, what is spent and what is still encumbered.',
   },
   {
     num: '06',
@@ -144,7 +144,7 @@ export default async function BudgetSoftwarePage() {
     name: 'flowlyst Budgeting Software',
     serviceType: 'K–12 school district budgeting software',
     description:
-      'A web-based budgeting platform for K–12 public school districts: department entry, budget-vs-actual tracking that refreshes each time the district uploads its ERP export (CSV import with upload, mapping and preview), board-ready reports, and analytics, supplementary to the district’s existing ERP. No live ERP connection or IT integration project required.',
+      'A web-based budgeting platform for K–12 public school districts: department budget entry with submit and lock, budget-vs-actual tracking that refreshes each time the district uploads its ERP export (CSV import with upload, column mapping and preview), purchase order tracking, color-coded analysis and CSV/Excel export, supplementary to the district’s existing ERP. No live ERP connection or IT integration project required.',
     url: `${serverURL}${CANONICAL_PATH}`,
     areaServed: 'US',
     provider: {
@@ -349,7 +349,7 @@ function ERPDiagram() {
   const adds = [
     'Department-level budget entry',
     'Variance tracking from every ERP upload',
-    'Board-ready reports',
+    'Color-coded budget analysis',
   ]
   return (
     <div

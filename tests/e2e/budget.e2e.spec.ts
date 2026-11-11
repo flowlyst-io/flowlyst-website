@@ -175,14 +175,25 @@ test.describe('Budget page — server-rendered content (raw HTML, no JS)', () =>
     const modules = [
       'Department-level entry',
       'Tracking that refreshes on upload',
-      'Color-coded reports',
+      'Color-coded analysis',
       'Supervisor rollup',
-      'Fast table export',
+      'Purchase order tracking',
       'AI budget analysis',
     ]
     for (const title of modules) {
       expect(html, `module "${title}" must be in the server HTML`).toContain(title)
     }
+  })
+
+  test('budget page and homepage make no claims the product cannot back', async ({ request }) => {
+    const budgetHtml = await fetchHtml(request, PATH)
+    const homeHtml = await fetchHtml(request, '/')
+    for (const html of [budgetHtml, homeHtml]) {
+      for (const claim of ['map it once', 'Board-ready', 'Grants tracking']) {
+        expect(html.toLowerCase()).not.toContain(claim.toLowerCase())
+      }
+    }
+    expect(budgetHtml).toContain('Purchase order tracking')
   })
 
   test('the service-promises band strings are server-rendered', async ({ request }) => {

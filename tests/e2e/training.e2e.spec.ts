@@ -286,7 +286,7 @@ test.describe('AI Training page — server-rendered content (raw HTML, no JS)', 
     }
     expect(text).not.toMatch(/100%\s*(workshop\s*)?satisfaction/i)
     expect(text).not.toMatch(/satisfaction/i)
-    expect(text).not.toContain('2,000+')
+    expect(text).toContain('2,000+ leaders trained')
     expect(text).not.toMatch(/500\+\s*hours/i)
   })
 

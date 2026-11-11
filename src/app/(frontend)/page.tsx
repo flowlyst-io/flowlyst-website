@@ -10,7 +10,7 @@ import { Mark } from '@/components/Mark'
 import { FinalCTA } from '@/components/FinalCTA'
 import { PostThumb } from '@/components/blog/BlogArt'
 import { ProductMock } from '@/components/solutions/ProductMock'
-import { STATES_COUNT, TRAINING_RESULTS } from '@/content/training'
+import { LEADERS_TRAINED, STATES_COUNT, TRAINING_RESULTS } from '@/content/training'
 import { getSiteSettings } from '@/utilities/siteSettings'
 
 /**
@@ -47,10 +47,10 @@ export const metadata: Metadata = {
 }
 
 const FLAGSHIP_FEATURES = [
-  'Department entry & approvals',
+  'Department entry, submit & lock',
   'Actuals imported from your ERP',
-  'Board-ready reports',
-  'Grants tracking',
+  'Color-coded budget analysis',
+  'Purchase order tracking',
 ]
 
 type Offering = {
@@ -67,7 +67,7 @@ const OFFERINGS: Offering[] = [
     num: '01',
     tag: 'Software',
     title: 'Budget Software',
-    copy: 'Department entry, budget-vs-actual tracking that refreshes every time you upload your ERP export, board-ready reports — supplementary to your ERP.',
+    copy: 'Department entry, budget-vs-actual tracking that refreshes every time you upload your ERP export, purchase order tracking and color-coded analysis — supplementary to your ERP.',
     cta: 'Request a demo',
     href: '/solutions/budget-software',
   },
@@ -75,7 +75,7 @@ const OFFERINGS: Offering[] = [
     num: '02',
     tag: 'Workshop',
     title: 'AI Training',
-    copy: `District-specific workshops for leadership and staff. ${TRAINING_RESULTS.positiveFeedbackPct}% positive feedback from ${TRAINING_RESULTS.surveyed} attendee responses across ${STATES_COUNT} states.`,
+    copy: `District-specific workshops for leadership and staff. ${LEADERS_TRAINED} leaders trained; ${TRAINING_RESULTS.positiveFeedbackPct}% positive feedback from ${TRAINING_RESULTS.surveyed} attendee responses across ${STATES_COUNT} states.`,
     cta: 'Book a discussion',
     href: '/solutions/ai-training',
   },
@@ -297,8 +297,8 @@ export default async function HomePage() {
               </h2>
               <p className="lead" style={{ fontSize: 19, marginBottom: 32 }}>
                 Department entry. Budget-vs-actual tracking that refreshes every time you upload
-                your ERP export. Board-ready reports. One source of truth that sits alongside the
-                ERP you’ve already paid for.
+                your ERP export. Purchase order tracking. One source of truth that sits alongside
+                the ERP you’ve already paid for.
               </p>
               <div
                 style={{
@@ -351,6 +351,8 @@ export default async function HomePage() {
             average confidence, out of 5.
             <br />
             <span className="accent--yellow">{STATES_COUNT}</span> states trained.
+            <br />
+            <span className="accent--yellow">{LEADERS_TRAINED}</span> leaders trained.
           </h2>
           {/* Size + white come from the .section--green WCAG 1.4.3 amendment in
               styles.css (large-text contrast on the brand-green band). */}
