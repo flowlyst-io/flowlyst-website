@@ -5,17 +5,17 @@ import type { LegalDoc } from './types'
  * and the processors it uses (verified against the form components, the Payload
  * collections, and the deploy stack): the demo, contact, newsletter, and speaking
  * forms; Vercel hosting; Neon Postgres; Resend email; Zoho Bigin CRM; Google
- * reCAPTCHA; Google Analytics (after consent, ADR 0005). Unknowns that only Tural/counsel can settle are `flag` blocks, not
+ * reCAPTCHA; Google Analytics (opt-in or opt-out by region, ADR 0005, #161). Unknowns that only Tural/counsel can settle are `flag` blocks, not
  * guesses.
  * Signed off by Tural 2026-10-11 (issue #70); the Speed Insights sentences were
- * added by #10 (2026-10-16) and the Google Analytics wording by #139 (2026-10-27),
- * both after that sign-off.
+ * added by #10 (2026-10-16), the Google Analytics wording by #139 (2026-10-27) and the
+ * regional consent wording by #161, pending review, all after that sign-off.
  */
 export const privacyDoc: LegalDoc = {
   doc: 'privacy',
   title: 'Privacy policy',
   sub: 'How we collect, use, and protect data from people who use the flowlyst website.',
-  lastUpdated: 'October 27, 2026',
+  lastUpdated: 'November 15, 2026',
   sections: [
     {
       id: 'overview',
@@ -62,7 +62,7 @@ export const privacyDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking), and Vercel Speed Insights, which is also cookieless and measures aggregated page-load performance. The site also uses Google Analytics, which runs only after you accept optional cookies in the cookie banner and receives your IP address, device and browser information, and the pages you visit. The site does not use advertising trackers.',
+          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking), and Vercel Speed Insights, which is also cookieless and measures aggregated page-load performance. The site also uses Google Analytics, which receives your IP address, device and browser information, and the pages you visit. If you are in the European Union, the European Economic Area, the United Kingdom or Switzerland, or we cannot tell where you are, it runs only after you accept optional cookies in the cookie banner; elsewhere, including the United States, it runs unless you opt out. Our cookie policy explains your choices. The site does not use advertising trackers.',
         },
       ],
     },
@@ -104,7 +104,7 @@ export const privacyDoc: LegalDoc = {
             'Neon — the database that stores your form submissions.',
             'Resend — sends the email notifications that tell our team about your request.',
             'Zoho Bigin — our customer relationship management (CRM) system, where demo requests are recorded so our team can follow up.',
-            'Google — reCAPTCHA spam protection on our forms and, if you accept optional cookies, Google Analytics website analytics (receives your IP address, browser and device information, and page-interaction signals).',
+            'Google — reCAPTCHA spam protection on our forms and Google Analytics website analytics, which runs as described in our cookie policy (receives your IP address, browser and device information, and page-interaction signals).',
           ],
         },
         {
@@ -134,6 +134,10 @@ export const privacyDoc: LegalDoc = {
         {
           kind: 'p',
           text: 'Depending on where you live, you may have additional rights. Residents of the EU/UK may have the right to access, rectify, erase, restrict, or object to our processing, and to data portability. California residents may have the right to know what we collect, to delete it, to correct it, to opt out of any sale or sharing, and not to be discriminated against for exercising those rights.',
+        },
+        {
+          kind: 'p',
+          text: 'You can opt out of Google Analytics at any time with the Cookie settings link in the site footer. We also honor the Global Privacy Control (GPC) signal: if your browser sends it, we treat it as a request to opt out, and Google Analytics does not run on this site, whatever you chose before.',
         },
         {
           kind: 'p',

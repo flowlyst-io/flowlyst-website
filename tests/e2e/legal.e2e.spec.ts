@@ -274,3 +274,49 @@ test.describe('Legal pages — accessibility and cross-navigation', () => {
     })
   }
 })
+
+// ------------------------- regional consent wording (#161) -------------------------
+
+test.describe('Legal pages — regional Google Analytics and GPC wording', () => {
+  const mainText = async (page: import('@playwright/test').Page, path: string) => {
+    await page.goto(path)
+    return page.locator('main').innerText()
+  }
+
+  test('LG1: the cookie policy names the region cookie, GPC, Cookie settings and that GPC wins', async ({
+    page,
+  }) => {
+    const text = await mainText(page, '/cookies')
+    for (const phrase of [
+      'fl_consent_region',
+      'Global Privacy Control',
+      'Cookie settings',
+      'whatever you chose before',
+    ]) {
+      expect(text, phrase).toContain(phrase)
+    }
+  })
+
+  test('LG2: the privacy policy names GPC, opting out and that GPC wins', async ({ page }) => {
+    const text = await mainText(page, '/privacy')
+    for (const phrase of ['Global Privacy Control', 'opt out', 'whatever you chose before']) {
+      expect(text, phrase).toContain(phrase)
+    }
+  })
+
+  test('LG3: neither policy keeps the old accept-only claims or a GPC exception', async ({
+    page,
+  }) => {
+    for (const path of ['/cookies', '/privacy']) {
+      const text = await mainText(page, path)
+      for (const stale of [
+        'loads only after you accept',
+        'runs only after you accept optional cookies in the cookie banner and receives',
+        'unless you have accepted',
+        'set only after you accept',
+      ]) {
+        expect(text, `${path}: ${stale}`).not.toContain(stale)
+      }
+    }
+  })
+})

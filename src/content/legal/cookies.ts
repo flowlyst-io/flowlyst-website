@@ -2,19 +2,22 @@ import type { LegalDoc } from './types'
 
 /**
  * Cookie policy (issue #22). Documents the cookies/storage the site ACTUALLY
- * uses today: the strictly-necessary consent cookie (`fl_cookie_consent`), the Payload
- * staff-session cookie, plus the optional Google Analytics cookies (`_ga`, `_ga_<ID>`) set
- * only after Accept (ADR 0005). The site also runs cookieless Vercel Web Analytics and Speed
+ * uses today: the strictly-necessary consent cookies (`fl_cookie_consent`,
+ * `fl_consent_region`), the Payload staff-session cookie, plus the optional Google
+ * Analytics cookies (`_ga`, `_ga_<ID>`), set from the first page outside the
+ * EU/EEA/UK/Switzerland unless the visitor opts out, and only after Accept inside it; a
+ * GPC signal turns them off everywhere (ADR 0005, #161). The site also runs cookieless Vercel Web Analytics and Speed
  * Insights; Google reCAPTCHA v3 protects the forms and is treated as strictly necessary
  * (ADR 0002). Unknowns are `flag` blocks. Signed off by Tural 2026-10-11; the Speed Insights
- * sentences were added by #10 (2026-10-16) and the Google Analytics wording by #139
- * (2026-10-27), both after that sign-off.
+ * sentences were added by #10 (2026-10-16), the Google Analytics wording by #139
+ * (2026-10-27) and the regional consent wording by #161, pending review, all after that
+ * sign-off.
  */
 export const cookiesDoc: LegalDoc = {
   doc: 'cookies',
   title: 'Cookie policy',
   sub: 'How we use cookies and similar technologies.',
-  lastUpdated: 'October 27, 2026',
+  lastUpdated: 'November 15, 2026',
   sections: [
     {
       id: 'overview',
@@ -32,11 +35,15 @@ export const cookiesDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'We keep the site light on cookies. Strictly necessary features work by default because the site cannot function properly without them. Any non-essential cookie runs only after you accept it in the cookie banner; Google Analytics is the only optional one (see Analytics below). You can decline, and you can change your mind later by clearing your cookies for this site, which brings the banner back.',
+          text: 'We keep the site light on cookies. Strictly necessary features work by default because the site cannot function properly without them. Google Analytics is the only optional cookie (see Analytics below), and when it runs depends on where you are visiting from. If you are in the European Union, the European Economic Area, the United Kingdom or Switzerland, or we cannot tell where you are, Google Analytics runs only after you accept it in the cookie banner. Everywhere else, including the United States, Google Analytics runs from your first page, and the banner lets you opt out. You can change your choice at any time with the Cookie settings link in the site footer.',
         },
         {
           kind: 'p',
-          text: 'To remember your accept-or-decline choice, we set one strictly necessary cookie (named below). It stores only your choice, so it is exempt from consent.',
+          text: 'If your browser sends a Global Privacy Control (GPC) signal, we treat it as a request to opt out: Google Analytics does not run on this site, whatever you chose before, and the banner is not shown. Cookie settings then shows a short note that your browser’s signal is being honored.',
+        },
+        {
+          kind: 'p',
+          text: 'To remember your choice, we set one strictly necessary cookie (named below). It stores only your choice, so it is exempt from consent. A second strictly necessary cookie records only which banner applies where you are visiting from; it does not store your location or identify you.',
         },
       ],
     },
@@ -51,7 +58,8 @@ export const cookiesDoc: LegalDoc = {
         {
           kind: 'list',
           items: [
-            'fl_cookie_consent — first-party — remembers whether you accepted or declined optional cookies — kept about 6 months.',
+            'fl_cookie_consent — first-party — remembers your cookie choice — kept about 6 months.',
+            'fl_consent_region — first-party — records whether the opt-in or the opt-out banner applies where you are visiting from; it stores no location — deleted when you close your browser.',
             'Staff sign-in session — first-party — set only when flowlyst staff sign in to manage site content; never set for visitors.',
           ],
         },
@@ -62,8 +70,8 @@ export const cookiesDoc: LegalDoc = {
         {
           kind: 'list',
           items: [
-            '_ga — first-party — Google Analytics — tells visits apart so we can count them — kept about 2 years — set only after you accept.',
-            '_ga_<ID> — first-party — Google Analytics — keeps the state of your current session — kept about 2 years — set only after you accept.',
+            '_ga — first-party — Google Analytics — tells visits apart so we can count them — kept about 2 years — set only while Google Analytics runs (see Your choice).',
+            '_ga_<ID> — first-party — Google Analytics — keeps the state of your current session — kept about 2 years — set only while Google Analytics runs (see Your choice).',
           ],
         },
         {
@@ -72,7 +80,7 @@ export const cookiesDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking), and Vercel Speed Insights, which is also cookieless and measures aggregated page-load performance. The site uses no advertising cookies. Google Analytics loads only after you accept in the cookie banner. It measures visits and form completions in aggregate, and Google acts as our service provider for it. Google’s use of this information is governed by the Google Privacy Policy (https://policies.google.com/privacy).',
+          text: 'The site uses Vercel Web Analytics, which is cookieless and collects aggregated, anonymized page-view data (no cookies, no cross-site tracking), and Vercel Speed Insights, which is also cookieless and measures aggregated page-load performance. The site uses no advertising cookies. Google Analytics runs as described under Your choice: in some regions only after you accept, elsewhere from your first page unless you opt out. It measures visits and form completions in aggregate, and Google acts as our service provider for it. Google’s use of this information is governed by the Google Privacy Policy (https://policies.google.com/privacy).',
         },
         {
           kind: 'subheading',
@@ -90,7 +98,7 @@ export const cookiesDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'You can accept or decline optional cookies in the banner, and you can control cookies through your browser settings — most browsers let you block or delete them. Blocking strictly necessary cookies may stop parts of the site from working as intended.',
+          text: 'You can accept, decline or opt out of optional cookies in the banner, and change that choice at any time with the Cookie settings link in the site footer. If you decline or opt out after Google Analytics has started, it stops on that page and we delete its cookies from your browser. You can also control cookies through your browser settings — most browsers let you block or delete them. Blocking strictly necessary cookies may stop parts of the site from working as intended.',
         },
       ],
     },
