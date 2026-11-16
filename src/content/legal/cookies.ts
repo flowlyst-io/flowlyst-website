@@ -17,7 +17,7 @@ export const cookiesDoc: LegalDoc = {
   doc: 'cookies',
   title: 'Cookie policy',
   sub: 'How we use cookies and similar technologies.',
-  lastUpdated: 'November 15, 2026',
+  lastUpdated: 'November 16, 2026',
   sections: [
     {
       id: 'overview',
