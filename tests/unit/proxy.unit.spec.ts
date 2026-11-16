@@ -5,11 +5,11 @@ import { describe, expect, it } from 'vitest'
 
 import { config, proxy } from '@/proxy'
 
-const req = (url: string, headers: Record<string, string> = {}) =>
-  new NextRequest(url, { headers })
+const req = (url: string, headers: Record<string, string> = {}) => new NextRequest(url, { headers })
 
-const region = (res: Response & { cookies: { get: (n: string) => { value: string } | undefined } }) =>
-  res.cookies.get('fl_consent_region')?.value
+const region = (
+  res: Response & { cookies: { get: (n: string) => { value: string } | undefined } },
+) => res.cookies.get('fl_consent_region')?.value
 
 describe('proxy region cookie', () => {
   it('P1: US sets opt-out', () => {
