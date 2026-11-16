@@ -1,14 +1,15 @@
 import React from 'react'
 import Link from 'next/link'
 import { Mark } from './Mark'
+import { CookieSettingsButton } from './CookieSettingsButton'
 
 /**
  * Site footer (design/site/site.jsx `Footer`, design/site/site.css `.footer`).
  *
- * Server component — pure content, no interactivity. Reproduces the settled
- * chrome faithfully: five columns (brand / Solutions / Proof /
- * Company / Legal), and the bottom bar. Legal is Privacy / Terms / Cookies only
- * (site.jsx is authoritative; there is no /accessibility page in the PRD).
+ * Server component — pure content, with the Cookie settings button as its one client
+ * island. Reproduces the settled chrome faithfully: five columns (brand / Solutions / Proof /
+ * Company / Legal), and the bottom bar. Legal is Privacy / Terms / Cookies plus
+ * the Cookie settings button (#161; there is no /accessibility page in the PRD).
  *
  * The `.html` hrefs in the comp are mapped to the real app routes (PRD §7 / §11).
  * Inline styles are carried over verbatim from site.jsx (they reference brand
@@ -131,6 +132,9 @@ export function Footer({ linkedInUrl }: { linkedInUrl?: string }) {
               </li>
               <li>
                 <Link href="/cookies">Cookies</Link>
+              </li>
+              <li>
+                <CookieSettingsButton />
               </li>
             </ul>
           </div>
