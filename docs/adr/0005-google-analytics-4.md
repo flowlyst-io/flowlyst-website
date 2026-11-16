@@ -18,7 +18,7 @@ We use Google Analytics 4 through gtag, loaded with Next's `<Script>`. No packag
 
 ## Consequences
 
-- GA sets the first-party cookies `_ga` and `_ga_<ID>` after Accept. The cookie banner, the privacy policy and the cookie policy say so.
+- GA sets the first-party cookies `_ga` and `_ga_<ID>`. In the opt-out region (the US and everywhere outside the opt-in region) it runs from the first visit unless the visitor opted out or sends GPC; in the opt-in region it runs only after Accept. The cookie banner, the privacy policy and the cookie policy say so.
 - CI sets a fake ID (`G-E2ETEST000`) job-wide so the build inlines it for the GA e2e spec; Google is never reached from tests, and the fake ID never reaches a deployed build.
 - SPA page views rely on GA4 Enhanced Measurement's history-change tracking.
 - _Superseded by the amendment below:_ consent cannot be withdrawn after a choice until the visitor clears cookies, as before.

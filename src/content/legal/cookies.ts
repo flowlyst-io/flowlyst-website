@@ -35,7 +35,7 @@ export const cookiesDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'We keep the site light on cookies. Strictly necessary features work by default because the site cannot function properly without them. Google Analytics is the only optional cookie (see Analytics below), and when it runs depends on where you are visiting from. If you are in the European Union, the European Economic Area, the United Kingdom or Switzerland, or we cannot tell where you are, Google Analytics runs only after you accept it in the cookie banner. Everywhere else, including the United States, Google Analytics runs from your first page, and the banner lets you opt out. You can change your choice at any time with the Cookie settings link in the site footer.',
+          text: 'We keep the site light on cookies. Strictly necessary features work by default because the site cannot function properly without them. Google Analytics is the only optional cookie (see Analytics below), and when it runs depends on where you are visiting from. If you are in the European Union, the European Economic Area, the United Kingdom or Switzerland, or we cannot tell where you are, Google Analytics runs only after you accept it in the cookie banner. Everywhere else, including the United States, Google Analytics runs from your first page, and the banner lets you opt out. You can change your choice at any time with the Cookie settings button in the site footer.',
         },
         {
           kind: 'p',
@@ -98,7 +98,7 @@ export const cookiesDoc: LegalDoc = {
       blocks: [
         {
           kind: 'p',
-          text: 'You can accept, decline or opt out of optional cookies in the banner, and change that choice at any time with the Cookie settings link in the site footer. If you decline or opt out after Google Analytics has started, it stops on that page and we delete its cookies from your browser. You can also control cookies through your browser settings — most browsers let you block or delete them. Blocking strictly necessary cookies may stop parts of the site from working as intended.',
+          text: 'You can accept, decline or opt out of optional cookies in the banner, and change that choice at any time with the Cookie settings button in the site footer. If you decline or opt out after Google Analytics has started, it stops on that page and we delete its cookies from your browser. You can also control cookies through your browser settings — most browsers let you block or delete them. Blocking strictly necessary cookies may stop parts of the site from working as intended.',
         },
       ],
     },

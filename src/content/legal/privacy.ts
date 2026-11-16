@@ -137,7 +137,7 @@ export const privacyDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'You can opt out of Google Analytics at any time with the Cookie settings link in the site footer. We also honor the Global Privacy Control (GPC) signal: if your browser sends it, we treat it as a request to opt out, and Google Analytics does not run on this site, whatever you chose before.',
+          text: 'You can opt out of Google Analytics at any time with the Cookie settings button in the site footer. We also honor the Global Privacy Control (GPC) signal: if your browser sends it, we treat it as a request to opt out, and Google Analytics does not run on this site, whatever you chose before.',
         },
         {
           kind: 'p',
