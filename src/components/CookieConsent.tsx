@@ -117,7 +117,7 @@ export function CookieConsent() {
             <div className="cookie-consent__actions">
               <button
                 type="button"
-                className="btn btn--primary btn--sm"
+                className="btn btn--ghost-light btn--sm"
                 onClick={() => choose('accepted')}
                 data-testid="cookie-accept"
               >
@@ -137,13 +137,14 @@ export function CookieConsent() {
         {variant === 'opt-out' && (
           <>
             <p className="cookie-consent__text">
-              We use Google Analytics cookies to understand how the site is used. You can opt out at
-              any time. Read our {policy}.
+              We use essential cookies to make this site work, and Google Analytics cookies to
+              understand how it&apos;s used. You can opt out of analytics cookies at any time. Read
+              our {policy}.
             </p>
             <div className="cookie-consent__actions">
               <button
                 type="button"
-                className="btn btn--primary btn--sm"
+                className="btn btn--ghost-light btn--sm"
                 onClick={() => choose('acknowledged')}
                 data-testid="cookie-got-it"
               >
@@ -163,8 +164,8 @@ export function CookieConsent() {
         {variant === 'gpc' && (
           <>
             <p className="cookie-consent__text">
-              Your browser sends a Global Privacy Control signal, so we don&apos;t use analytics
-              cookies. Read our {policy}.
+              Your browser sends a Global Privacy Control signal, so we use only essential cookies
+              and analytics is off. Read our {policy}.
             </p>
             <div className="cookie-consent__actions">
               <button

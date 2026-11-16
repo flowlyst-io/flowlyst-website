@@ -283,12 +283,13 @@ test.describe('Legal pages — regional Google Analytics and GPC wording', () =>
     return page.locator('main').innerText()
   }
 
-  test('LG1: the cookie policy names the region cookie, GPC, Cookie settings and that GPC wins', async ({
+  test('LG1: the cookie policy names the region and reCAPTCHA cookies, GPC, Cookie settings and that GPC wins', async ({
     page,
   }) => {
     const text = await mainText(page, '/cookies')
     for (const phrase of [
       'fl_consent_region',
+      '_GRECAPTCHA',
       'Global Privacy Control',
       'Cookie settings',
       'whatever you chose before',

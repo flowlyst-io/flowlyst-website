@@ -60,6 +60,7 @@ export const cookiesDoc: LegalDoc = {
           items: [
             'fl_cookie_consent — first-party — remembers your cookie choice — kept about 6 months.',
             'fl_consent_region — first-party — records whether the opt-in or the opt-out banner applies where you are visiting from; it stores no location — deleted when you close your browser.',
+            '_GRECAPTCHA — Google reCAPTCHA (www.google.com) — spam protection on our forms — set only when you start filling in a form — kept about 6 months.',
             'Staff sign-in session — first-party — set only when flowlyst staff sign in to manage site content; never set for visitors.',
           ],
         },

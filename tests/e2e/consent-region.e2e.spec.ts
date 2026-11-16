@@ -22,13 +22,14 @@ const US = { 'x-vercel-ip-country': 'US' }
 const DE = { 'x-vercel-ip-country': 'DE' }
 
 const OPT_OUT_TEXT =
-  'We use Google Analytics cookies to understand how the site is used. You can opt out at any time. Read our cookie policy.'
+  "We use essential cookies to make this site work, and Google Analytics cookies to understand how it's used. You can opt out of analytics cookies at any time. Read our cookie policy."
 const OPT_IN_TEXT =
   'We use essential cookies, including one that remembers this choice. If you accept, we also use Google Analytics cookies to understand how the site is used. Read our cookie policy.'
 const GPC_TEXT =
-  "Your browser sends a Global Privacy Control signal, so we don't use analytics cookies. Read our cookie policy."
+  'Your browser sends a Global Privacy Control signal, so we use only essential cookies and analytics is off. Read our cookie policy.'
 
 const banner = (page: Page) => page.getByTestId('cookie-consent')
+const classOf = (page: Page, testId: string) => page.getByTestId(testId).getAttribute('class')
 
 // A string, not a function: `pnpm test:e2e` runs specs through tsx, which wraps arrow
 // functions in a `__name` helper that does not exist in the browser.
@@ -97,6 +98,7 @@ test.describe('US visitor, no choice yet', () => {
     await expect(page.getByTestId('cookie-opt-out')).toHaveText('Opt out')
     await expect(page.getByTestId('cookie-accept')).toHaveCount(0)
     await expect(page.getByTestId('cookie-decline')).toHaveCount(0)
+    expect(await classOf(page, 'cookie-got-it')).toBe(await classOf(page, 'cookie-opt-out'))
     await expect(banner(page).getByRole('link', { name: 'cookie policy' })).toHaveAttribute(
       'href',
       '/cookies',
@@ -198,6 +200,7 @@ test.describe('EU visitor, no choice yet', () => {
     await expect(banner(page)).toBeVisible()
     await expect(banner(page)).toHaveAttribute('data-variant', 'opt-in')
     await expect(banner(page).locator('p')).toHaveText(OPT_IN_TEXT)
+    expect(await classOf(page, 'cookie-accept')).toBe(await classOf(page, 'cookie-decline'))
     await page.waitForLoadState('networkidle')
     expect(seen.gtm).toHaveLength(0)
     await expect(page.locator(GTAG)).toHaveCount(0)
