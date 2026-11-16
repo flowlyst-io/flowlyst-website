@@ -1,64 +1,21 @@
-import { test, expect, type BrowserContext, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 
-import { E2E_GA_ID } from '../helpers/ga'
+import {
+  E2E_GA_ID,
+  GTAG,
+  cookieState,
+  dataLayer,
+  expectNeverReachedGoogle,
+  hasDataLayer,
+  leadEvents,
+  stubGoogle,
+} from '../helpers/ga'
 
 /**
  * Google Analytics (issue #139): loads only after Accept, never on /admin, and each
  * successful lead-form submit sends one `generate_lead` carrying only the form name.
  * Google is never reached: the gtag script is stubbed and collection calls are aborted.
  */
-
-const GTAG = 'script[src*="googletagmanager.com/gtag/js"]'
-
-const cookieState = (value?: 'accepted' | 'declined') => ({
-  cookies: value
-    ? [
-        {
-          name: 'fl_cookie_consent',
-          value,
-          domain: 'localhost',
-          path: '/',
-          expires: -1,
-          httpOnly: false,
-          secure: false,
-          sameSite: 'Lax' as const,
-        },
-      ]
-    : [],
-  origins: [],
-})
-
-type Seen = { gtm: string[]; collect: string[]; reached: string[] }
-
-async function stubGoogle(context: BrowserContext): Promise<Seen> {
-  const seen: Seen = { gtm: [], collect: [], reached: [] }
-  context.on('requestfinished', (req) => {
-    if (/google-analytics\.com|analytics\.google\.com/.test(req.url())) seen.reached.push(req.url())
-  })
-  await context.route('https://www.googletagmanager.com/**', (route) => {
-    seen.gtm.push(route.request().url())
-    return route.fulfill({ status: 200, contentType: 'application/javascript', body: '' })
-  })
-  const abort = (route: import('@playwright/test').Route) => {
-    seen.collect.push(route.request().url())
-    return route.abort()
-  }
-  await context.route('https://*.google-analytics.com/**', abort)
-  await context.route('https://*.analytics.google.com/**', abort)
-  return seen
-}
-
-const dataLayer = (page: Page) =>
-  page.evaluate(() => (window.dataLayer ?? []).map((e) => Array.from(e as ArrayLike<unknown>)))
-
-const hasDataLayer = (page: Page) => page.evaluate(() => window.dataLayer !== undefined)
-
-const leadEvents = async (page: Page) =>
-  (await dataLayer(page)).filter((e) => e[0] === 'event' && e[1] === 'generate_lead')
-
-function expectNeverReachedGoogle(seen: Seen) {
-  expect(seen.reached, 'no request ever completed against real Google Analytics').toEqual([])
-}
 
 test.describe('GA consent gate', () => {
   test.use({ storageState: cookieState() })
