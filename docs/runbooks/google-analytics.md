@@ -12,7 +12,7 @@
 5. Copy the **Measurement ID**. It looks like `G-XXXXXXXXXX`.
 6. In Vercel, open `flowlyst-website`, then **Settings**, then **Environment Variables**. Add `NEXT_PUBLIC_GA_MEASUREMENT_ID` with your real ID in place of the placeholder `G-XXXXXXXXXX`, and tick only **Production**.
 7. Redeploy Production. The value is read at build time, so a redeploy is required.
-8. Check: open the site in a private window, click **Accept**, and look for yourself in GA **Realtime**. In another private window click **Decline**; you should not appear.
+8. Check: from the US, open the site in a private window. You should appear in GA **Realtime** without clicking anything. In another private window click **Opt out**; you stop being counted from that page on. A browser with Global Privacy Control on (Brave, DuckDuckGo, or Firefox with the setting) is never counted, even after it clicked Accept. To check the EU path, use a VPN exit in an EU country: the banner says Accept/Decline on the first and on a reloaded page, and you appear only after **Accept**. After **Opt out**, the browser's storage panel shows no `_ga` or `_ga_…` cookie for `.flowlyst.io`.
 
 ## Good to know
 

@@ -29,7 +29,7 @@ The decisions before this record existed were logged on issue #1 (Architecture d
 | QR codes: matrix and drawing                    | `qrcode`                     | 2026-10-30, [ADR 0006](./adr/0006-qr-codes.md)              | Aziz, in session (Tural present)                                    |
 | QR codes: decoding in tests                     | `jsqr`                       | 2026-10-30, [ADR 0006](./adr/0006-qr-codes.md)              | Aziz, in session (Tural present)                                    |
 
-Configuration within the decided Next.js: `experimental.globalNotFound` (Next 16) is on because the frontend and Payload route groups each own a root layout, so unmatched URLs have no layout to build the branded 404 from; `src/app/global-not-found.tsx` supplies it.
+Configuration within the decided Next.js: `experimental.globalNotFound` (Next 16) is on because the frontend and Payload route groups each own a root layout, so unmatched URLs have no layout to build the branded 404 from; `src/app/global-not-found.tsx` supplies it. `src/proxy.ts` (Next 16 proxy) sets the `fl_consent_region` cookie from Vercel's `x-vercel-ip-country` header (#161).
 
 ## Companion of a decided choice
 
