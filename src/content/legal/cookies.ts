@@ -39,7 +39,7 @@ export const cookiesDoc: LegalDoc = {
         },
         {
           kind: 'p',
-          text: 'If your browser sends a Global Privacy Control (GPC) signal, we treat it as a request to opt out: Google Analytics does not run on this site, whatever you chose before, and the banner is not shown. Cookie settings then shows a short note that your browser’s signal is being honored.',
+          text: 'If your browser sends a Global Privacy Control (GPC) signal, we treat it as a request to opt out: Google Analytics does not run on this site, whatever you chose before, and the banner is not shown.',
         },
         {
           kind: 'p',
