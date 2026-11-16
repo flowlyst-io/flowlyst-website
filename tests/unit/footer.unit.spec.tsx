@@ -1,9 +1,11 @@
 import React from 'react'
-import { describe, it, expect, vi } from 'vitest'
-import { fireEvent, render, within } from '@testing-library/react'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { cleanup, fireEvent, render, within } from '@testing-library/react'
 
 import { Footer } from '@/components/Footer'
 import { subscribeCookieSettings } from '@/utilities/consent'
+
+afterEach(cleanup)
 
 describe('Footer LinkedIn icon', () => {
   it('renders no LinkedIn link when no URL is given, and keeps the rest of the footer', () => {
