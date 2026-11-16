@@ -9,6 +9,7 @@ import {
   hasDataLayer,
   leadEvents,
   stubGoogle,
+  type Seen,
 } from '../helpers/ga'
 
 /**
@@ -29,14 +30,26 @@ const GPC_TEXT =
 
 const banner = (page: Page) => page.getByTestId('cookie-consent')
 
+// A string, not a function: `pnpm test:e2e` runs specs through tsx, which wraps arrow
+// functions in a `__name` helper that does not exist in the browser.
 async function sendGpc(context: BrowserContext) {
-  await context.addInitScript(() =>
-    Object.defineProperty(Navigator.prototype, 'globalPrivacyControl', {
-      get: () => true,
-      configurable: true,
-    }),
+  await context.addInitScript(
+    "Object.defineProperty(Navigator.prototype, 'globalPrivacyControl', { get: () => true, configurable: true })",
   )
 }
+
+const stubbed = new WeakMap<BrowserContext, Seen>()
+
+async function stub(context: BrowserContext) {
+  const seen = await stubGoogle(context)
+  stubbed.set(context, seen)
+  return seen
+}
+
+test.afterEach(({ context }) => {
+  const seen = stubbed.get(context)
+  if (seen) expectNeverReachedGoogle(seen)
+})
 
 async function seedGaCookies(context: BrowserContext) {
   const base = { domain: 'localhost', path: '/', expires: -1 }
@@ -75,7 +88,7 @@ test.describe('US visitor, no choice yet', () => {
   test.use({ storageState: cookieState(), extraHTTPHeaders: US })
 
   test('R1: shows the opt-out banner with Got it and Opt out', async ({ page, context }) => {
-    await stubGoogle(context)
+    await stub(context)
     await page.goto('/')
     await expect(banner(page)).toBeVisible()
     await expect(banner(page)).toHaveAttribute('data-variant', 'opt-out')
@@ -91,7 +104,7 @@ test.describe('US visitor, no choice yet', () => {
   })
 
   test('R2: GA loads on the first page with no click', async ({ page, context }) => {
-    const seen = await stubGoogle(context)
+    const seen = await stub(context)
     await page.goto('/')
     const script = page.locator(GTAG)
     await expect(script).toBeAttached()
@@ -105,7 +118,7 @@ test.describe('US visitor, no choice yet', () => {
     page,
     context,
   }) => {
-    await stubGoogle(context)
+    await stub(context)
     await page.goto('/')
     await page.getByTestId('cookie-got-it').click()
     await expect(banner(page)).toHaveCount(0)
@@ -119,7 +132,7 @@ test.describe('US visitor, no choice yet', () => {
     page,
     context,
   }) => {
-    const seen = await stubGoogle(context)
+    const seen = await stub(context)
     await seedGaCookies(context)
     await page.goto('/')
     await expect(page.locator(GTAG)).toBeAttached()
@@ -138,7 +151,7 @@ test.describe('US visitor, no choice yet', () => {
   })
 
   test('R5: a lead sent after Opt out is not tracked', async ({ page, context }) => {
-    await stubGoogle(context)
+    await stub(context)
     await page.goto('/contact')
     await expect(page.locator(GTAG)).toBeAttached()
     await page.getByTestId('cookie-opt-out').click()
@@ -147,7 +160,7 @@ test.describe('US visitor, no choice yet', () => {
   })
 
   test('R18: the banner is a fixed bottom overlay', async ({ page, context }) => {
-    await stubGoogle(context)
+    await stub(context)
     await page.goto('/')
     await expect(banner(page)).toBeVisible()
     await expect(banner(page)).toHaveCSS('position', 'fixed')
@@ -166,7 +179,7 @@ test.describe('US visitor, lead without ever touching the banner', () => {
     page,
     context,
   }) => {
-    await stubGoogle(context)
+    await stub(context)
     await page.goto('/contact')
     await expect(banner(page)).toBeVisible()
     await submitContact(page)
@@ -180,7 +193,7 @@ test.describe('EU visitor, no choice yet', () => {
   test.use({ storageState: cookieState(), extraHTTPHeaders: DE })
 
   test('R7: Accept-first banner, nothing GA loads', async ({ page, context }) => {
-    const seen = await stubGoogle(context)
+    const seen = await stub(context)
     await page.goto('/')
     await expect(banner(page)).toBeVisible()
     await expect(banner(page)).toHaveAttribute('data-variant', 'opt-in')
@@ -199,7 +212,7 @@ test.describe('GPC visitors', () => {
     test.use({ storageState: cookieState(), extraHTTPHeaders: US })
 
     test('R8: not counted and no banner', async ({ page, context }) => {
-      const seen = await stubGoogle(context)
+      const seen = await stub(context)
       await page.goto('/')
       await page.waitForLoadState('networkidle')
       await expect(banner(page)).toHaveCount(0)
@@ -212,7 +225,7 @@ test.describe('GPC visitors', () => {
       page,
       context,
     }) => {
-      await stubGoogle(context)
+      await stub(context)
       await seedGaCookies(context)
       await page.goto('/')
       await page.waitForLoadState('networkidle')
@@ -225,7 +238,7 @@ test.describe('GPC visitors', () => {
     test.use({ storageState: cookieState(), extraHTTPHeaders: DE })
 
     test('R9: not counted and no banner', async ({ page, context }) => {
-      const seen = await stubGoogle(context)
+      const seen = await stub(context)
       await page.goto('/')
       await page.waitForLoadState('networkidle')
       await expect(banner(page)).toHaveCount(0)
@@ -246,7 +259,7 @@ test.describe('GPC visitors', () => {
         page,
         context,
       }) => {
-        const seen = await stubGoogle(context)
+        const seen = await stub(context)
         await page.goto('/')
         await page.waitForLoadState('networkidle')
         await expect(page.locator(GTAG)).toHaveCount(0)
@@ -264,7 +277,7 @@ test.describe('GPC visitors', () => {
       page,
       context,
     }) => {
-      const seen = await stubGoogle(context)
+      const seen = await stub(context)
       await page.goto('/')
       await page.getByTestId('cookie-settings').click()
       await expect(banner(page)).toBeVisible()
@@ -291,7 +304,7 @@ test.describe('US visitor with a stored choice', () => {
     test.use({ storageState: cookieState('declined') })
 
     test('R11: no banner and no GA', async ({ page, context }) => {
-      const seen = await stubGoogle(context)
+      const seen = await stub(context)
       await page.goto('/')
       await page.waitForLoadState('networkidle')
       await expect(banner(page)).toHaveCount(0)
@@ -304,7 +317,7 @@ test.describe('US visitor with a stored choice', () => {
       page,
       context,
     }) => {
-      await stubGoogle(context)
+      await stub(context)
       await page.goto('/')
       await page.getByTestId('cookie-settings').focus()
       await page.keyboard.press('Enter')
@@ -325,7 +338,7 @@ test.describe('US visitor with a stored choice', () => {
     test.use({ storageState: cookieState('accepted') })
 
     test('R12: no banner, GA loads once', async ({ page, context }) => {
-      await stubGoogle(context)
+      await stub(context)
       await page.goto('/')
       await expect(banner(page)).toHaveCount(0)
       await expect(page.locator(GTAG)).toHaveCount(1)
@@ -340,7 +353,7 @@ test.describe('EU visitor, stored accepted', () => {
     page,
     context,
   }) => {
-    await stubGoogle(context)
+    await stub(context)
     await seedGaCookies(context)
     await page.goto('/')
     await expect(page.locator(GTAG)).toBeAttached()
