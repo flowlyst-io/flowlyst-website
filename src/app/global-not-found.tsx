@@ -2,6 +2,7 @@ import React from 'react'
 import { nunito } from './(frontend)/fonts'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
+import { CookieConsent } from '@/components/CookieConsent'
 import { OrganizationJsonLd } from '@/components/OrganizationJsonLd'
 import { getSiteSettings } from '@/utilities/siteSettings'
 import { companyLinkedIn, companySameAs } from '@/utilities/socialLinks'
@@ -24,6 +25,7 @@ export default async function GlobalNotFound() {
           <NotFound />
         </main>
         <Footer linkedInUrl={companyLinkedIn(settings)} />
+        <CookieConsent />
       </body>
     </html>
   )
